@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Poker Tools</title>
+  <style>
+/* タブメニュー */
+.tab-menu {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 10px;
+}
+.tab-menu li {
+  cursor: pointer;
+  padding: 8px 16px;
+  background: #ccc;
+  border: 1px solid #999;
+  border-bottom: none;
+  margin-right: 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+.tab-menu li.active {
+  background: #fff;
+  font-weight: bold;
+}
+/* タブコンテンツ表示制御 */
+.tab-content {
+  border: 1px solid #999;
+  padding: 15px;
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+
+/* ICMツールフォームのスタイル */
+.controls, .actions {
+  margin-bottom: 10px;
+}
+.controls label, .actions label {
+  margin-right: 5px;
+}
+#player-inputs {
+  margin: 10px 0;
+}
+.player-inputs {
+  margin-bottom: 5px;
+}
+.player-inputs input {
+  width: 80px;
+  margin-right: 5px;
+}
+.player-inputs select {
+  margin-left: 5px;
+}
+#icm-results p {
+  margin: 4px 0;
+}
+body {
+  font-family: sans-serif;
+}
+table {
+  border-collapse: collapse;
+}
+td {
+  border: 1px solid #ccc;
+  padding: 4px;
+  text-align: center;
+  cursor: pointer;
+}
+.suited {
+  background-color: #e0f7ff;
+}
+.offsuit {
+  background-color: #e9ffe0;
+}
+.pair {
+  background-color: #f0f0f0;
+}
+.red {
+  color: red;
+}
+
+/* カードセル */
+.card-cell {
+  width: 16px;
+  height: 24px;
+  margin: 2px;
+  padding: 0;
+  text-align: center;
+  line-height: 24px;
+  border: 1px solid #666;
+  border-radius: 2px;
+  font-size: 14px;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* カード・レンジ選択時のハイライト */
+.hero-hand {
+  background-color: gold !important;
+  color: black;
+}
+
+.card-cell.selected {
+  background: #ff0;  /* 選択カードは黄色ハイライト */
+}
+.active-range {
+  background: #d00;
+  color: #fff;
+}
+
+/* レンジ表セルのサイズ統一 */
+.pair, .suited, .offsuit {
+  width: 18px;
+  height: 18px;
+  text-align: center;
+  line-height: 18px;
+  font-size: 12px;
+  border: 1px solid #888;
+  cursor: pointer;
+  user-select: none;
+  padding: 0;
+}
+@media screen and (max-width: 480px) {
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .controls label {
+    width: 48%;
+    margin-bottom: 5px;
+  }
+}
+  </style>
+</head>
+<body>
+
+  <!-- タブメニュー -->
+  <ul class="tab-menu">
+    <li data-tab="icm-tab" class="active">ICM計算</li>
+    <li data-tab="winrate-tab">勝率計算</li>
+  </ul>
+
+  <!-- 勝率計算タブ内容 -->
+  <div id="winrate-tab" class="tab-content">
+    
+    <div>
+      <h2>ヒーローのハンド</h2>
+      <div id="card-selection">
+        <p>クリックして2枚のカードを選択:</p>
+        <!-- 52枚のカードを4行×13列のグリッドで表示 -->
+        <table id="card-grid">
+          <tr>
+            <td data-card="As" class="card-cell">A&spades;</td>
+            <td data-card="Ks" class="card-cell">K&spades;</td>
+            <td data-card="Qs" class="card-cell">Q&spades;</td>
+            <td data-card="Js" class="card-cell">J&spades;</td>
+            <td data-card="Ts" class="card-cell">T&spades;</td>
+            <td data-card="9s" class="card-cell">9&spades;</td>
+            <td data-card="8s" class="card-cell">8&spades;</td>
+            <td data-card="7s" class="card-cell">7&spades;</td>
+            <td data-card="6s" class="card-cell">6&spades;</td>
+            <td data-card="5s" class="card-cell">5&spades;</td>
+            <td data-card="4s" class="card-cell">4&spades;</td>
+            <td data-card="3s" class="card-cell">3&spades;</td>
+            <td data-card="2s" class="card-cell">2&spades;</td>
+          </tr>
+          <tr>
+            <td data-card="Ah" class="card-cell">A&hearts;</td>
+            <td data-card="Kh" class="card-cell">K&hearts;</td>
+            <td data-card="Qh" class="card-cell">Q&hearts;</td>
+            <td data-card="Jh" class="card-cell">J&hearts;</td>
+            <td data-card="Th" class="card-cell">T&hearts;</td>
+            <td data-card="9h" class="card-cell">9&hearts;</td>
+            <td data-card="8h" class="card-cell">8&hearts;</td>
+            <td data-card="7h" class="card-cell">7&hearts;</td>
+            <td data-card="6h" class="card-cell">6&hearts;</td>
+            <td data-card="5h" class="card-cell">5&hearts;</td>
+            <td data-card="4h" class="card-cell">4&hearts;</td>
+            <td data-card="3h" class="card-cell">3&hearts;</td>
+            <td data-card="2h" class="card-cell">2&hearts;</td>
+          </tr>
+          <tr>
+            <td data-card="Ad" class="card-cell">A&diams;</td>
+            <td data-card="Kd" class="card-cell">K&diams;</td>
+            <td data-card="Qd" class="card-cell">Q&diams;</td>
+            <td data-card="Jd" class="card-cell">J&diams;</td>
+            <td data-card="Td" class="card-cell">T&diams;</td>
+            <td data-card="9d" class="card-cell">9&diams;</td>
+            <td data-card="8d" class="card-cell">8&diams;</td>
+            <td data-card="7d" class="card-cell">7&diams;</td>
+            <td data-card="6d" class="card-cell">6&diams;</td>
+            <td data-card="5d" class="card-cell">5&diams;</td>
+            <td data-card="4d" class="card-cell">4&diams;</td>
+            <td data-card="3d" class="card-cell">3&diams;</td>
+            <td data-card="2d" class="card-cell">2&diams;</td>
+          </tr>
+          <tr>
+            <td data-card="Ac" class="card-cell">A&clubs;</td>
+            <td data-card="Kc" class="card-cell">K&clubs;</td>
+            <td data-card="Qc" class="card-cell">Q&clubs;</td>
+            <td data-card="Jc" class="card-cell">J&clubs;</td>
+            <td data-card="Tc" class="card-cell">T&clubs;</td>
+            <td data-card="9c" class="card-cell">9&clubs;</td>
+            <td data-card="8c" class="card-cell">8&clubs;</td>
+            <td data-card="7c" class="card-cell">7&clubs;</td>
+            <td data-card="6c" class="card-cell">6&clubs;</td>
+            <td data-card="5c" class="card-cell">5&clubs;</td>
+            <td data-card="4c" class="card-cell">4&clubs;</td>
+            <td data-card="3c" class="card-cell">3&clubs;</td>
+            <td data-card="2c" class="card-cell">2&clubs;</td>
+          </tr>
+        </table>
+        <p>選択中: <span id="hand-card1">--</span> <span id="hand-card2">--</span></p>
+      </div>
+
+      <h2>相手のレンジ</h2>
+      <div id="range-selection">
+        <p>クリックしてレンジを選択:</p>
+        <!-- 169通りのスターティングハンドを13×13のレンジ表で表示 -->
+        <table id="range-grid">
+          <tr><td data-cat="0" class="pair">AA</td><td data-cat="1" class="suited">AKs</td><td data-cat="2" class="suited">AQs</td><td data-cat="3" class="suited">AJs</td><td data-cat="4" class="suited">ATs</td><td data-cat="5" class="suited">A9s</td><td data-cat="6" class="suited">A8s</td><td data-cat="7" class="suited">A7s</td><td data-cat="8" class="suited">A6s</td><td data-cat="9" class="suited">A5s</td><td data-cat="10" class="suited">A4s</td><td data-cat="11" class="suited">A3s</td><td data-cat="12" class="suited">A2s</td></tr>
+          <tr><td data-cat="13" class="offsuit">AKo</td><td data-cat="14" class="pair">KK</td><td data-cat="15" class="suited">KQs</td><td data-cat="16" class="suited">KJs</td><td data-cat="17" class="suited">KTs</td><td data-cat="18" class="suited">K9s</td><td data-cat="19" class="suited">K8s</td><td data-cat="20" class="suited">K7s</td><td data-cat="21" class="suited">K6s</td><td data-cat="22" class="suited">K5s</td><td data-cat="23" class="suited">K4s</td><td data-cat="24" class="suited">K3s</td><td data-cat="25" class="suited">K2s</td></tr>
+          <tr><td data-cat="26" class="offsuit">AQo</td><td data-cat="27" class="offsuit">KQo</td><td data-cat="28" class="pair">QQ</td><td data-cat="29" class="suited">QJs</td><td data-cat="30" class="suited">QTs</td><td data-cat="31" class="suited">Q9s</td><td data-cat="32" class="suited">Q8s</td><td data-cat="33" class="suited">Q7s</td><td data-cat="34" class="suited">Q6s</td><td data-cat="35" class="suited">Q5s</td><td data-cat="36" class="suited">Q4s</td><td data-cat="37" class="suited">Q3s</td><td data-cat="38" class="suited">Q2s</td></tr>
+          <tr><td data-cat="39" class="offsuit">AJo</td><td data-cat="40" class="offsuit">KJo</td><td data-cat="41" class="offsuit">QJo</td><td data-cat="42" class="pair">JJ</td><td data-cat="43" class="suited">JTs</td><td data-cat="44" class="suited">J9s</td><td data-cat="45" class="suited">J8s</td><td data-cat="46" class="suited">J7s</td><td data-cat="47" class="suited">J6s</td><td data-cat="48" class="suited">J5s</td><td data-cat="49" class="suited">J4s</td><td data-cat="50" class="suited">J3s</td><td data-cat="51" class="suited">J2s</td></tr>
+          <tr><td data-cat="52" class="offsuit">ATo</td><td data-cat="53" class="offsuit">KTo</td><td data-cat="54" class="offsuit">QTo</td><td data-cat="55" class="offsuit">JTo</td><td data-cat="56" class="pair">TT</td><td data-cat="57" class="suited">T9s</td><td data-cat="58" class="suited">T8s</td><td data-cat="59" class="suited">T7s</td><td data-cat="60" class="suited">T6s</td><td data-cat="61" class="suited">T5s</td><td data-cat="62" class="suited">T4s</td><td data-cat="63" class="suited">T3s</td><td data-cat="64" class="suited">T2s</td></tr>
+          <tr><td data-cat="65" class="offsuit">A9o</td><td data-cat="66" class="offsuit">K9o</td><td data-cat="67" class="offsuit">Q9o</td><td data-cat="68" class="offsuit">J9o</td><td data-cat="69" class="offsuit">T9o</td><td data-cat="70" class="pair">99</td><td data-cat="71" class="suited">98s</td><td data-cat="72" class="suited">97s</td><td data-cat="73" class="suited">96s</td><td data-cat="74" class="suited">95s</td><td data-cat="75" class="suited">94s</td><td data-cat="76" class="suited">93s</td><td data-cat="77" class="suited">92s</td></tr>
+          <tr><td data-cat="78" class="offsuit">A8o</td><td data-cat="79" class="offsuit">K8o</td><td data-cat="80" class="offsuit">Q8o</td><td data-cat="81" class="offsuit">J8o</td><td data-cat="82" class="offsuit">T8o</td><td data-cat="83" class="offsuit">98o</td><td data-cat="84" class="pair">88</td><td data-cat="85" class="suited">87s</td><td data-cat="86" class="suited">86s</td><td data-cat="87" class="suited">85s</td><td data-cat="88" class="suited">84s</td><td data-cat="89" class="suited">83s</td><td data-cat="90" class="suited">82s</td></tr>
+          <tr><td data-cat="91" class="offsuit">A7o</td><td data-cat="92" class="offsuit">K7o</td><td data-cat="93" class="offsuit">Q7o</td><td data-cat="94" class="offsuit">J7o</td><td data-cat="95" class="offsuit">T7o</td><td data-cat="96" class="offsuit">97o</td><td data-cat="97" class="offsuit">87o</td><td data-cat="98" class="pair">77</td><td data-cat="99" class="suited">76s</td><td data-cat="100" class="suited">75s</td><td data-cat="101" class="suited">74s</td><td data-cat="102" class="suited">73s</td><td data-cat="103" class="suited">72s</td></tr>
+          <tr><td data-cat="104" class="offsuit">A6o</td><td data-cat="105" class="offsuit">K6o</td><td data-cat="106" class="offsuit">Q6o</td><td data-cat="107" class="offsuit">J6o</td><td data-cat="108" class="offsuit">T6o</td><td data-cat="109" class="offsuit">96o</td><td data-cat="110" class="offsuit">86o</td><td data-cat="111" class="offsuit">76o</td><td data-cat="112" class="pair">66</td><td data-cat="113" class="suited">65s</td><td data-cat="114" class="suited">64s</td><td data-cat="115" class="suited">63s</td><td data-cat="116" class="suited">62s</td></tr>
+          <tr><td data-cat="117" class="offsuit">A5o</td><td data-cat="118" class="offsuit">K5o</td><td data-cat="119" class="offsuit">Q5o</td><td data-cat="120" class="offsuit">J5o</td><td data-cat="121" class="offsuit">T5o</td><td data-cat="122" class="offsuit">95o</td><td data-cat="123" class="offsuit">85o</td><td data-cat="124" class="offsuit">75o</td><td data-cat="125" class="offsuit">65o</td><td data-cat="126" class="pair">55</td><td data-cat="127" class="suited">54s</td><td data-cat="128" class="suited">53s</td><td data-cat="129" class="suited">52s</td></tr>
+          <tr><td data-cat="130" class="offsuit">A4o</td><td data-cat="131" class="offsuit">K4o</td><td data-cat="132" class="offsuit">Q4o</td><td data-cat="133" class="offsuit">J4o</td><td data-cat="134" class="offsuit">T4o</td><td data-cat="135" class="offsuit">94o</td><td data-cat="136" class="offsuit">84o</td><td data-cat="137" class="offsuit">74o</td><td data-cat="138" class="offsuit">64o</td><td data-cat="139" class="offsuit">54o</td><td data-cat="140" class="pair">44</td><td data-cat="141" class="suited">43s</td><td data-cat="142" class="suited">42s</td></tr>
+          <tr><td data-cat="143" class="offsuit">A3o</td><td data-cat="144" class="offsuit">K3o</td><td data-cat="145" class="offsuit">Q3o</td><td data-cat="146" class="offsuit">J3o</td><td data-cat="147" class="offsuit">T3o</td><td data-cat="148" class="offsuit">93o</td><td data-cat="149" class="offsuit">83o</td><td data-cat="150" class="offsuit">73o</td><td data-cat="151" class="offsuit">63o</td><td data-cat="152" class="offsuit">53o</td><td data-cat="153" class="offsuit">43o</td><td data-cat="154" class="pair">33</td><td data-cat="155" class="suited">32s</td></tr>
+          <tr><td data-cat="156" class="offsuit">A2o</td><td data-cat="157" class="offsuit">K2o</td><td data-cat="158" class="offsuit">Q2o</td><td data-cat="159" class="offsuit">J2o</td><td data-cat="160" class="offsuit">T2o</td><td data-cat="161" class="offsuit">92o</td><td data-cat="162" class="offsuit">82o</td><td data-cat="163" class="offsuit">72o</td><td data-cat="164" class="offsuit">62o</td><td data-cat="165" class="offsuit">52o</td><td data-cat="166" class="offsuit">42o</td><td data-cat="167" class="offsuit">32o</td><td data-cat="168" class="pair">22</td></tr>
+        </table>
+      </div>
+
+      <button id="calc-winrate-btn" disabled>勝率計算</button>
+      <div id="winrate-result"></div>
+
+    </div>
+  </div>
+
+  <!-- ICM計算タブ内容 -->
+  <div id="icm-tab" class="tab-content active">
+    <div class="controls">
+      <label>プレイヤー数:
+        <select id="num-players">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+        </select>
+      </label>
+      <button id="generate-btn">生成</button>
+      <label>ヒーロー:
+        <select id="hero-index"></select>
+      </label>
+      <label>オールイン相手:
+        <select id="allin-index"></select>
+      </label>
+      <label>オープン額:
+        <input type="number" id="open-amount" step="0.1">
+      </label>
+    </div>
+    <div id="player-inputs"></div>
+    <div class="actions">
+      <button id="calc-icm-btn">ICM計算</button>
+    </div>
+    <div id="icm-results">
+      <p>合計ポット: <span id="total-pot">0.00</span></p>
+      <p>コール額: <span id="call-amount">0.00</span></p>
+      <p>フォールド時EV: <span id="fold-ev">0.00</span></p>
+      <p>勝利時EV: <span id="win-ev">0.00</span></p>
+      <p>敗北時EV: <span id="lose-ev">0.00</span></p>
+      <p>必要勝率: <span id="required-winrate">0.00%</span></p>
+      <div id="ev-list"></div>
+    </div>
+  </div>
+
+  <script>
+const calcWinBtn = document.getElementById('calc-winrate-btn');
+calcWinBtn.disabled = true;
+// プリコンピュート済み勝率データをバイナリファイルから読み込む
+fetch('hand_vs_hand.bin')
+  .then(res => res.arrayBuffer())
+  .then(buffer => {
+    winRateMatrix = new Float32Array(buffer);
+    console.log('勝率データ読み込み完了:', winRateMatrix);
+    calcWinBtn.disabled = false;
+  })
+  .catch(err => {
+    console.error('データ読み込み失敗:', err);
+    winrateResultDiv.textContent = '勝率データ読み込み失敗';
+  });
+const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+const suits = ['s', 'h', 'd', 'c'];
+const suitSymbols = { 's': '♠', 'h': '♥', 'd': '♦', 'c': '♣' };
+const tabMenuItems = document.querySelectorAll('.tab-menu li');
+const tabContents = document.querySelectorAll('.tab-content');
+const playerInputsDiv = document.getElementById('player-inputs');
+const numPlayersSelect = document.getElementById('num-players');
+const heroIndexSelect = document.getElementById('hero-index');
+const allinIndexSelect = document.getElementById('allin-index');
+const openAmountInput = document.getElementById('open-amount');
+const totalPotSpan = document.getElementById('total-pot');
+const callAmountSpan = document.getElementById('call-amount');
+const foldEvSpan = document.getElementById('fold-ev');
+const winEvSpan = document.getElementById('win-ev');
+const loseEvSpan = document.getElementById('lose-ev');
+const requiredWinrateSpan = document.getElementById('required-winrate');
+const evListDiv = document.getElementById('ev-list');
+const cardGridDiv = document.getElementById('card-grid');
+const rangeGridDiv = document.getElementById('range-grid');
+const handCard1Display = document.getElementById('hand-card1');
+const handCard2Display = document.getElementById('hand-card2');
+const winrateResultDiv = document.getElementById('winrate-result');
+let selectedCards = [];
+let winRateMatrix;
+/** タブ切り替え処理 */
+tabMenuItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const targetId = item.getAttribute('data-tab');
+    tabMenuItems.forEach(i => i.classList.toggle('active', i === item));
+    tabContents.forEach(content => {
+      content.classList.toggle('active', content.id === targetId);
+    });
+  });
+});
+/** ICMプレイヤー入力欄を生成する関数 */
+function generatePlayerInputs() {
+  const n = parseInt(numPlayersSelect.value);
+  playerInputsDiv.innerHTML = '';
+  heroIndexSelect.innerHTML = '';
+  allinIndexSelect.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const div = document.createElement('div');
+    div.className = 'player-inputs';
+    div.innerHTML = `
+      P${i+1}:
+      <input type="number" id="stack${i}" step="0.1" placeholder="スタック">
+      <input type="number" id="prize${i}" step="0.1" placeholder="プライズ">
+      <select id="role${i}">
+        <option value="none">その他</option>
+        <option value="sb">SB</option>
+        <option value="bb">BB</option>
+        <option value="open">オープン</option>
+      </select>`;
+    playerInputsDiv.appendChild(div);
+    const optHero = document.createElement('option');
+    optHero.value = i;
+    optHero.text = `P${i+1}`;
+    heroIndexSelect.appendChild(optHero);
+    const optAllin = document.createElement('option');
+    optAllin.value = i;
+    optAllin.text = `P${i+1}`;
+    allinIndexSelect.appendChild(optAllin);
+  }
+}
+// 初期状態としてデフォルトのプレイヤー数で入力欄を生成
+generatePlayerInputs();
+// プレイヤー数変更時や「生成」ボタンクリック時にも入力欄生成を呼ぶ
+document.getElementById('generate-btn').addEventListener('click', generatePlayerInputs);
+/** ICM計算処理 */
+function calculateICM() {
+  const n = parseInt(numPlayersSelect.value);
+  const stacks = [], prizes = [], roles = [];
+  for (let i = 0; i < n; i++) {
+    stacks.push(parseFloat(document.getElementById(`stack${i}`).value) || 0);
+    prizes.push(parseFloat(document.getElementById(`prize${i}`).value) || 0);
+    roles.push(document.getElementById(`role${i}`).value);
+  }
+  const heroIndex = parseInt(heroIndexSelect.value);
+  const allinIndex = parseInt(allinIndexSelect.value);
+  const openAmount = parseFloat(openAmountInput.value) || 0;
+  const heroStack = stacks[heroIndex];
+  const allinStack = stacks[allinIndex];
+  let adjustedHeroStack = heroStack;
+  if (roles[heroIndex] === 'bb') {
+      adjustedHeroStack = Math.max(0, heroStack - 1.0);
+  }
+  let contested = Math.min(adjustedHeroStack, allinStack);
+  let openIndex = -1;
+  let openAmountUsed = 0;
+  const B = stacks.slice();
+  let pot = 0;
+  for (let i = 0; i < n; i++) {
+    if (roles[i] === 'bb') {
+      const ante = Math.min(B[i], 1.0);
+      B[i] -= ante;
+      pot += ante;
+      break;
+    }
+  }
+  if (roles[heroIndex] === 'open') {
+    openIndex = heroIndex;
+    openAmountUsed = openAmount > contested ? contested : openAmount;
+    openAmountUsed = Math.min(openAmountUsed, B[heroIndex]);
+    B[heroIndex] -= openAmountUsed;
+    pot += openAmountUsed;
+  } else {
+    for (let i = 0; i < n; i++) {
+      if (roles[i] === 'open' && i !== heroIndex) {
+        openIndex = i;
+        openAmountUsed = openAmount > contested ? contested : openAmount;
+        openAmountUsed = Math.min(openAmountUsed, B[i]);
+        B[i] -= openAmountUsed;
+        pot += openAmountUsed;
+        break;
+      }
+    }
+  }
+  let allinAmount = contested;
+  if (roles[allinIndex] === 'bb') {
+    allinAmount = Math.max(0, allinAmount - 1.0);
+    pot += 1.0;
+  }
+  if (openIndex === allinIndex) {
+    allinAmount -= openAmountUsed;
+    if (allinAmount < 0) allinAmount = 0;
+  }
+  pot += allinAmount;
+  B[allinIndex] = Math.max(B[allinIndex] - allinAmount, 0);
+  for (let i = 0; i < n; i++) {
+    if (roles[i] === 'sb' && i !== allinIndex) {
+      const sbBlind = Math.min(B[i], 0.5);
+      B[i] -= sbBlind;
+      pot += sbBlind;
+    }
+    if (roles[i] === 'bb' && i !== allinIndex) {
+      const bbBlind = Math.min(B[i], 1.0);
+      B[i] -= bbBlind;
+      pot += bbBlind;
+    }
+  }
+  let callAmount = 0;
+  if (roles[heroIndex] === 'open') {
+    callAmount = Math.max(0, contested - openAmountUsed);
+  } else {
+    let heroBlind = 0;
+    if (roles[heroIndex] === 'sb') heroBlind = 0.5;
+    if (roles[heroIndex] === 'bb') heroBlind = 1.0;
+    callAmount = Math.max(0, contested - heroBlind);
+  }
+  const stacksFold = B.slice();
+  const stacksWin  = B.slice();
+  const stacksLose = B.slice();
+  stacksWin[heroIndex]  = Math.max(stacksWin[heroIndex] - callAmount, 0);
+  stacksLose[heroIndex] = Math.max(stacksLose[heroIndex] - callAmount, 0);
+  stacksWin[heroIndex]   += pot + callAmount;
+  stacksLose[allinIndex] += pot + callAmount;
+  stacksFold[allinIndex] += pot;
+  const foldEV = computeICMRecursive(stacksFold, prizes)[heroIndex];
+  const winEV  = computeICMRecursive(stacksWin,  prizes)[heroIndex];
+  const loseEV = computeICMRecursive(stacksLose, prizes)[heroIndex];
+  const requiredPct = (foldEV - loseEV) / (winEV - loseEV) * 100;
+  totalPotSpan.textContent        = pot.toFixed(2);
+  callAmountSpan.textContent      = callAmount.toFixed(2);
+  foldEvSpan.textContent          = foldEV.toFixed(2);
+  winEvSpan.textContent           = winEV.toFixed(2);
+  loseEvSpan.textContent          = loseEV.toFixed(2);
+  requiredWinrateSpan.textContent = requiredPct.toFixed(2) + '%';
+  const allEV = computeICMRecursive(stacks, prizes);
+  evListDiv.innerHTML = '開始時ICM:<br>';
+  allEV.forEach((val, idx) => {
+    evListDiv.innerHTML += `P${idx+1}: ${val.toFixed(2)}<br>`;
+  });
+}
+/** ICM計算: 再帰的に全プレイヤーの賞金期待値を算出する関数 */
+function computeICMRecursive(stacks, prizes) {
+  const n = stacks.length;
+  const payouts = prizes.slice();
+  while (payouts.length < n) {
+    payouts.push(0);
+  }
+  const results = new Array(n).fill(0);
+  function recurse(activeIndices, remainingPayouts, probFactor) {
+    const m = activeIndices.length;
+    if (m === 0) return;
+    if (m === 1) {
+      const playerIndex = activeIndices[0];
+      results[playerIndex] += probFactor * (remainingPayouts[0] || 0);
+      return;
+    }
+    let totalChips = 0;
+    activeIndices.forEach(idx => {
+      totalChips += stacks[idx];
+    });
+    const topPrize = remainingPayouts[0] || 0;
+    for (let j = 0; j < m; j++) {
+      const playerIndex = activeIndices[j];
+      const chips = stacks[playerIndex];
+      const p = (totalChips > 0 ? chips / totalChips : 0);
+      results[playerIndex] += probFactor * p * topPrize;
+      const newActive = activeIndices.slice(0, j).concat(activeIndices.slice(j+1));
+      recurse(newActive, remainingPayouts.slice(1), probFactor * p);
+    }
+  }
+  const initialIndices = stacks.map((_, idx) => idx);
+  recurse(initialIndices, payouts, 1);
+  return results;
+}
+// ヒーローのカードクリック処理
+function handleCardClick(e) {
+  const cell = e.currentTarget;
+  const card = cell.dataset.card;
+  const idx = selectedCards.indexOf(card);
+  if (idx !== -1) {
+    selectedCards.splice(idx, 1);
+    cell.classList.remove('selected');
+    updateHandDisplay();
+    return;
+  }
+  if (selectedCards.length === 2) {
+    return;
+  }
+  selectedCards.push(card);
+  cell.classList.add('selected');
+  updateHandDisplay();
+}
+/** ヒーローの2枚の手札からカテゴリーIDを算出する関数 */
+function computeHeroCategory(card1, card2) {
+  const rankIndex1 = ranks.indexOf(card1[0]);
+  const rankIndex2 = ranks.indexOf(card2[0]);
+  const suit1 = card1[1];
+  const suit2 = card2[1];
+  let cat;
+  if (rankIndex1 === rankIndex2) {
+    cat = rankIndex1 * 13 + rankIndex2;
+  } else if (suit1 === suit2) {
+    const i = Math.min(rankIndex1, rankIndex2);
+    const j = Math.max(rankIndex1, rankIndex2);
+    cat = i * 13 + j;
+  } else {
+    const i = Math.max(rankIndex1, rankIndex2);
+    const j = Math.min(rankIndex1, rankIndex2);
+    cat = i * 13 + j;
+  }
+  return cat;
+}
+// ヒーローのハンド表示を更新する関数
+function updateHandDisplay() {
+  if (selectedCards[0]) {
+    const rank = selectedCards[0][0];
+    const suit = selectedCards[0][1];
+    handCard1Display.innerHTML = rank + suitSymbols[suit];
+    if (suit === 'h' || suit === 'd') {
+      handCard1Display.classList.add('red');
+    } else {
+      handCard1Display.classList.remove('red');
+    }
+  } else {
+    handCard1Display.textContent = '--';
+    handCard1Display.classList.remove('red');
+  }
+  if (selectedCards[1]) {
+    const rank = selectedCards[1][0];
+    const suit = selectedCards[1][1];
+    handCard2Display.innerHTML = rank + suitSymbols[suit];
+    if (suit === 'h' || suit === 'd') {
+      handCard2Display.classList.add('red');
+    } else {
+      handCard2Display.classList.remove('red');
+    }
+  } else {
+    handCard2Display.textContent = '--';
+    handCard2Display.classList.remove('red');
+  }
+  // ヒーローの選択手役に一致するセルを強調表示
+  document.querySelectorAll('#range-grid td').forEach(cell => {
+    cell.classList.remove('hero-hand');
+  });
+  if (selectedCards.length === 2) {
+    const catId = computeHeroCategory(selectedCards[0], selectedCards[1]);
+    const cell = document.querySelector(`#range-grid td[data-cat="${catId}"]`);
+    if (cell) {
+      cell.classList.add('hero-hand');
+    }
+  }
+}
+// ヒーローのカードグリッドのクリックイベント設定
+document.querySelectorAll('#card-grid td').forEach(cell => {
+  cell.addEventListener('click', handleCardClick);
+});
+// レンジグリッドのクリックイベント設定（クリックで選択トグル）
+document.querySelectorAll('#range-grid td').forEach(cell => {
+  cell.addEventListener('click', () => {
+    cell.classList.toggle('active-range');
+  });
+});
+/** 勝率計算処理 */
+function calculateWinRate() {
+  if (selectedCards.length !== 2) {
+    winrateResultDiv.textContent = '手札を選択してください';
+    return;
+  }
+  const heroCard1 = selectedCards[0];
+  const heroCard2 = selectedCards[1];
+  const rankIndex1 = ranks.indexOf(heroCard1[0]);
+  const rankIndex2 = ranks.indexOf(heroCard2[0]);
+  const suit1 = heroCard1[1];
+  const suit2 = heroCard2[1];
+  let heroCat;
+  if (rankIndex1 === rankIndex2) {
+    heroCat = rankIndex1 * 13 + rankIndex2;
+  } else {
+    if (suit1 === suit2) {
+      const i = Math.min(rankIndex1, rankIndex2);
+      const j = Math.max(rankIndex1, rankIndex2);
+      heroCat = i * 13 + j;
+    } else {
+      const i = Math.max(rankIndex1, rankIndex2);
+      const j = Math.min(rankIndex1, rankIndex2);
+      heroCat = i * 13 + j;
+    }
+  }
+  const villainCells = document.querySelectorAll('#range-grid td.active-range');
+  if (villainCells.length === 0) {
+    winrateResultDiv.textContent = 'レンジを選択してください';
+    return;
+  }
+  let totalCombos = 0;
+  let totalEquity = 0;
+  villainCells.forEach(cell => {
+    const cat = Number(cell.dataset.cat);
+    let combos;
+    const i = Math.floor(cat / 13);
+    const j = cat % 13;
+    if (i === j) {
+      combos = 6;
+    } else if (i < j) {
+      combos = 4;
+    } else {
+      combos = 12;
+    }
+    totalCombos += combos;
+    if (!winRateMatrix) {
+      return;
+    }
+    const heroEquity = winRateMatrix[heroCat * 169 + cat];
+    totalEquity += heroEquity * combos;
+  });
+  if (!winRateMatrix) {
+    winrateResultDiv.textContent = 'データ読み込み中...';
+  } else {
+    const heroWinRate = (totalEquity / totalCombos) * 100;
+    winrateResultDiv.textContent = `ヒーローの勝率: ${heroWinRate.toFixed(2)}%`;
+  }
+}
+// 勝率計算ボタンにイベントを設定
+document.getElementById('calc-winrate-btn').addEventListener('click', calculateWinRate);
+// ICM計算ボタンにイベントを設定
+document.getElementById('calc-icm-btn').addEventListener('click', calculateICM);
+  </script>
+</body>
+</html>
