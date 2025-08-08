@@ -7,23 +7,43 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      margin: 0;
+      padding: 10px;
       background-color: #f5f5f5;
     }
     .container {
       max-width: 1200px;
       margin: 0 auto;
       background: white;
-      padding: 20px;
+      padding: 15px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+    
+    /* モバイル対応 */
+    @media (max-width: 768px) {
+      body {
+        padding: 5px;
+      }
+      .container {
+        padding: 10px;
+        border-radius: 0;
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+      h2 {
+        font-size: 1.2em;
+      }
+    }
+    
     .tab-menu {
       display: flex;
       list-style: none;
       padding: 0;
       margin: 0 0 20px 0;
       border-bottom: 2px solid #ddd;
+      overflow-x: auto;
     }
     .tab-menu li {
       padding: 10px 20px;
@@ -32,6 +52,7 @@
       margin-right: 5px;
       border-radius: 5px 5px 0 0;
       transition: all 0.3s;
+      white-space: nowrap;
     }
     .tab-menu li:hover {
       background: #e0e0e0;
@@ -42,7 +63,7 @@
     }
     .tab-content {
       display: none;
-      padding: 20px;
+      padding: 15px;
       border: 1px solid #ddd;
       border-radius: 0 5px 5px 5px;
     }
@@ -50,19 +71,32 @@
       display: block;
     }
     
-    /* カードグリッド */
+    /* カードグリッド - モバイル対応 */
+    .card-grid-container {
+      overflow-x: auto;
+      margin: 10px 0;
+    }
     #card-grid, #range-grid {
       border-collapse: collapse;
-      margin: 10px 0;
       cursor: pointer;
     }
-    #card-grid td, #range-grid td {
+    #card-grid td {
       padding: 8px 12px;
       border: 1px solid #ddd;
       text-align: center;
       transition: all 0.2s;
       font-weight: bold;
+      min-width: 40px;
     }
+    
+    @media (max-width: 768px) {
+      #card-grid td {
+        padding: 6px 8px;
+        font-size: 14px;
+        min-width: 35px;
+      }
+    }
+    
     #card-grid td:hover {
       background-color: #f0f0f0;
     }
@@ -76,11 +110,29 @@
       cursor: not-allowed;
     }
     
-    /* レンジグリッド */
+    /* レンジグリッド - モバイル対応 */
+    .range-grid-container {
+      overflow-x: auto;
+      margin: 10px 0;
+    }
     #range-grid td {
       font-size: 12px;
       padding: 6px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      transition: all 0.2s;
+      font-weight: bold;
+      min-width: 35px;
     }
+    
+    @media (max-width: 768px) {
+      #range-grid td {
+        font-size: 10px;
+        padding: 4px 6px;
+        min-width: 30px;
+      }
+    }
+    
     #range-grid td.pair {
       background-color: #ffe4e1;
     }
@@ -110,11 +162,22 @@
     /* 結果表示 */
     .results {
       margin-top: 20px;
-      padding: 20px;
+      padding: 15px;
       background: #f8f9fa;
       border-radius: 5px;
       border: 1px solid #dee2e6;
     }
+    
+    @media (max-width: 768px) {
+      .results {
+        padding: 10px;
+      }
+      .results p {
+        font-size: 14px;
+        margin: 8px 0;
+      }
+    }
+    
     .results h3 {
       margin-top: 0;
       color: #333;
@@ -138,7 +201,17 @@
       border-radius: 5px;
       font-size: 16px;
       transition: all 0.3s;
+      width: auto;
+      min-width: 100px;
     }
+    
+    @media (max-width: 768px) {
+      button {
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
+    
     button:hover {
       background: #0056b3;
     }
@@ -160,37 +233,22 @@
       background: #dc3545;
     }
     
-    /* 統計情報 */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .stat-box {
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 5px;
-      border: 1px solid #dee2e6;
-    }
-    .stat-label {
-      font-size: 0.9em;
-      color: #666;
-    }
-    .stat-value {
-      font-size: 1.5em;
-      font-weight: bold;
-      color: #333;
-    }
-    
     /* 選択中の表示 */
     .selection-display {
-      padding: 15px;
+      padding: 10px;
       background: #e9ecef;
       border-radius: 5px;
       margin: 10px 0;
-      font-size: 1.2em;
+      font-size: 1em;
     }
+    
+    @media (max-width: 768px) {
+      .selection-display {
+        font-size: 14px;
+        padding: 8px;
+      }
+    }
+    
     .selection-display span {
       font-weight: bold;
       margin: 0 5px;
@@ -211,19 +269,54 @@
       font-size: 16px;
     }
     
+    @media (max-width: 768px) {
+      .sample-select {
+        display: flex;
+        flex-direction: column;
+      }
+      .sample-select label {
+        margin-bottom: 5px;
+      }
+      .sample-select select {
+        width: 100%;
+        padding: 8px;
+      }
+    }
+    
     /* ICM計算用スタイル */
     .controls {
       margin: 20px 0;
     }
     .controls label {
       margin-right: 15px;
+      display: inline-block;
+      margin-bottom: 10px;
     }
     .controls select, .controls input {
       padding: 5px;
       margin-right: 10px;
     }
+    
+    @media (max-width: 768px) {
+      .controls {
+        display: flex;
+        flex-direction: column;
+      }
+      .controls label {
+        margin-bottom: 5px;
+      }
+      .controls select, .controls input {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 8px;
+      }
+    }
+    
     .player-inputs {
       margin: 10px 0;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
     }
     .player-inputs input {
       width: 100px;
@@ -232,6 +325,19 @@
     .player-inputs select {
       margin-left: 5px;
     }
+    
+    @media (max-width: 768px) {
+      .player-inputs {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .player-inputs input, .player-inputs select {
+        width: 100%;
+        margin: 5px 0;
+        padding: 8px;
+      }
+    }
+    
     #icm-results {
       margin-top: 20px;
       padding: 15px;
@@ -240,6 +346,21 @@
     }
     #icm-results p {
       margin: 5px 0;
+    }
+    
+    /* スクロールヒント */
+    .scroll-hint {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      margin: 5px 0;
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      .scroll-hint {
+        display: block;
+      }
     }
   </style>
 </head>
@@ -257,68 +378,71 @@
       <h2>ヒーローのハンド</h2>
       <div id="card-selection">
         <p>クリックして2枚のカードを選択してください:</p>
-        <table id="card-grid">
-          <tr>
-            <td data-card="As" class="black">A♠</td>
-            <td data-card="Ks" class="black">K♠</td>
-            <td data-card="Qs" class="black">Q♠</td>
-            <td data-card="Js" class="black">J♠</td>
-            <td data-card="Ts" class="black">T♠</td>
-            <td data-card="9s" class="black">9♠</td>
-            <td data-card="8s" class="black">8♠</td>
-            <td data-card="7s" class="black">7♠</td>
-            <td data-card="6s" class="black">6♠</td>
-            <td data-card="5s" class="black">5♠</td>
-            <td data-card="4s" class="black">4♠</td>
-            <td data-card="3s" class="black">3♠</td>
-            <td data-card="2s" class="black">2♠</td>
-          </tr>
-          <tr>
-            <td data-card="Ah" class="red">A♥</td>
-            <td data-card="Kh" class="red">K♥</td>
-            <td data-card="Qh" class="red">Q♥</td>
-            <td data-card="Jh" class="red">J♥</td>
-            <td data-card="Th" class="red">T♥</td>
-            <td data-card="9h" class="red">9♥</td>
-            <td data-card="8h" class="red">8♥</td>
-            <td data-card="7h" class="red">7♥</td>
-            <td data-card="6h" class="red">6♥</td>
-            <td data-card="5h" class="red">5♥</td>
-            <td data-card="4h" class="red">4♥</td>
-            <td data-card="3h" class="red">3♥</td>
-            <td data-card="2h" class="red">2♥</td>
-          </tr>
-          <tr>
-            <td data-card="Ad" class="red">A♦</td>
-            <td data-card="Kd" class="red">K♦</td>
-            <td data-card="Qd" class="red">Q♦</td>
-            <td data-card="Jd" class="red">J♦</td>
-            <td data-card="Td" class="red">T♦</td>
-            <td data-card="9d" class="red">9♦</td>
-            <td data-card="8d" class="red">8♦</td>
-            <td data-card="7d" class="red">7♦</td>
-            <td data-card="6d" class="red">6♦</td>
-            <td data-card="5d" class="red">5♦</td>
-            <td data-card="4d" class="red">4♦</td>
-            <td data-card="3d" class="red">3♦</td>
-            <td data-card="2d" class="red">2♦</td>
-          </tr>
-          <tr>
-            <td data-card="Ac" class="black">A♣</td>
-            <td data-card="Kc" class="black">K♣</td>
-            <td data-card="Qc" class="black">Q♣</td>
-            <td data-card="Jc" class="black">J♣</td>
-            <td data-card="Tc" class="black">T♣</td>
-            <td data-card="9c" class="black">9♣</td>
-            <td data-card="8c" class="black">8♣</td>
-            <td data-card="7c" class="black">7♣</td>
-            <td data-card="6c" class="black">6♣</td>
-            <td data-card="5c" class="black">5♣</td>
-            <td data-card="4c" class="black">4♣</td>
-            <td data-card="3c" class="black">3♣</td>
-            <td data-card="2c" class="black">2♣</td>
-          </tr>
-        </table>
+        <div class="scroll-hint">← 横スクロール可能 →</div>
+        <div class="card-grid-container">
+          <table id="card-grid">
+            <tr>
+              <td data-card="As" class="black">A♠</td>
+              <td data-card="Ks" class="black">K♠</td>
+              <td data-card="Qs" class="black">Q♠</td>
+              <td data-card="Js" class="black">J♠</td>
+              <td data-card="Ts" class="black">T♠</td>
+              <td data-card="9s" class="black">9♠</td>
+              <td data-card="8s" class="black">8♠</td>
+              <td data-card="7s" class="black">7♠</td>
+              <td data-card="6s" class="black">6♠</td>
+              <td data-card="5s" class="black">5♠</td>
+              <td data-card="4s" class="black">4♠</td>
+              <td data-card="3s" class="black">3♠</td>
+              <td data-card="2s" class="black">2♠</td>
+            </tr>
+            <tr>
+              <td data-card="Ah" class="red">A♥</td>
+              <td data-card="Kh" class="red">K♥</td>
+              <td data-card="Qh" class="red">Q♥</td>
+              <td data-card="Jh" class="red">J♥</td>
+              <td data-card="Th" class="red">T♥</td>
+              <td data-card="9h" class="red">9♥</td>
+              <td data-card="8h" class="red">8♥</td>
+              <td data-card="7h" class="red">7♥</td>
+              <td data-card="6h" class="red">6♥</td>
+              <td data-card="5h" class="red">5♥</td>
+              <td data-card="4h" class="red">4♥</td>
+              <td data-card="3h" class="red">3♥</td>
+              <td data-card="2h" class="red">2♥</td>
+            </tr>
+            <tr>
+              <td data-card="Ad" class="red">A♦</td>
+              <td data-card="Kd" class="red">K♦</td>
+              <td data-card="Qd" class="red">Q♦</td>
+              <td data-card="Jd" class="red">J♦</td>
+              <td data-card="Td" class="red">T♦</td>
+              <td data-card="9d" class="red">9♦</td>
+              <td data-card="8d" class="red">8♦</td>
+              <td data-card="7d" class="red">7♦</td>
+              <td data-card="6d" class="red">6♦</td>
+              <td data-card="5d" class="red">5♦</td>
+              <td data-card="4d" class="red">4♦</td>
+              <td data-card="3d" class="red">3♦</td>
+              <td data-card="2d" class="red">2♦</td>
+            </tr>
+            <tr>
+              <td data-card="Ac" class="black">A♣</td>
+              <td data-card="Kc" class="black">K♣</td>
+              <td data-card="Qc" class="black">Q♣</td>
+              <td data-card="Jc" class="black">J♣</td>
+              <td data-card="Tc" class="black">T♣</td>
+              <td data-card="9c" class="black">9♣</td>
+              <td data-card="8c" class="black">8♣</td>
+              <td data-card="7c" class="black">7♣</td>
+              <td data-card="6c" class="black">6♣</td>
+              <td data-card="5c" class="black">5♣</td>
+              <td data-card="4c" class="black">4♣</td>
+              <td data-card="3c" class="black">3♣</td>
+              <td data-card="2c" class="black">2♣</td>
+            </tr>
+          </table>
+        </div>
         <div class="selection-display">
           選択中: <span id="hand-card1">--</span> <span id="hand-card2">--</span>
           <span id="hand-category"></span>
@@ -332,9 +456,12 @@
       
       <div id="range-selection">
         <p>クリックしてレンジを選択:</p>
-        <table id="range-grid">
-          <!-- JavaScriptで生成 -->
-        </table>
+        <div class="scroll-hint">← 横スクロール可能 →</div>
+        <div class="range-grid-container">
+          <table id="range-grid">
+            <!-- JavaScriptで生成 -->
+          </table>
+        </div>
         <div class="selection-display">
           選択中: <span id="range-count">0</span> / 169 ハンド 
           (<span id="range-percent">0.0</span>%)
