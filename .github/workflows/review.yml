@@ -1,0 +1,44 @@
+name: Review Guard
+on:
+  pull_request:
+    types: [opened, synchronize, edited, reopened]
+
+jobs:
+  review-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check prohibited terms
+        run: |
+          set -e
+          if git grep -I -nE 'TODO|暫定|一旦|FIXME|@ts-ignore|eslint-disable' -- . ':!node_modules' ; then
+            echo 'Prohibited terms found'; exit 1
+          fi
+          echo 'OK: no prohibited terms'
+
+      - name: Check CRLF line endings
+        run: |
+          set -e
+          if git grep -I -nP "\r$" -- . ':!*.png' ':!*.jpg' ':!*.jpeg' ':!*.gif' ':!*.pdf' ; then
+            echo 'CRLF detected'; exit 1
+          fi
+          echo 'OK: LF only'
+
+      - name: Ensure newline at EOF
+        shell: bash
+        run: |
+          set -e
+          missing=0
+          while IFS= read -r -d '' f; do
+            case "$f" in
+              *.png|*.jpg|*.jpeg|*.gif|*.svg|*.ico|*.pdf|*.zip) continue;;
+            esac
+            last_byte=$(tail -c1 "$f" | wc -c)
+            if [ "$last_byte" -ne 1 ]; then
+              echo "No newline at EOF: $f"
+              missing=1
+            fi
+          done < <(git ls-files -z)
+          exit $missing
