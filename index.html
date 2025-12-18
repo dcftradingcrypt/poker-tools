@@ -191,34 +191,45 @@
     .unprofitable { color: #dc3545; }
     
     /* ボタン */
-    button {
-      padding: 10px 20px;
-      margin: 10px 5px;
-      cursor: pointer;
-      background: #007bff;
+	    button {
+	      padding: 10px 20px;
+	      margin: 10px 5px;
+	      cursor: pointer;
+	      background: #007bff;
       color: white;
       border: none;
       border-radius: 5px;
       font-size: 16px;
       transition: all 0.3s;
       width: auto;
-      min-width: 100px;
-    }
+	      min-width: 100px;
+	    }
+	    button.small {
+	      padding: 6px 10px;
+	      font-size: 14px;
+	      min-width: 0;
+	    }
+	    
+	    @media (max-width: 768px) {
+	      button {
+	        width: 100%;
+	        margin: 5px 0;
+	      }
+	    }
     
-    @media (max-width: 768px) {
-      button {
-        width: 100%;
-        margin: 5px 0;
-      }
-    }
-    
-    button:hover {
-      background: #0056b3;
-    }
-    button:disabled {
-      background: #6c757d;
-      cursor: not-allowed;
-    }
+	    button:hover {
+	      background: #0056b3;
+	    }
+	    button.cancel {
+	      background: #dc3545;
+	    }
+	    button.cancel:hover {
+	      background: #a71d2a;
+	    }
+	    button:disabled {
+	      background: #6c757d;
+	      cursor: not-allowed;
+	    }
     
     /* クイックレンジボタン */
     .quick-ranges {
@@ -296,6 +307,12 @@
       padding: 5px;
       margin-right: 10px;
     }
+    .icm-hint {
+      margin: 10px 0 15px;
+      color: #666;
+      font-size: 0.9em;
+      line-height: 1.4;
+    }
     
     @media (max-width: 768px) {
       .controls {
@@ -338,14 +355,133 @@
       }
     }
     
-    #icm-results {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f8f9fa;
+	    #icm-results {
+	      margin-top: 20px;
+	      padding: 15px;
+	      background: #f8f9fa;
+	      border-radius: 5px;
+	    }
+	    #icm-results p {
+	      margin: 5px 0;
+	    }
+	    .icm-summary {
+	      padding: 4px 0;
+	    }
+	    #icm-details {
+	      margin-top: 12px;
+	    }
+	    #icm-details summary {
+	      cursor: pointer;
+	      font-weight: bold;
+	      padding: 10px;
+	      background: #e9ecef;
+	      border-radius: 5px;
+	      user-select: none;
+	    }
+	    #icm-details[open] summary {
+	      border-bottom-left-radius: 0;
+	      border-bottom-right-radius: 0;
+	    }
+	    #icm-details .icm-details-body {
+	      padding: 10px;
+	      border: 1px solid #ddd;
+	      border-top: none;
+	      border-radius: 0 0 5px 5px;
+	      background: #fff;
+	    }
+    #icm-error {
+      display: none;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #f5c2c7;
+      background: #f8d7da;
+      color: #842029;
+      border-radius: 5px;
+      word-break: break-word;
+    }
+    #icm-error.active {
+      display: block;
+    }
+    #assumed-ev {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #d1e7dd;
+      background: #d1e7dd;
+      color: #0f5132;
       border-radius: 5px;
     }
-    #icm-results p {
-      margin: 5px 0;
+    #assumed-ev.active {
+      display: block;
+    }
+    .ev-positive {
+      color: #0f5132;
+    }
+    .ev-negative {
+      color: #842029;
+    }
+    #icm-breakdown {
+      margin-top: 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .icm-section-title {
+      font-weight: bold;
+      margin: 10px 0 6px;
+    }
+    .icm-table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 8px;
+    }
+    .icm-table-container table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    .icm-table-container th, .icm-table-container td {
+      border: 1px solid #ddd;
+      padding: 6px 8px;
+      font-size: 0.9em;
+      text-align: left;
+      white-space: nowrap;
+    }
+	    .icm-table-container input, .icm-table-container select {
+	      width: 100%;
+	      box-sizing: border-box;
+	      min-width: 60px;
+	    }
+	    .icm-table-container input[readonly] {
+	      background: #f1f3f5;
+	    }
+    #icm-action-table th:last-child,
+    #icm-action-table td:last-child {
+      width: 1%;
+      text-align: center;
+    }
+	    #icm-action-table button {
+	      margin: 0;
+	      padding: 6px 10px;
+	      font-size: 14px;
+	      width: auto;
+	      min-width: 0;
+	    }
+    #icm-player-table tr.icm-player-hero td {
+      background: #e7f1ff;
+    }
+    #icm-player-table tr.icm-player-villain td {
+      background: #fff3cd;
+    }
+    #icm-breakdown table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    #icm-breakdown th, #icm-breakdown td {
+      border: 1px solid #ddd;
+      padding: 6px 8px;
+      font-size: 0.9em;
+      text-align: left;
     }
     
     /* スクロールヒント */
@@ -368,13 +504,13 @@
   <div class="container">
     <h1>Poker Equity Calculator</h1>
     
-    <ul class="tab-menu">
-      <li data-tab="winrate-tab" class="active">勝率計算</li>
-      <li data-tab="icm-tab">ICM計算</li>
-    </ul>
+	    <ul class="tab-menu">
+	      <li data-tab="winrate-tab" class="active">エクイティ計算</li>
+	      <li data-tab="icm-tab">ICM計算</li>
+	    </ul>
 
-    <!-- 勝率計算タブ -->
-    <div id="winrate-tab" class="tab-content active">
+	    <!-- エクイティ計算タブ -->
+	    <div id="winrate-tab" class="tab-content active">
       <h2>ヒーローのハンド</h2>
       <div id="card-selection">
         <p>クリックして2枚のカードを選択してください:</p>
@@ -468,22 +604,27 @@
         </div>
       </div>
 
-      <div class="sample-select">
-        <label for="sample-count">サンプル数:</label>
-        <select id="sample-count">
-          <option value="5000">5,000回 (標準)</option>
-          <option value="10000" selected>10,000回 (高精度)</option>
-          <option value="25000">25,000回 (最高精度)</option>
-        </select>
-      </div>
+	      <div class="sample-select">
+	        <label for="sample-count">サンプル数:</label>
+	        <select id="sample-count">
+	          <option value="5000">5,000回 (標準)</option>
+	          <option value="10000" selected>10,000回 (高精度)</option>
+	          <option value="25000">25,000回 (最高精度)</option>
+	        </select>
+	      </div>
+	      <div class="selection-display" id="equity-precalc">
+	        相手有効コンボ数: <span id="villain-combo-count">0</span>
+	        / 推定総試行回数: <span id="estimated-trials">0</span>
+	      </div>
 
-      <button id="calc-winrate-btn">勝率計算</button>
-      <div id="winrate-result" class="results"></div>
-    </div>
+		      <button id="calc-winrate-btn">エクイティ計算</button>
+	      <button id="cancel-winrate-btn" type="button" class="cancel" style="display:none;" disabled>キャンセル</button>
+	      <div id="winrate-result" class="results"></div>
+	    </div>
 
     <!-- ICM計算タブ -->
     <div id="icm-tab" class="tab-content">
-      <div class="controls">
+      <div class="controls controls-setup">
         <label>プレイヤー数:
           <select id="num-players">
             <option value="2">2</option>
@@ -497,36 +638,87 @@
           </select>
         </label>
         <button id="generate-btn">生成</button>
-        <label>ヒーロー:
-          <select id="hero-index"></select>
-        </label>
-        <label>オールイン相手:
-          <select id="allin-index"></select>
-        </label>
-        <label>オープン額:
-          <input type="number" id="open-amount" step="0.1">
+        <label>BBアンティ:
+          <input type="number" id="bb-ante" step="0.1" min="0" placeholder="0">
         </label>
       </div>
+      <p class="icm-hint">スタック/金額はBB換算(小数可)。ブラインドはSB=0.5 / BB=1.0固定。BBアンティは任意。計算は「ヒーロー vs オールイン相手」の2人ショーダウンを前提。</p>
       <div id="player-inputs"></div>
+	      <div class="controls controls-action">
+	        <label>ヒーロー:
+	          <select id="hero-index"></select>
+	        </label>
+	        <label>オールイン相手:
+	          <select id="allin-index"></select>
+	        </label>
+	        <label>想定勝率(%):
+	          <input type="number" id="assumed-winrate" step="0.1" min="0" max="100" placeholder="任意">
+	        </label>
+	        <button id="use-equity-for-assumed-btn" type="button" class="small" disabled>エクイティ→想定勝率</button>
+	      </div>
+      <div id="icm-actions">
+        <div class="icm-section-title">アクション(オールイン前)</div>
+        <p class="icm-hint">下のアクションを順に適用した後、「オールイン相手」がオールインします(自動)。必要勝率はヒーローのコール/フォールドで算出。</p>
+        <div class="icm-table-container">
+          <table id="icm-action-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>プレイヤー</th>
+                <th>アクション</th>
+                <th>金額(to)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="icm-action-rows"></tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <button id="add-icm-action-btn" type="button">+ アクション追加</button>
+          <button id="fold-others-icm-action-btn" type="button">残り全員フォールド</button>
+          <button id="clear-icm-action-btn" type="button">クリア</button>
+        </div>
+      </div>
       <div class="actions">
         <button id="calc-icm-btn">ICM計算</button>
       </div>
-      <div id="icm-results">
-        <p>合計ポット: <span id="total-pot">0.00</span></p>
-        <p>コール額: <span id="call-amount">0.00</span></p>
-        <p>フォールド時EV: <span id="fold-ev">0.00</span></p>
-        <p>勝利時EV: <span id="win-ev">0.00</span></p>
-        <p>敗北時EV: <span id="lose-ev">0.00</span></p>
-        <p>必要勝率: <span id="required-winrate">0.00%</span></p>
-        <div id="ev-list"></div>
-      </div>
-    </div>
-  </div>
+		      <div id="icm-results">
+		        <div id="icm-error" role="alert"></div>
+		        <div class="icm-summary">
+		          <p>有効オールイン(ヒーローvs相手): <span id="effective-stack">0.00</span></p>
+		          <p>相手オールイン(to): <span id="villain-allin-to">0.00</span></p>
+		          <p>コール額(追加): <span id="call-amount">0.00</span></p>
+		          <p>ショーダウンポット: <span id="pot-call">0.00</span></p>
+		          <p>必要勝率: <span id="required-winrate">0.00%</span> / エクイティ: <span id="equity-for-icm">-</span></p>
+		        </div>
+
+		        <details id="icm-details">
+		          <summary>詳細</summary>
+		          <div class="icm-details-body">
+	            <p>フォールド時 相手純増(デッドポット): <span id="pot-fold">0.00</span></p>
+	            <p>フォールド時 未コール返却(相手): <span id="fold-uncalled-villain">0.00</span></p>
+	            <p>コール時 未コール返却(相手): <span id="call-uncalled-villain">0.00</span></p>
+	            <p>フォールド時EV: <span id="fold-ev">0.00</span></p>
+	            <p>勝利時EV: <span id="win-ev">0.00</span></p>
+	            <p>敗北時EV: <span id="lose-ev">0.00</span></p>
+	            <div id="assumed-ev">
+	              <p>想定勝率でのコールEV: <span id="assumed-call-ev">0.00</span></p>
+	              <p>EV差(コール-フォールド): <span id="assumed-ev-diff">0.00</span></p>
+	            </div>
+	            <div id="icm-breakdown"></div>
+	            <div id="ev-list"></div>
+	          </div>
+	        </details>
+	      </div>
+	    </div>
+	  </div>
 
   <script>
-    // グローバル変数
-    let selectedCards = [];
-    const HAND_CATEGORIES = [
+		    // グローバル変数
+		    let selectedCards = [];
+		    let winrateCancelRequested = false;
+		    let lastEquityPctForIcm = null;
+		    const HAND_CATEGORIES = [
       'AA','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s',
       'AKo','KK','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s',
       'AQo','KQo','QQ','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','Q4s','Q3s','Q2s',
@@ -551,16 +743,18 @@
       '9':9, '8':8, '7':7, '6':6, '5':5, '4':4, '3':3, '2':2
     };
     
-    // デッキ作成
-    function createDeck() {
-      const deck = [];
-      for (const rank of ranks) {
+	    // デッキ作成
+	    function createDeck() {
+	      const deck = [];
+	      for (const rank of ranks) {
         for (const suit of suits) {
           deck.push(rank + suit);
         }
       }
-      return deck;
-    }
+	      return deck;
+	    }
+
+	    const FULL_DECK = createDeck();
     
     // 組み合わせを生成
     function* combinations(array, k) {
@@ -580,97 +774,154 @@
       }
     }
     
-    // 5枚の役を評価
-    function evaluateFive(cards) {
-      const ranks = cards.map(c => RANK_VALUES[c[0]]).sort((a,b) => b-a);
-      const suits = cards.map(c => c[1]);
-      
-      // フラッシュ判定
-      const isFlush = new Set(suits).size === 1;
-      
-      // ストレート判定
-      let isStraight = false;
-      const uniqueRanks = [...new Set(ranks)].sort((a,b) => b-a);
-      if (uniqueRanks.length >= 5) {
-        for (let i = 0; i <= uniqueRanks.length - 5; i++) {
-          if (uniqueRanks[i] - uniqueRanks[i+4] === 4) {
-            isStraight = true;
-            break;
-          }
-        }
-      }
-      // A-5ストレート
-      if (!isStraight && uniqueRanks.includes(14) && uniqueRanks.includes(2) && 
-          uniqueRanks.includes(3) && uniqueRanks.includes(4) && uniqueRanks.includes(5)) {
-        isStraight = true;
-      }
-      
-      // ランクカウント
-      const rankCounts = {};
-      for (const rank of ranks) {
-        rankCounts[rank] = (rankCounts[rank] || 0) + 1;
-      }
-      const counts = Object.values(rankCounts).sort((a,b) => b-a);
-      
-      // 役の強さを計算
-      let score = 0;
-      if (isStraight && isFlush) {
-        score = 9000000 + Math.max(...ranks);
-      } else if (counts[0] === 4) {
-        const fourRank = Object.keys(rankCounts).find(r => rankCounts[r] === 4);
-        score = 8000000 + parseInt(fourRank) * 10000;
-      } else if (counts[0] === 3 && counts[1] === 2) {
-        const threeRank = Object.keys(rankCounts).find(r => rankCounts[r] === 3);
-        const pairRank = Object.keys(rankCounts).find(r => rankCounts[r] === 2);
-        score = 7000000 + parseInt(threeRank) * 10000 + parseInt(pairRank) * 100;
-      } else if (isFlush) {
-        score = 6000000;
-        for (let i = 0; i < ranks.length; i++) {
-          score += ranks[i] * Math.pow(15, 4-i);
-        }
-      } else if (isStraight) {
-        score = 5000000 + Math.max(...ranks);
-      } else if (counts[0] === 3) {
-        const threeRank = Object.keys(rankCounts).find(r => rankCounts[r] === 3);
-        score = 4000000 + parseInt(threeRank) * 10000;
-      } else if (counts[0] === 2 && counts[1] === 2) {
-        const pairs = Object.keys(rankCounts).filter(r => rankCounts[r] === 2)
-                            .map(r => parseInt(r)).sort((a,b) => b-a);
-        score = 3000000 + pairs[0] * 10000 + pairs[1] * 100;
-      } else if (counts[0] === 2) {
-        const pairRank = Object.keys(rankCounts).find(r => rankCounts[r] === 2);
-        score = 2000000 + parseInt(pairRank) * 10000;
-      } else {
-        score = 1000000;
-        for (let i = 0; i < ranks.length; i++) {
-          score += ranks[i] * Math.pow(15, 4-i);
-        }
-      }
-      
-      return score;
-    }
+	    // 5枚の役を評価 (タイブレークを含む)
+	    function evaluateFive(cards) {
+	      const rankValues = cards.map(c => RANK_VALUES[c[0]]);
+	      const suitValues = cards.map(c => c[1]);
+	
+	      const isFlush = new Set(suitValues).size === 1;
+	
+	      const rankCounts = {};
+	      for (const r of rankValues) {
+	        rankCounts[r] = (rankCounts[r] || 0) + 1;
+	      }
+	      const uniqueRanks = Object.keys(rankCounts).map(r => parseInt(r)).sort((a, b) => b - a);
+	
+	      let isStraight = false;
+	      let straightHigh = 0;
+	      if (uniqueRanks.length === 5) {
+	        if (uniqueRanks[0] - uniqueRanks[4] === 4) {
+	          isStraight = true;
+	          straightHigh = uniqueRanks[0];
+	        } else if (
+	          uniqueRanks[0] === 14 &&
+	          uniqueRanks[1] === 5 &&
+	          uniqueRanks[2] === 4 &&
+	          uniqueRanks[3] === 3 &&
+	          uniqueRanks[4] === 2
+	        ) {
+	          isStraight = true;
+	          straightHigh = 5; // A-5 ストレートは 5 ハイ
+	        }
+	      }
+	
+	      const groups = Object.entries(rankCounts).map(([rank, count]) => ({
+	        rank: parseInt(rank),
+	        count,
+	      }));
+	      groups.sort((a, b) => (b.count - a.count) || (b.rank - a.rank));
+	
+	      const SCORE_BASE = Math.pow(15, 5);
+	      const encode = (digits) => {
+	        let value = 0;
+	        for (let i = 0; i < 5; i++) {
+	          const d = digits[i] || 0;
+	          value += d * Math.pow(15, 4 - i);
+	        }
+	        return value;
+	      };
+	
+	      // category(強) 8..0 + encoded tie-break
+	      if (isStraight && isFlush) {
+	        return 8 * SCORE_BASE + encode([straightHigh]);
+	      }
+	      if (groups[0].count === 4) {
+	        const quadRank = groups[0].rank;
+	        const kicker = groups.find(g => g.count === 1).rank;
+	        return 7 * SCORE_BASE + encode([quadRank, kicker]);
+	      }
+	      if (groups[0].count === 3 && groups[1].count === 2) {
+	        return 6 * SCORE_BASE + encode([groups[0].rank, groups[1].rank]);
+	      }
+	      if (isFlush) {
+	        const sorted = rankValues.slice().sort((a, b) => b - a);
+	        return 5 * SCORE_BASE + encode(sorted);
+	      }
+	      if (isStraight) {
+	        return 4 * SCORE_BASE + encode([straightHigh]);
+	      }
+	      if (groups[0].count === 3) {
+	        const tripsRank = groups[0].rank;
+	        const kickers = groups.filter(g => g.count === 1).map(g => g.rank).sort((a, b) => b - a);
+	        return 3 * SCORE_BASE + encode([tripsRank, ...kickers]);
+	      }
+	      if (groups[0].count === 2 && groups[1].count === 2) {
+	        const pairRanks = groups.filter(g => g.count === 2).map(g => g.rank).sort((a, b) => b - a);
+	        const kicker = groups.find(g => g.count === 1).rank;
+	        return 2 * SCORE_BASE + encode([pairRanks[0], pairRanks[1], kicker]);
+	      }
+	      if (groups[0].count === 2) {
+	        const pairRank = groups[0].rank;
+	        const kickers = groups.filter(g => g.count === 1).map(g => g.rank).sort((a, b) => b - a);
+	        return 1 * SCORE_BASE + encode([pairRank, ...kickers]);
+	      }
+	
+	      const sorted = rankValues.slice().sort((a, b) => b - a);
+	      return 0 * SCORE_BASE + encode(sorted);
+	    }
     
-    // 7枚から最高の5枚を評価
-    function evaluate(cards) {
-      let best = 0;
-      for (const five of combinations(cards, 5)) {
-        const score = evaluateFive(five);
-        if (score > best) best = score;
-      }
-      return best;
-    }
+	    const SEVEN_CHOOSE_FIVE_INDICES = (() => {
+	      const combos = [];
+	      for (let i = 0; i < 6; i++) {
+	        for (let j = i + 1; j < 7; j++) {
+	          const five = [];
+	          for (let k = 0; k < 7; k++) {
+	            if (k !== i && k !== j) five.push(k);
+	          }
+	          combos.push(five);
+	        }
+	      }
+	      return combos;
+	    })();
+
+	    // 7枚から最高の5枚を評価（7C5=21を固定で回す）
+	    function evaluate(cards) {
+	      if (cards.length === 7) {
+	        let best = 0;
+	        const fiveCards = new Array(5);
+	        for (const idxs of SEVEN_CHOOSE_FIVE_INDICES) {
+	          fiveCards[0] = cards[idxs[0]];
+	          fiveCards[1] = cards[idxs[1]];
+	          fiveCards[2] = cards[idxs[2]];
+	          fiveCards[3] = cards[idxs[3]];
+	          fiveCards[4] = cards[idxs[4]];
+	          const score = evaluateFive(fiveCards);
+	          if (score > best) best = score;
+	        }
+	        return best;
+	      }
+
+	      let best = 0;
+	      for (const five of combinations(cards, 5)) {
+	        const score = evaluateFive(five);
+	        if (score > best) best = score;
+	      }
+	      return best;
+	    }
     
-    // ランダムサンプル
-    function sample(array, n) {
-      const result = [];
-      const copy = [...array];
-      for (let i = 0; i < n; i++) {
-        const idx = Math.floor(Math.random() * copy.length);
-        result.push(copy[idx]);
-        copy.splice(idx, 1);
-      }
-      return result;
-    }
+	    function randomInt(maxExclusive) {
+	      return Math.floor(Math.random() * maxExclusive);
+	    }
+
+	    // デッキ配列から重複なしで5枚を引く（配列生成なし、引いた後にデッキ順序を復元）
+	    function drawBoardFromDeck(deck, outBoard, swapIndices) {
+	      const len = deck.length;
+	      for (let i = 0; i < 5; i++) {
+	        const j = i + randomInt(len - i);
+	        swapIndices[i] = j;
+	        const tmp = deck[i];
+	        deck[i] = deck[j];
+	        deck[j] = tmp;
+	        outBoard[i] = deck[i];
+	      }
+
+	      for (let i = 4; i >= 0; i--) {
+	        const j = swapIndices[i];
+	        const tmp = deck[i];
+	        deck[i] = deck[j];
+	        deck[j] = tmp;
+	      }
+	    }
     
     // レンジグリッドの生成
     function generateRangeGrid() {
@@ -742,10 +993,11 @@
     }
     
     // ハンド表示更新
-    function updateHandDisplay() {
-      const card1Display = document.getElementById('hand-card1');
-      const card2Display = document.getElementById('hand-card2');
-      const categoryDisplay = document.getElementById('hand-category');
+		    function updateHandDisplay() {
+		      clearEquityForIcmDisplay();
+		      const card1Display = document.getElementById('hand-card1');
+		      const card2Display = document.getElementById('hand-card2');
+		      const categoryDisplay = document.getElementById('hand-category');
       
       if (selectedCards[0]) {
         const rank = selectedCards[0][0];
@@ -782,10 +1034,11 @@
             cell.classList.add('hero-hand');
           }
         }
-      } else {
-        categoryDisplay.textContent = '';
-      }
-    }
+	      } else {
+	        categoryDisplay.textContent = '';
+	      }
+	      updateEquityPrecalcDisplay();
+	    }
     
     // カードからカテゴリーを取得
     function getHandCategory(card1, card2) {
@@ -818,17 +1071,57 @@
     }
     
     // レンジ表示更新
-    function updateRangeDisplay() {
-      const selectedCells = document.querySelectorAll('#range-grid td.active-range');
-      const count = selectedCells.length;
-      const percent = (count / 169 * 100).toFixed(1);
-      
-      document.getElementById('range-count').textContent = count;
-      document.getElementById('range-percent').textContent = percent;
-    }
-    
-    // プリセットレンジ選択
-    function selectRange(type) {
+		    function updateRangeDisplay() {
+		      clearEquityForIcmDisplay();
+		      const selectedCells = document.querySelectorAll('#range-grid td.active-range');
+		      const count = selectedCells.length;
+		      const percent = (count / 169 * 100).toFixed(1);
+	      
+	      document.getElementById('range-count').textContent = count;
+	      document.getElementById('range-percent').textContent = percent;
+	      updateEquityPrecalcDisplay();
+	    }
+
+		    function updateEquityPrecalcDisplay() {
+		      const villainComboSpan = document.getElementById('villain-combo-count');
+		      const estimatedTrialsSpan = document.getElementById('estimated-trials');
+		      if (!villainComboSpan || !estimatedTrialsSpan) return;
+
+	      const villainCells = document.querySelectorAll('#range-grid td.active-range');
+	      const blockedCards = selectedCards.length === 2 ? selectedCards : [];
+	      let combosCount = 0;
+	      for (const cell of villainCells) {
+	        const handCategory = cell.dataset.hand;
+	        if (!handCategory) continue;
+	        combosCount += getCombosForHand(handCategory, blockedCards).length;
+	      }
+	      villainComboSpan.textContent = String(combosCount);
+
+	      const sampleCount = parseInt(document.getElementById('sample-count')?.value);
+	      const trials = Number.isFinite(sampleCount) ? combosCount * sampleCount : 0;
+		      estimatedTrialsSpan.textContent = trials.toLocaleString();
+		    }
+
+		    function clearEquityForIcmDisplay() {
+		      lastEquityPctForIcm = null;
+		      const span = document.getElementById('equity-for-icm');
+		      if (span) span.textContent = '-';
+		      const btn = document.getElementById('use-equity-for-assumed-btn');
+		      if (btn) btn.disabled = true;
+		    }
+
+		    function setEquityForIcmDisplay(equityPct) {
+		      if (!Number.isFinite(equityPct)) return;
+		      lastEquityPctForIcm = equityPct;
+		      const span = document.getElementById('equity-for-icm');
+		      if (!span) return;
+		      span.textContent = equityPct.toFixed(2) + '%';
+		      const btn = document.getElementById('use-equity-for-assumed-btn');
+		      if (btn) btn.disabled = false;
+		    }
+	    
+	    // プリセットレンジ選択
+	    function selectRange(type) {
       // 全てクリア
       document.querySelectorAll('#range-grid td').forEach(td => {
         td.classList.remove('active-range');
@@ -837,18 +1130,17 @@
       updateRangeDisplay();
     }
     
-    // 組み合わせを取得（ブロッカー考慮）
-    function getCombosForHand(handCategory, blockedCards) {
-      const deck = createDeck();
-      const combos = [];
-      
-      if (handCategory.length === 2 && handCategory[0] === handCategory[1]) {
-        // ポケットペア
-        const rank = handCategory[0];
-        const rankCards = deck.filter(c => c[0] === rank && !blockedCards.includes(c));
-        for (const combo of combinations(rankCards, 2)) {
-          combos.push(combo);
-        }
+	    // 組み合わせを取得（ブロッカー考慮）
+	    function getCombosForHand(handCategory, blockedCards) {
+	      const combos = [];
+	      
+	      if (handCategory.length === 2 && handCategory[0] === handCategory[1]) {
+	        // ポケットペア
+	        const rank = handCategory[0];
+	        const rankCards = FULL_DECK.filter(c => c[0] === rank && !blockedCards.includes(c));
+	        for (const combo of combinations(rankCards, 2)) {
+	          combos.push(combo);
+	        }
       } else if (handCategory.endsWith('s')) {
         // スーテッド
         const r1 = handCategory[0];
@@ -880,15 +1172,28 @@
       return combos;
     }
     
-    // 勝率計算（モンテカルロ法）
-    async function calculateWinRate() {
-      const winrateResultDiv = document.getElementById('winrate-result');
-      const calcButton = document.getElementById('calc-winrate-btn');
-      
-      if (selectedCards.length !== 2) {
-        winrateResultDiv.innerHTML = '<p style="color: red;">手札を2枚選択してください</p>';
-        return;
-      }
+	    // エクイティ計算（モンテカルロ法）
+		    async function calculateWinRate() {
+	      const winrateResultDiv = document.getElementById('winrate-result');
+	      const calcButton = document.getElementById('calc-winrate-btn');
+	      const cancelButton = document.getElementById('cancel-winrate-btn');
+	
+		      const setUiBusy = (busy) => {
+		        if (calcButton) {
+		          calcButton.disabled = busy;
+		          calcButton.textContent = busy ? '計算中...' : 'エクイティ計算';
+		        }
+	        if (cancelButton) {
+	          cancelButton.style.display = busy ? '' : 'none';
+	          cancelButton.disabled = !busy;
+	          cancelButton.textContent = 'キャンセル';
+	        }
+	      };
+	      
+	      if (selectedCards.length !== 2) {
+	        winrateResultDiv.innerHTML = '<p style="color: red;">手札を2枚選択してください</p>';
+	        return;
+	      }
       
       // 選択されたレンジのカテゴリーを取得
       const villainCells = document.querySelectorAll('#range-grid td.active-range');
@@ -896,13 +1201,14 @@
         winrateResultDiv.innerHTML = '<p style="color: red;">相手のレンジを選択してください</p>';
         return;
       }
-      
-      // ボタンを無効化
-      calcButton.disabled = true;
-      calcButton.textContent = '計算中...';
-      
-      const sampleCount = parseInt(document.getElementById('sample-count').value);
-      const startTime = performance.now();
+	
+	      setUiBusy(true);
+	      winrateCancelRequested = false;
+	      let canceled = false;
+	      try {
+	      
+	      const sampleCount = parseInt(document.getElementById('sample-count').value);
+	      const startTime = performance.now();
       
       // ヒーローハンド
       const heroCards = selectedCards;
@@ -916,251 +1222,1189 @@
         allVillainCombos.push(...combos);
       });
       
-      if (allVillainCombos.length === 0) {
-        winrateResultDiv.innerHTML = '<p style="color: red;">ブロッカー効果により、相手の有効な組み合わせがありません</p>';
-        calcButton.disabled = false;
-        calcButton.textContent = '勝率計算';
-        return;
-      }
+	      if (allVillainCombos.length === 0) {
+	        winrateResultDiv.innerHTML = '<p style="color: red;">ブロッカー効果により、相手の有効な組み合わせがありません</p>';
+	        return;
+	      }
       
-      // 進捗表示
-      winrateResultDiv.innerHTML = `
-        <p>計算中... (相手の組み合わせ: ${allVillainCombos.length})</p>
-        <p>進捗: <span id="calc-progress">0</span> / ${allVillainCombos.length}</p>
-      `;
+	      // 進捗表示
+	      winrateResultDiv.innerHTML = `
+	        <p>計算中... (相手の組み合わせ: ${allVillainCombos.length})</p>
+	        <p>進捗: <span id="calc-progress">0</span> / ${allVillainCombos.length} (<span id="calc-progress-pct">0.0</span>%)</p>
+	      `;
       
-      // モンテカルロシミュレーション（非同期処理）
-      const deck = createDeck();
-      let totalEquity = 0;
-      let processedCombos = 0;
+		      // モンテカルロシミュレーション（非同期処理）
+		      let totalEquity = 0;
+		      let totalWins = 0;
+		      let totalTies = 0;
+		      let totalTrials = 0;
+		      let varianceSum = 0;
+		      let processedCombos = 0;
+		      const h0 = heroCards[0];
+		      const h1 = heroCards[1];
+		      const remainingDeck = new Array(FULL_DECK.length - 4);
+		      const board = new Array(5);
+		      const swapIndices = new Int32Array(5);
+		      const heroSeven = new Array(7);
+		      heroSeven[0] = h0;
+		      heroSeven[1] = h1;
+		      const villainSeven = new Array(7);
+	      
+	      // バッチ処理で計算
+	      const batchSize = 5; // 一度に処理する組み合わせ数
       
-      // バッチ処理で計算
-      const batchSize = 5; // 一度に処理する組み合わせ数
+	      for (let batchStart = 0; batchStart < allVillainCombos.length; batchStart += batchSize) {
+	        // UIを更新するための非同期処理
+	        await new Promise(resolve => setTimeout(resolve, 0));
+	        if (winrateCancelRequested) {
+	          canceled = true;
+	          break;
+	        }
+	        
+	        const batchEnd = Math.min(batchStart + batchSize, allVillainCombos.length);
+	        
+		        for (let idx = batchStart; idx < batchEnd; idx++) {
+		          if (winrateCancelRequested) {
+		            canceled = true;
+		            break;
+		          }
+		          const villainCards = allVillainCombos[idx];
+		          const v0 = villainCards[0];
+		          const v1 = villainCards[1];
+		          villainSeven[0] = v0;
+		          villainSeven[1] = v1;
+
+		          let wins = 0;
+		          let ties = 0;
+	          
+		          // 使用済みカードを除外（配列生成を避けて48枚に詰める）
+		          let remainingLen = 0;
+		          for (const c of FULL_DECK) {
+		            if (c === h0 || c === h1 || c === v0 || c === v1) continue;
+		            remainingDeck[remainingLen++] = c;
+		          }
+		          remainingDeck.length = remainingLen;
+
+				          // サンプルボード数だけシミュレーション
+					          for (let i = 0; i < sampleCount; i++) {
+					            if (winrateCancelRequested && (i & 255) === 0) {
+					              canceled = true;
+					              break;
+					            }
+					            drawBoardFromDeck(remainingDeck, board, swapIndices);
+			            
+			            heroSeven[2] = board[0];
+		            heroSeven[3] = board[1];
+		            heroSeven[4] = board[2];
+		            heroSeven[5] = board[3];
+		            heroSeven[6] = board[4];
+		            villainSeven[2] = board[0];
+		            villainSeven[3] = board[1];
+		            villainSeven[4] = board[2];
+		            villainSeven[5] = board[3];
+		            villainSeven[6] = board[4];
+
+		            const heroScore = evaluate(heroSeven);
+		            const villainScore = evaluate(villainSeven);
+		            
+			            if (heroScore > villainScore) {
+		              wins++;
+		            } else if (heroScore === villainScore) {
+	              ties++;
+	            }
+		          }
+		          if (canceled) break;
+		          
+		          const matchupEquity = (wins + ties * 0.5) / sampleCount;
+	          const matchupSecondMoment = (wins + ties * 0.25) / sampleCount;
+	          const matchupVariance = Math.max(0, matchupSecondMoment - matchupEquity * matchupEquity);
+	          totalEquity += matchupEquity;
+	          varianceSum += matchupVariance;
+	
+	          totalWins += wins;
+	          totalTies += ties;
+		          totalTrials += sampleCount;
+		          processedCombos++;
+		        }
+	        if (canceled) break;
+	        
+		        // 進捗更新
+		        const progressSpan = document.getElementById('calc-progress');
+		        if (progressSpan) progressSpan.textContent = String(processedCombos);
+		        const progressPctSpan = document.getElementById('calc-progress-pct');
+		        if (progressPctSpan) progressPctSpan.textContent = ((processedCombos / allVillainCombos.length) * 100).toFixed(1);
+	      }
+	      if (canceled) {
+	        winrateResultDiv.innerHTML = '<p style="color: #666;">計算をキャンセルしました</p>';
+	        return;
+	      }
       
-      for (let batchStart = 0; batchStart < allVillainCombos.length; batchStart += batchSize) {
-        // UIを更新するための非同期処理
-        await new Promise(resolve => setTimeout(resolve, 0));
-        
-        const batchEnd = Math.min(batchStart + batchSize, allVillainCombos.length);
-        
-        for (let idx = batchStart; idx < batchEnd; idx++) {
-          const villainCards = allVillainCombos[idx];
-          let wins = 0;
-          let ties = 0;
-          
-          // 使用済みカードを除外
-          const usedCards = [...heroCards, ...villainCards];
-          const remainingDeck = deck.filter(c => !usedCards.includes(c));
-          
-          // サンプルボード数だけシミュレーション
-          for (let i = 0; i < sampleCount; i++) {
-            const board = sample(remainingDeck, 5);
-            
-            const heroScore = evaluate([...heroCards, ...board]);
-            const villainScore = evaluate([...villainCards, ...board]);
-            
-            if (heroScore > villainScore) {
-              wins++;
-            } else if (heroScore === villainScore) {
-              ties++;
-            }
-          }
-          
-          const matchupEquity = (wins + ties * 0.5) / sampleCount;
-          totalEquity += matchupEquity;
-          processedCombos++;
-        }
-        
-        // 進捗更新
-        document.getElementById('calc-progress').textContent = processedCombos;
-      }
-      
-      const heroWinRate = (totalEquity / allVillainCombos.length) * 100;
-      const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
-      const totalBoards = sampleCount * allVillainCombos.length;
-      
-      // 誤差範囲を計算（95%信頼区間）
-      const p = heroWinRate / 100;
-      const stderr = Math.sqrt((p * (1 - p)) / (sampleCount * allVillainCombos.length));
-      const errorMargin = (stderr * 1.96 * 100).toFixed(2);
-      
-      // 結果を詳細に表示
-      winrateResultDiv.innerHTML = `
-        <h3>計算結果</h3>
+	      const heroEquity = (totalEquity / allVillainCombos.length) * 100;
+	      const winPct = totalTrials > 0 ? (totalWins / totalTrials * 100) : 0;
+	      const tiePct = totalTrials > 0 ? (totalTies / totalTrials * 100) : 0;
+	      const losePct = Math.max(0, 100 - winPct - tiePct);
+	      const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+	      const totalBoards = sampleCount * allVillainCombos.length;
+	      
+	      // 誤差範囲を計算（95%信頼区間）
+	      const stderr = Math.sqrt(varianceSum / (sampleCount * allVillainCombos.length * allVillainCombos.length));
+		      const errorMargin = (stderr * 1.96 * 100).toFixed(2);
+
+		      setEquityForIcmDisplay(heroEquity);
+	      
+	      // 結果を詳細に表示
+	      winrateResultDiv.innerHTML = `
+	        <h3>計算結果</h3>
         <p>ヒーロー: <strong>${heroCards[0]} ${heroCards[1]} (${heroCategory})</strong></p>
         <p>相手レンジ: ${villainCells.length}種類 / 169種類 (${(villainCells.length / 169 * 100).toFixed(1)}%)</p>
-        <p>相手の実際の組み合わせ数: ${allVillainCombos.length} (ブロッカー考慮後)</p>
-        <p>総シミュレーション数: ${totalBoards.toLocaleString()}回</p>
-        <p>計算時間: ${elapsed}秒</p>
-        <hr>
-        <p>勝率: <strong style="font-size: 1.5em; color: ${heroWinRate >= 50 ? 'green' : 'red'}">${heroWinRate.toFixed(2)}%</strong></p>
-        <p style="font-size: 0.9em; color: #666;">95%信頼区間: ±${errorMargin}%</p>
-      `;
+	        <p>相手の実際の組み合わせ数: ${allVillainCombos.length} (ブロッカー考慮後)</p>
+	        <p>総シミュレーション数: ${totalBoards.toLocaleString()}回</p>
+	        <p>計算時間: ${elapsed}秒</p>
+	        <hr>
+	        <p>エクイティ(勝率+引分/2): <strong style="font-size: 1.5em; color: ${heroEquity >= 50 ? 'green' : 'red'}">${heroEquity.toFixed(2)}%</strong></p>
+	        <p>内訳: 勝ち ${winPct.toFixed(2)}% / 引き分け ${tiePct.toFixed(2)}% / 負け ${losePct.toFixed(2)}%</p>
+	        <p style="font-size: 0.9em; color: #666;">推定誤差(95%): ±${errorMargin}%</p>
+	      `;
       
-      // ボタンを有効化
-      calcButton.disabled = false;
-      calcButton.textContent = '勝率計算';
-    }
+	      // ボタンを有効化
+	      } finally {
+	        setUiBusy(false);
+	      }
+	    }
     
-    // ICM計算関数
-    function generatePlayerInputs() {
-      const n = parseInt(document.getElementById('num-players').value);
-      const playerInputsDiv = document.getElementById('player-inputs');
-      const heroIndexSelect = document.getElementById('hero-index');
-      const allinIndexSelect = document.getElementById('allin-index');
-      
-      playerInputsDiv.innerHTML = '';
-      heroIndexSelect.innerHTML = '';
-      allinIndexSelect.innerHTML = '';
+	    // ICM計算関数
+	    let lastIcmResult = null;
+
+	    const ICM_POSITION_OPTIONS = [
+	      { value: 'none', label: '-' },
+	      { value: 'utg', label: 'UTG' },
+	      { value: 'utg1', label: 'UTG+1' },
+	      { value: 'utg2', label: 'UTG+2' },
+	      { value: 'lj', label: 'LJ' },
+	      { value: 'hj', label: 'HJ' },
+	      { value: 'co', label: 'CO' },
+	      { value: 'btn', label: 'BTN' },
+	      { value: 'sb', label: 'SB' },
+	      { value: 'bb', label: 'BB' },
+	    ];
+
+	    function getIcmPositionLabel(value) {
+	      const found = ICM_POSITION_OPTIONS.find(o => o.value === value);
+	      return found ? found.label : '';
+	    }
+
+	    function getIcmPlayerPositionValue(playerIndex) {
+	      const el = document.getElementById(`pos${playerIndex}`);
+	      return el ? el.value : 'none';
+	    }
+
+	    function formatPlayerSeatLabel(playerIndex) {
+	      return `P${playerIndex + 1}`;
+	    }
+
+	    function formatPlayerLabel(playerIndex) {
+	      const seat = formatPlayerSeatLabel(playerIndex);
+	      const posValue = getIcmPlayerPositionValue(playerIndex);
+	      const posLabel = getIcmPositionLabel(posValue);
+	      return posValue !== 'none' && posLabel ? `${seat}(${posLabel})` : seat;
+	    }
+
+	    function getIcmPositionSelectHtml(id) {
+	      const options = ICM_POSITION_OPTIONS.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+	      return `<select id="${id}">${options}</select>`;
+	    }
+
+	    function rebuildIcmPlayerSelectOptions(selectEl, n) {
+	      if (!selectEl) return;
+	      const prev = selectEl.value;
+	      selectEl.innerHTML = '';
+	      for (let i = 0; i < n; i++) {
+	        const opt = document.createElement('option');
+	        opt.value = String(i);
+	        opt.text = formatPlayerLabel(i);
+	        selectEl.appendChild(opt);
+	      }
+	      if (prev !== '' && Number.isFinite(parseInt(prev)) && parseInt(prev) >= 0 && parseInt(prev) < n) {
+	        selectEl.value = prev;
+	      }
+	    }
+
+	    function updateIcmPlayerHighlights() {
+	      const n = parseInt(document.getElementById('num-players').value);
+	      const heroIndex = parseInt(document.getElementById('hero-index').value);
+	      const allinIndex = parseInt(document.getElementById('allin-index').value);
+	      for (let i = 0; i < n; i++) {
+	        const row = document.getElementById(`icm-player-row${i}`);
+	        if (!row) continue;
+	        row.classList.remove('icm-player-hero', 'icm-player-villain');
+	        if (i === heroIndex) row.classList.add('icm-player-hero');
+	        if (i === allinIndex) row.classList.add('icm-player-villain');
+	      }
+	    }
+
+	    function clearIcmActionRows() {
+	      const tbody = document.getElementById('icm-action-rows');
+	      if (!tbody) return;
+	      tbody.innerHTML = '';
+	      updateIcmActionRowNumbers();
+	      renderIcmPlayerActionSummary();
+	    }
+
+	    function updateIcmActionRowNumbers() {
+	      const tbody = document.getElementById('icm-action-rows');
+	      if (!tbody) return;
+	      const rows = Array.from(tbody.querySelectorAll('tr'));
+	      rows.forEach((row, idx) => {
+	        const stepTd = row.querySelector('.icm-action-step');
+	        if (stepTd) stepTd.textContent = String(idx + 1);
+	      });
+	    }
+
+	    function refreshIcmActionPlayerOptionTexts() {
+	      const n = parseInt(document.getElementById('num-players').value);
+	      const tbody = document.getElementById('icm-action-rows');
+	      if (!tbody) return;
+	      for (const row of tbody.querySelectorAll('tr')) {
+	        const select = row.querySelector('.icm-action-player');
+	        if (!select) continue;
+	        const prev = select.value;
+	        select.innerHTML = '';
+	        for (let i = 0; i < n; i++) {
+	          const opt = document.createElement('option');
+	          opt.value = String(i);
+	          opt.text = formatPlayerLabel(i);
+	          select.appendChild(opt);
+	        }
+	        if (prev !== '' && Number.isFinite(parseInt(prev)) && parseInt(prev) >= 0 && parseInt(prev) < n) {
+	          select.value = prev;
+	        }
+	      }
+	    }
+
+		    function setIcmActionRowAmountMode(row) {
+		      const typeEl = row.querySelector('.icm-action-type');
+		      const input = row.querySelector('.icm-action-to');
+		      if (!typeEl || !input) return;
+		      const type = typeEl.value;
+
+		      if (type === 'fold') {
+		        input.disabled = true;
+		        input.readOnly = false;
+		        input.value = '';
+		        return;
+		      }
+
+		      input.disabled = false;
+		      input.readOnly = (type === 'callTo');
+		    }
+
+		    function refreshIcmCallToAutoValues() {
+		      const tbody = document.getElementById('icm-action-rows');
+		      if (!tbody) return;
+		      const rows = Array.from(tbody.querySelectorAll('tr'));
+		      let currentBetTo = 1.0; // SB=0.5 / BB=1.0 固定
+
+		      for (const row of rows) {
+		        const typeEl = row.querySelector('.icm-action-type');
+		        const toEl = row.querySelector('.icm-action-to');
+		        if (!typeEl || !toEl) continue;
+
+		        const type = typeEl.value;
+		        if (type === 'fold') continue;
+
+		        if (type === 'callTo') {
+		          if (toEl.readOnly) toEl.value = currentBetTo.toFixed(2);
+		          continue;
+		        }
+
+		        if (type === 'raiseTo') {
+		          const str = toEl.value.trim();
+		          if (str === '') continue;
+		          const v = parseFloat(str);
+		          if (!Number.isFinite(v)) continue;
+		          if (v > currentBetTo) currentBetTo = v;
+		        }
+		      }
+		    }
+
+		    function addIcmActionRow(preset = {}) {
+		      const n = parseInt(document.getElementById('num-players').value);
+		      const tbody = document.getElementById('icm-action-rows');
+		      if (!tbody) return;
+
+	      const tr = document.createElement('tr');
+	      tr.innerHTML = `
+	        <td class="icm-action-step"></td>
+	        <td>
+	          <select class="icm-action-player"></select>
+	        </td>
+	        <td>
+	          <select class="icm-action-type">
+	            <option value="raiseTo">レイズ(to)</option>
+	            <option value="callTo">コール(to)</option>
+	            <option value="fold">フォールド</option>
+	          </select>
+	        </td>
+	        <td>
+	          <input type="number" class="icm-action-to" step="0.1" min="0" placeholder="例: 2.5">
+	        </td>
+	        <td>
+	          <button type="button" class="icm-remove-action-btn">×</button>
+	        </td>
+	      `;
+	      tbody.appendChild(tr);
+
+	      const playerSelect = tr.querySelector('.icm-action-player');
+	      for (let i = 0; i < n; i++) {
+	        const opt = document.createElement('option');
+	        opt.value = String(i);
+	        opt.text = formatPlayerLabel(i);
+	        playerSelect.appendChild(opt);
+	      }
+	      if (Number.isFinite(preset.playerIndex) && preset.playerIndex >= 0 && preset.playerIndex < n) {
+	        playerSelect.value = String(preset.playerIndex);
+	      }
+
+	      const typeSelect = tr.querySelector('.icm-action-type');
+	      if (preset.type) typeSelect.value = preset.type;
+
+	      const amountInput = tr.querySelector('.icm-action-to');
+	      if (preset.toAmount !== undefined && preset.toAmount !== null) amountInput.value = String(preset.toAmount);
+
+			      setIcmActionRowAmountMode(tr);
+			      refreshIcmCallToAutoValues();
+			      updateIcmActionRowNumbers();
+			      renderIcmPlayerActionSummary();
+			    }
+
+		    function getIcmFoldedPlayersFromActionRows(n) {
+		      const folded = new Array(n).fill(false);
+		      const tbody = document.getElementById('icm-action-rows');
+		      if (!tbody) return { folded, error: null };
+		      const rows = Array.from(tbody.querySelectorAll('tr'));
+		      for (let i = 0; i < rows.length; i++) {
+		        const step = i + 1;
+		        const row = rows[i];
+		        const playerEl = row.querySelector('.icm-action-player');
+		        const typeEl = row.querySelector('.icm-action-type');
+		        if (!playerEl || !typeEl) return { folded, error: `アクション#${step}: 入力行が不正です` };
+
+		        const playerIndexRaw = playerEl.value;
+		        const playerIndex = parseInt(playerIndexRaw);
+		        if (!Number.isFinite(playerIndex) || playerIndex < 0 || playerIndex >= n) {
+		          return { folded, error: `アクション#${step}: プレイヤーが不正です: ${playerIndexRaw}` };
+		        }
+		        if (typeEl.value === 'fold') folded[playerIndex] = true;
+		      }
+		      return { folded, error: null };
+		    }
+
+		    function addIcmFoldOthers() {
+		      clearIcmError();
+		      const n = parseInt(document.getElementById('num-players').value);
+		      const heroIndex = parseInt(document.getElementById('hero-index').value);
+		      const allinIndex = parseInt(document.getElementById('allin-index').value);
+		      if (!Number.isFinite(heroIndex) || heroIndex < 0 || heroIndex >= n) {
+		        setIcmError('ヒーローが不正です');
+		        return;
+		      }
+		      if (!Number.isFinite(allinIndex) || allinIndex < 0 || allinIndex >= n) {
+		        setIcmError('オールイン相手が不正です');
+		        return;
+		      }
+
+		      const foldState = getIcmFoldedPlayersFromActionRows(n);
+		      if (foldState.error) {
+		        setIcmError(foldState.error);
+		        return;
+		      }
+
+		      for (let i = 0; i < n; i++) {
+		        if (i === heroIndex || i === allinIndex) continue;
+		        if (foldState.folded[i]) continue;
+		        addIcmActionRow({ playerIndex: i, type: 'fold' });
+		        foldState.folded[i] = true;
+		      }
+		    }
+
+		    function generatePlayerInputs() {
+		      const n = parseInt(document.getElementById('num-players').value);
+		      const playerInputsDiv = document.getElementById('player-inputs');
+		      const heroIndexSelect = document.getElementById('hero-index');
+	      const allinIndexSelect = document.getElementById('allin-index');
+
+	      playerInputsDiv.innerHTML = `
+	        <div class="icm-section-title">プレイヤー</div>
+	        <div class="icm-table-container">
+	          <table id="icm-player-table">
+	            <thead>
+	              <tr>
+	                <th>席</th>
+	                <th>ポジション</th>
+	                <th>スタック(BB)</th>
+	                <th>プライズ</th>
+	                <th>アクション</th>
+	              </tr>
+	            </thead>
+	            <tbody id="icm-player-rows"></tbody>
+	          </table>
+	        </div>
+	      `;
+
+	      heroIndexSelect.innerHTML = '';
+	      allinIndexSelect.innerHTML = '';
+
+	      const tbody = document.getElementById('icm-player-rows');
+	      for (let i = 0; i < n; i++) {
+	        const tr = document.createElement('tr');
+	        tr.id = `icm-player-row${i}`;
+	        tr.innerHTML = `
+	          <td>${formatPlayerSeatLabel(i)}</td>
+	          <td>${getIcmPositionSelectHtml(`pos${i}`)}</td>
+	          <td><input type="number" id="stack${i}" step="0.1" min="0" placeholder="BB"></td>
+	          <td><input type="number" id="prize${i}" step="0.1" min="0" placeholder="0"></td>
+	          <td id="icm-player-action${i}">-</td>
+	        `;
+	        tbody.appendChild(tr);
+
+	        const posSelect = tr.querySelector(`#pos${i}`);
+	        if (posSelect) {
+	          if (i === 0) posSelect.value = 'sb';
+	          else if (i === 1) posSelect.value = 'bb';
+	          else posSelect.value = 'none';
+	        }
+	      }
+
+	      rebuildIcmPlayerSelectOptions(heroIndexSelect, n);
+	      rebuildIcmPlayerSelectOptions(allinIndexSelect, n);
+	      if (n >= 2) {
+	        heroIndexSelect.value = '0';
+	        allinIndexSelect.value = '1';
+	      }
+
+	      clearIcmActionRows();
+	      updateIcmPlayerHighlights();
+	      clearIcmError();
+	      resetIcmOutputs();
+	      refreshIcmActionPlayerOptionTexts();
+	      renderIcmPlayerActionSummary();
+	    }
+	    
+		    function resetIcmOutputs() {
+		      lastIcmResult = null;
+
+		      const setText = (id, text) => {
+		        const el = document.getElementById(id);
+		        if (el) el.textContent = text;
+		      };
+
+		      setText('effective-stack', '0.00');
+		      setText('villain-allin-to', '0.00');
+		      setText('pot-fold', '0.00');
+		      setText('fold-uncalled-villain', '0.00');
+		      setText('call-amount', '0.00');
+		      setText('pot-call', '0.00');
+		      setText('call-uncalled-villain', '0.00');
+		      setText('fold-ev', '0.00');
+		      setText('win-ev', '0.00');
+		      setText('lose-ev', '0.00');
+		      setText('required-winrate', '0.00%');
+
+	      const assumedDiv = document.getElementById('assumed-ev');
+	      if (assumedDiv) assumedDiv.classList.remove('active');
+	      setText('assumed-call-ev', '0.00');
+	      setText('assumed-ev-diff', '0.00');
+
+	      const breakdownDiv = document.getElementById('icm-breakdown');
+	      if (breakdownDiv) breakdownDiv.innerHTML = '';
+	      const evListDiv = document.getElementById('ev-list');
+	      if (evListDiv) evListDiv.innerHTML = '';
+	    }
+
+	    function updateAssumedEvDisplay() {
+	      const assumedDiv = document.getElementById('assumed-ev');
+	      const assumedInput = document.getElementById('assumed-winrate');
+	      if (!assumedDiv || !assumedInput || !lastIcmResult) return;
+
+	      const str = assumedInput.value.trim();
+	      if (str === '') {
+	        assumedDiv.classList.remove('active');
+	        return;
+	      }
+	      const pct = parseFloat(str);
+	      if (!Number.isFinite(pct) || pct < 0 || pct > 100) {
+	        assumedDiv.classList.remove('active');
+	        return;
+	      }
+
+	      const p = pct / 100;
+	      const callEV = p * lastIcmResult.winEV + (1 - p) * lastIcmResult.loseEV;
+	      const diff = callEV - lastIcmResult.foldEV;
+
+	      const callEvSpan = document.getElementById('assumed-call-ev');
+	      const diffSpan = document.getElementById('assumed-ev-diff');
+	      callEvSpan.textContent = callEV.toFixed(2);
+	      diffSpan.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(2);
+	      diffSpan.classList.remove('ev-positive', 'ev-negative');
+	      diffSpan.classList.add(diff >= 0 ? 'ev-positive' : 'ev-negative');
+
+	      assumedDiv.classList.add('active');
+	    }
+
+	    function setIcmError(message) {
+	      console.error(message);
+	      resetIcmOutputs();
+	      const errorDiv = document.getElementById('icm-error');
+	      errorDiv.textContent = message;
+	      errorDiv.classList.add('active');
+	    }
+
+    function clearIcmError() {
+      const errorDiv = document.getElementById('icm-error');
+      errorDiv.textContent = '';
+      errorDiv.classList.remove('active');
+    }
+
+	    function findUniquePositionIndex(positions, targetValue, targetLabel) {
+	      const indices = [];
+	      for (let i = 0; i < positions.length; i++) {
+	        if (positions[i] === targetValue) indices.push(i);
+	      }
+	      if (indices.length === 0) return { index: -1, error: null };
+	      if (indices.length === 1) return { index: indices[0], error: null };
+	      const players = indices.map(i => formatPlayerLabel(i)).join(', ');
+	      return { index: -1, error: `${targetLabel} が複数選択されています: ${players}` };
+	    }
+
+    function createIcmHandState(stacks) {
+      return {
+        remaining: stacks.slice(),
+        betContributed: new Array(stacks.length).fill(0),
+        deadContributed: new Array(stacks.length).fill(0),
+        pot: 0,
+        folded: new Array(stacks.length).fill(false),
+      };
+    }
+
+    function payDeadChips(state, playerIndex, amount) {
+      if (playerIndex < 0) return 0;
+      if (!Number.isFinite(amount) || amount <= 0) return 0;
+      const paid = Math.max(0, Math.min(amount, state.remaining[playerIndex]));
+      state.remaining[playerIndex] -= paid;
+      state.deadContributed[playerIndex] += paid;
+      state.pot += paid;
+      return paid;
+    }
+
+    function payBetChips(state, playerIndex, amount) {
+      if (playerIndex < 0) return 0;
+      if (!Number.isFinite(amount) || amount <= 0) return 0;
+      const paid = Math.max(0, Math.min(amount, state.remaining[playerIndex]));
+      state.remaining[playerIndex] -= paid;
+      state.betContributed[playerIndex] += paid;
+      state.pot += paid;
+      return paid;
+    }
+
+    function betToTotalBetContribution(state, playerIndex, targetTotal) {
+      if (playerIndex < 0) return 0;
+      if (!Number.isFinite(targetTotal) || targetTotal <= 0) return 0;
+      const current = state.betContributed[playerIndex];
+      const need = targetTotal - current;
+      if (need <= 0) return 0;
+      return payBetChips(state, playerIndex, need);
+    }
+
+    function betAllIn(state, playerIndex) {
+      if (playerIndex < 0) return 0;
+      return payBetChips(state, playerIndex, state.remaining[playerIndex]);
+    }
+
+    function getTotalContributions(betContributions, deadContributions) {
+      return betContributions.map((v, i) => v + (deadContributions[i] || 0));
+    }
+
+    function describeIcmAction(action) {
+      const player = formatPlayerLabel(action.playerIndex);
+      if (action.type === 'postAnte') {
+        return `${player} ${action.label} ${action.amount.toFixed(2)}`;
+      }
+      if (action.type === 'postBlind') {
+        return `${player} ${action.label} ${action.amount.toFixed(2)}`;
+      }
+      if (action.type === 'raiseTo') {
+        return `${player} レイズ to ${action.toAmount.toFixed(2)}`;
+      }
+      if (action.type === 'allIn') {
+        return Number.isFinite(action.toAmount) ? `${player} オールイン to ${action.toAmount.toFixed(2)}` : `${player} オールイン`;
+      }
+      if (action.type === 'callTo') {
+        return `${player} コール to ${action.toAmount.toFixed(2)}`;
+      }
+      if (action.type === 'fold') {
+        return `${player} フォールド`;
+      }
+      return `${player} ${action.type}`;
+    }
+
+    function applyIcmActions(initialStacks, actions) {
+      const state = createIcmHandState(initialStacks);
+      const log = [];
+
+      for (let i = 0; i < actions.length; i++) {
+        const action = actions[i];
+        const playerIndex = action.playerIndex;
+        if (!Number.isFinite(playerIndex) || playerIndex < 0 || playerIndex >= initialStacks.length) {
+          return { error: `プレイヤー指定が不正です: ${playerIndex}` };
+        }
+        if (state.folded[playerIndex] && action.type !== 'postAnte' && action.type !== 'postBlind') {
+          return { error: `${formatPlayerLabel(playerIndex)} はすでにフォールドしています` };
+        }
+
+        let paid = 0;
+        if (action.type === 'postAnte') {
+          paid = payDeadChips(state, playerIndex, action.amount);
+        } else if (action.type === 'postBlind') {
+          paid = payBetChips(state, playerIndex, action.amount);
+        } else if (action.type === 'raiseTo' || action.type === 'callTo') {
+          paid = betToTotalBetContribution(state, playerIndex, action.toAmount);
+        } else if (action.type === 'allIn') {
+          paid = betAllIn(state, playerIndex);
+        } else if (action.type === 'fold') {
+          state.folded[playerIndex] = true;
+          paid = 0;
+        } else {
+          return { error: `未対応のアクションです: ${action.type}` };
+        }
+
+        log.push({
+          step: i + 1,
+          desc: describeIcmAction(action),
+          paid,
+          pot: state.pot,
+        });
+      }
+
+      const betContributions = state.betContributed.slice();
+      const deadContributions = state.deadContributed.slice();
+      return {
+        betContributions,
+        deadContributions,
+        totalContributions: getTotalContributions(betContributions, deadContributions),
+        remaining: state.remaining.slice(),
+        folded: state.folded.slice(),
+        pot: state.pot,
+        log,
+      };
+    }
+
+	    function sumNumbers(values) {
+	      let total = 0;
+	      for (const v of values) total += v;
+	      return total;
+	    }
+
+		    function computeUncalledRefunds(betContributions, folded) {
+		      const n = betContributions.length;
+		      if (!Array.isArray(folded) || folded.length !== n) return { refunds: [], error: 'フォールド配列の長さが不正です' };
+
+		      const refunds = new Array(n).fill(0);
+		      for (let i = 0; i < n; i++) {
+		        const bet = betContributions[i];
+		        if (!Number.isFinite(bet) || bet < 0) return { refunds: [], error: 'ベット投入額が不正です' };
+		        if (folded[i]) continue;
+		
+		        let maxOtherBet = 0;
+		        for (let j = 0; j < n; j++) {
+		          if (j === i) continue;
+		          if (folded[j]) continue;
+		          const other = betContributions[j];
+		          if (!Number.isFinite(other) || other < 0) return { refunds: [], error: 'ベット投入額が不正です' };
+		          if (other > maxOtherBet) maxOtherBet = other;
+		        }
+		
+		        const refundRaw = bet - maxOtherBet;
+		        if (!Number.isFinite(refundRaw)) return { refunds: [], error: '未コール返却が不正です' };
+		        refunds[i] = refundRaw <= 0 ? 0 : refundRaw;
+		      }
+		
+		      return { refunds, error: null };
+		    }
+
+	    function buildIcmOutcomeStacks(postActionResult, uncalledRefunds, potAwarded, winnerIndex) {
+	      const n = postActionResult.remaining.length;
+	      if (uncalledRefunds.length !== n) return { error: '未コール返却配列の長さが不正です' };
+	      if (!Number.isFinite(potAwarded) || potAwarded < 0) return { error: 'ポット額が不正です' };
+      if (!Number.isFinite(winnerIndex) || winnerIndex < 0 || winnerIndex >= n) return { error: 'winnerIndex が不正です' };
+
+      const stacks = postActionResult.remaining.slice();
+      for (let i = 0; i < n; i++) {
+        const r = uncalledRefunds[i];
+        if (!Number.isFinite(r) || r < 0) return { error: '未コール返却が不正です' };
+        stacks[i] += r;
+      }
+      stacks[winnerIndex] += potAwarded;
+      return { stacks };
+    }
+
+    function renderIcmBreakdown({ preLog, callPot, foldRefunds, callRefunds, heroIndex, allinIndex }) {
+      const breakdownDiv = document.getElementById('icm-breakdown');
+      if (!breakdownDiv) return;
+
+      const actionRows = preLog.map(row => `
+        <tr>
+          <td>${row.step}</td>
+          <td>${row.desc}</td>
+          <td>${row.paid.toFixed(2)}</td>
+          <td>${row.pot.toFixed(2)}</td>
+        </tr>
+      `).join('');
+
+      const formatRefunds = (refunds) => {
+        const parts = [];
+        for (let i = 0; i < refunds.length; i++) {
+          if (refunds[i] > 1e-9) parts.push(`${formatPlayerLabel(i)}: ${refunds[i].toFixed(2)}`);
+        }
+        return parts.length === 0 ? '-' : parts.join(' / ');
+      };
+
+      breakdownDiv.innerHTML = `
+        <div class="icm-section-title">アクション(コール前)</div>
+        <table>
+          <thead>
+            <tr><th>#</th><th>内容</th><th>支払い</th><th>ポット合計</th></tr>
+          </thead>
+          <tbody>${actionRows || '<tr><td colspan="4">-</td></tr>'}</tbody>
+        </table>
+
+	        <div class="icm-section-title">ショーダウンポット(コール時)</div>
+        <table>
+          <tbody>
+            <tr><th>金額</th><td>${Number.isFinite(callPot) ? callPot.toFixed(2) : '-'}</td></tr>
+            <tr><th>勝利対象</th><td>${formatPlayerLabel(heroIndex)} / ${formatPlayerLabel(allinIndex)}</td></tr>
+          </tbody>
+        </table>
+
+        <div class="icm-section-title">未コール返却(フォールド時/コール時)</div>
+        <table>
+          <tbody>
+            <tr><th>フォールド時</th><td>${formatRefunds(foldRefunds)}</td></tr>
+            <tr><th>コール時</th><td>${formatRefunds(callRefunds)}</td></tr>
+          </tbody>
+        </table>
+      `;
+    }
+
+    function readIcmBbAnte() {
+      const anteInput = document.getElementById('bb-ante');
+      if (!anteInput) return { value: 0, error: null };
+      const str = anteInput.value.trim();
+      if (str === '') return { value: 0, error: null };
+      const value = parseFloat(str);
+      if (!Number.isFinite(value) || value < 0) return { value: 0, error: `BBアンティが不正です: ${str}` };
+      return { value, error: null };
+    }
+
+    function readIcmPreAllInActions(n) {
+      const tbody = document.getElementById('icm-action-rows');
+      if (!tbody) return { actions: [], error: null };
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+
+      const actions = [];
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const step = i + 1;
+        const playerEl = row.querySelector('.icm-action-player');
+        const typeEl = row.querySelector('.icm-action-type');
+        const toEl = row.querySelector('.icm-action-to');
+        if (!playerEl || !typeEl) return { actions: [], error: `アクション#${step}: 入力行が不正です` };
+
+        const playerIndexRaw = playerEl.value;
+        const playerIndex = parseInt(playerIndexRaw);
+        if (!Number.isFinite(playerIndex) || playerIndex < 0 || playerIndex >= n) {
+          return { actions: [], error: `アクション#${step}: プレイヤーが不正です: ${playerIndexRaw}` };
+        }
+
+        const type = typeEl.value;
+        if (type === 'fold') {
+          actions.push({ type: 'fold', playerIndex });
+          continue;
+        }
+        if (type !== 'raiseTo' && type !== 'callTo') {
+          return { actions: [], error: `アクション#${step}: アクション種別が不正です: ${type}` };
+        }
+
+        const toStr = (toEl ? toEl.value : '').trim();
+        if (toStr === '') {
+          return { actions: [], error: `アクション#${step}: 金額(to)を入力してください` };
+        }
+        const toAmount = parseFloat(toStr);
+        if (!Number.isFinite(toAmount) || toAmount <= 0) {
+          return { actions: [], error: `アクション#${step}: 金額(to)が不正です: ${toStr}` };
+        }
+        actions.push({ type, playerIndex, toAmount });
+      }
+
+      return { actions, error: null };
+    }
+
+	    function renderIcmPlayerActionSummary() {
+	      refreshIcmCallToAutoValues();
+	      const n = parseInt(document.getElementById('num-players').value);
+	      const positions = [];
+      for (let i = 0; i < n; i++) {
+        const posEl = document.getElementById(`pos${i}`);
+        positions.push(posEl ? posEl.value : 'none');
+      }
+      const sbIndex = positions.indexOf('sb');
+      const bbIndex = positions.indexOf('bb');
+
+      const bbAnte = readIcmBbAnte();
+      const anteValue = bbAnte.error ? 0 : bbAnte.value;
+
+      const histories = new Array(n).fill(null).map(() => []);
+      if (bbIndex !== -1 && anteValue > 0) histories[bbIndex].push(`BBアンティ ${anteValue.toFixed(2)}`);
+      if (sbIndex !== -1) histories[sbIndex].push('SB 0.50');
+      if (bbIndex !== -1) histories[bbIndex].push('BB 1.00');
+
+      const pre = readIcmPreAllInActions(n);
+      if (!pre.error) {
+        for (const action of pre.actions) {
+          const p = action.playerIndex;
+          if (action.type === 'fold') histories[p].push('フォールド');
+          if (action.type === 'raiseTo') histories[p].push(`レイズ to ${action.toAmount.toFixed(2)}`);
+          if (action.type === 'callTo') histories[p].push(`コール to ${action.toAmount.toFixed(2)}`);
+        }
+      }
+
+      const allinIndexStr = document.getElementById('allin-index')?.value;
+      const allinIndex = allinIndexStr === undefined ? NaN : parseInt(allinIndexStr);
+      if (Number.isFinite(allinIndex) && allinIndex >= 0 && allinIndex < n) {
+        histories[allinIndex].push('オールイン(自動)');
+      }
 
       for (let i = 0; i < n; i++) {
-        const div = document.createElement('div');
-        div.className = 'player-inputs';
-        div.innerHTML = `
-          P${i+1}:
-          <input type="number" id="stack${i}" step="0.1" placeholder="スタック">
-          <input type="number" id="prize${i}" step="0.1" placeholder="プライズ">
-          <select id="role${i}">
-            <option value="none">その他</option>
-            <option value="sb">SB</option>
-            <option value="bb">BB</option>
-            <option value="open">オープン</option>
-          </select>`;
-        playerInputsDiv.appendChild(div);
-        
-        const optHero = document.createElement('option');
-        optHero.value = i;
-        optHero.text = `P${i+1}`;
-        heroIndexSelect.appendChild(optHero);
-        
-        const optAllin = document.createElement('option');
-        optAllin.value = i;
-        optAllin.text = `P${i+1}`;
-        allinIndexSelect.appendChild(optAllin);
+        const cell = document.getElementById(`icm-player-action${i}`);
+        if (!cell) continue;
+        cell.textContent = histories[i].length === 0 ? '-' : histories[i].join(' → ');
       }
     }
-    
-    function calculateICM() {
-      const n = parseInt(document.getElementById('num-players').value);
-      const stacks = [], prizes = [], roles = [];
-      
+
+	    function calculateICM() {
+	      const n = parseInt(document.getElementById('num-players').value);
+	      clearIcmError();
+	      resetIcmOutputs();
+	      refreshIcmCallToAutoValues();
+
+	      const stacks = [];
+      const prizes = [];
+      const positions = [];
+
       for (let i = 0; i < n; i++) {
-        stacks.push(parseFloat(document.getElementById(`stack${i}`).value) || 0);
-        prizes.push(parseFloat(document.getElementById(`prize${i}`).value) || 0);
-        roles.push(document.getElementById(`role${i}`).value);
+        const stackStr = document.getElementById(`stack${i}`).value.trim();
+        if (stackStr === '') {
+          setIcmError(`${formatPlayerLabel(i)} のスタックを入力してください`);
+          return;
+        }
+        const stack = parseFloat(stackStr);
+        if (!Number.isFinite(stack) || stack < 0) {
+          setIcmError(`${formatPlayerLabel(i)} のスタックが不正です: ${stackStr}`);
+          return;
+        }
+        stacks.push(stack);
+
+        const prizeStr = document.getElementById(`prize${i}`).value.trim();
+        const prize = prizeStr === '' ? 0 : parseFloat(prizeStr);
+        if (!Number.isFinite(prize) || prize < 0) {
+          setIcmError(`${formatPlayerLabel(i)} のプライズが不正です: ${prizeStr}`);
+          return;
+        }
+        prizes.push(prize);
+
+        const posEl = document.getElementById(`pos${i}`);
+        positions.push(posEl ? posEl.value : 'none');
       }
-      
+
+      const bbAnte = readIcmBbAnte();
+      if (bbAnte.error) {
+        setIcmError(bbAnte.error);
+        return;
+      }
+
       const heroIndex = parseInt(document.getElementById('hero-index').value);
       const allinIndex = parseInt(document.getElementById('allin-index').value);
-      const openAmount = parseFloat(document.getElementById('open-amount').value) || 0;
-      const heroStack = stacks[heroIndex];
-      const allinStack = stacks[allinIndex];
-
-      let adjustedHeroStack = heroStack;
-      if (roles[heroIndex] === 'bb') {
-          adjustedHeroStack = Math.max(0, heroStack - 1.0);
+      if (!Number.isFinite(heroIndex) || heroIndex < 0 || heroIndex >= n) {
+        setIcmError(`ヒーローが不正です: ${document.getElementById('hero-index').value}`);
+        return;
       }
-      
-      let contested = Math.min(adjustedHeroStack, allinStack);
-
-      let openIndex = -1;
-      let openAmountUsed = 0;
-      const B = stacks.slice();
-      let pot = 0;
-      
-      for (let i = 0; i < n; i++) {
-       if (roles[i] === 'bb') {
-         const ante = Math.min(B[i], 1.0);
-         B[i] -= ante;
-         pot += ante;
-         break;
-       }
+      if (!Number.isFinite(allinIndex) || allinIndex < 0 || allinIndex >= n) {
+        setIcmError(`オールイン相手が不正です: ${document.getElementById('allin-index').value}`);
+        return;
       }
-      
-      if (roles[heroIndex] === 'open') {
-        openIndex = heroIndex;
-        openAmountUsed = openAmount > contested ? contested : openAmount;
-        openAmountUsed = Math.min(openAmountUsed, B[heroIndex]);
-        B[heroIndex] -= openAmountUsed;
-        pot += openAmountUsed;
-      } else {
-        for (let i = 0; i < n; i++) {
-          if (roles[i] === 'open' && i !== heroIndex) {
-            openIndex = i;
-            openAmountUsed = openAmount > contested ? contested : openAmount;
-            openAmountUsed = Math.min(openAmountUsed, B[i]);
-            B[i] -= openAmountUsed;
-            pot += openAmountUsed;
-            break;
+      if (heroIndex === allinIndex) {
+        setIcmError('ヒーローとオールイン相手が同一です');
+        return;
+      }
+      if (stacks[heroIndex] === 0) {
+        setIcmError('ヒーローのスタックが 0 です');
+        return;
+      }
+      if (stacks[allinIndex] === 0) {
+        setIcmError('オールイン相手のスタックが 0 です');
+        return;
+      }
+
+      const assumedWinrateStr = document.getElementById('assumed-winrate').value.trim();
+      if (assumedWinrateStr !== '') {
+        const assumed = parseFloat(assumedWinrateStr);
+        if (!Number.isFinite(assumed) || assumed < 0 || assumed > 100) {
+          setIcmError(`想定勝率が不正です: ${assumedWinrateStr}`);
+          return;
+        }
+      }
+
+      const sb = findUniquePositionIndex(positions, 'sb', 'SB');
+      if (sb.error) {
+        setIcmError(sb.error);
+        return;
+      }
+      const bb = findUniquePositionIndex(positions, 'bb', 'BB');
+      if (bb.error) {
+        setIcmError(bb.error);
+        return;
+      }
+      if (sb.index === -1 || bb.index === -1) {
+        setIcmError('SB と BB をそれぞれ 1人ずつ選択してください');
+        return;
+      }
+      if (sb.index === bb.index) {
+        setIcmError('SB と BB が同一プレイヤーです');
+        return;
+      }
+
+      const preUserActions = readIcmPreAllInActions(n);
+      if (preUserActions.error) {
+        setIcmError(preUserActions.error);
+        return;
+      }
+
+      const forcedActions = [];
+      if (bbAnte.value > 0) {
+        forcedActions.push({ type: 'postAnte', playerIndex: bb.index, amount: bbAnte.value, label: 'BBアンティ' });
+      }
+      forcedActions.push({ type: 'postBlind', playerIndex: sb.index, amount: 0.5, label: 'SB' });
+      forcedActions.push({ type: 'postBlind', playerIndex: bb.index, amount: 1.0, label: 'BB' });
+
+      const eps = 1e-9;
+      const validateState = createIcmHandState(stacks);
+      if (bbAnte.value > 0) payDeadChips(validateState, bb.index, bbAnte.value);
+      payBetChips(validateState, sb.index, 0.5);
+      payBetChips(validateState, bb.index, 1.0);
+
+      const currentBets = validateState.betContributed;
+      let currentBetTo = 0;
+      for (const v of currentBets) if (v > currentBetTo) currentBetTo = v;
+
+      if (validateState.remaining[heroIndex] <= eps) {
+        setIcmError('ヒーローがブラインド/アンティでオールインになっています');
+        return;
+      }
+      if (validateState.remaining[allinIndex] <= eps) {
+        setIcmError('オールイン相手がブラインド/アンティでオールインになっています');
+        return;
+      }
+
+      for (let i = 0; i < preUserActions.actions.length; i++) {
+        const action = preUserActions.actions[i];
+        const step = i + 1;
+        const p = action.playerIndex;
+
+        if (validateState.folded[p]) {
+          setIcmError(`アクション#${step}: ${formatPlayerLabel(p)} はすでにフォールドしています`);
+          return;
+        }
+        if (p === heroIndex && action.type === 'fold') {
+          setIcmError(`アクション#${step}: ヒーローをフォールドさせる入力はできません`);
+          return;
+        }
+        if (p === allinIndex && action.type === 'fold') {
+          setIcmError(`アクション#${step}: オールイン相手をフォールドさせる入力はできません`);
+          return;
+        }
+        if (validateState.remaining[p] <= eps && action.type !== 'fold') {
+          setIcmError(`アクション#${step}: ${formatPlayerLabel(p)} はすでにオールインしています`);
+          return;
+        }
+
+        if (action.type === 'fold') {
+          validateState.folded[p] = true;
+          continue;
+        }
+
+        const toAmount = action.toAmount;
+        if (!Number.isFinite(toAmount) || toAmount <= 0) {
+          setIcmError(`アクション#${step}: 金額(to)が不正です`);
+          return;
+        }
+
+        const maxBet = validateState.betContributed[p] + validateState.remaining[p];
+        if (toAmount > maxBet + eps) {
+          setIcmError(`アクション#${step}: ${formatPlayerLabel(p)} のスタックを超えています (最大to=${maxBet.toFixed(2)})`);
+          return;
+        }
+
+        if (action.type === 'callTo') {
+          if (Math.abs(toAmount - currentBetTo) > 1e-6) {
+            setIcmError(`アクション#${step}: コールto は現在のベット額(${currentBetTo.toFixed(2)})に合わせてください`);
+            return;
           }
+          betToTotalBetContribution(validateState, p, currentBetTo);
+        } else if (action.type === 'raiseTo') {
+          if (toAmount <= currentBetTo + eps) {
+            setIcmError(`アクション#${step}: レイズto は現在のベット額(${currentBetTo.toFixed(2)})より大きくしてください`);
+            return;
+          }
+          betToTotalBetContribution(validateState, p, toAmount);
+          if (validateState.betContributed[p] > currentBetTo) currentBetTo = validateState.betContributed[p];
+        } else {
+          setIcmError(`アクション#${step}: 未対応のアクションです: ${action.type}`);
+          return;
+        }
+
+        if (validateState.remaining[p] <= eps) {
+          setIcmError(`アクション#${step}: ${formatPlayerLabel(p)} がオールインになります (オールイン前アクションでは非対応)`);
+          return;
         }
       }
 
-      let allinAmount = contested;
-      if (roles[allinIndex] === 'bb') {
-        allinAmount = Math.max(0, allinAmount - 1.0);
-        pot += 1.0;
+      if (validateState.folded[allinIndex]) {
+        setIcmError('オールイン相手がフォールドしています');
+        return;
       }
-      if (openIndex === allinIndex) {
-        allinAmount -= openAmountUsed;
-        if (allinAmount < 0) allinAmount = 0;
-      }
-      
-      pot += allinAmount;
-      B[allinIndex] = Math.max(B[allinIndex] - allinAmount, 0);
-      
-      for (let i = 0; i < n; i++) {
-        if (roles[i] === 'sb' && i !== allinIndex) {
-          const sbBlind = Math.min(B[i], 0.5);
-          B[i] -= sbBlind;
-          pot += sbBlind;
-        }
-        if (roles[i] === 'bb' && i !== allinIndex) {
-          const bbBlind = Math.min(B[i], 1.0);
-          B[i] -= bbBlind;
-          pot += bbBlind;
-        }
+      if (validateState.remaining[allinIndex] <= eps) {
+        setIcmError('オールイン相手がすでにオールインしています (オールイン前アクションでスタックが0になっています)');
+        return;
       }
 
-      let callAmount = 0;
-      if (roles[heroIndex] === 'open') {
-        callAmount = Math.max(0, contested - openAmountUsed);
-      } else {
-        let heroBlind = 0;
-        if (roles[heroIndex] === 'sb') heroBlind = 0.5;
-        if (roles[heroIndex] === 'bb') heroBlind = 1.0;
-        callAmount = Math.max(0, contested - heroBlind);
+	      const allinTo = validateState.betContributed[allinIndex] + validateState.remaining[allinIndex];
+	      const actionsBeforeAllIn = forcedActions.concat(preUserActions.actions);
+
+	      const actions = actionsBeforeAllIn.concat([{ type: 'allIn', playerIndex: allinIndex, toAmount: allinTo }]);
+	      const pre = applyIcmActions(stacks, actions);
+	      if (pre.error) {
+	        setIcmError(pre.error);
+	        return;
+	      }
+
+	      for (let i = 0; i < n; i++) {
+	        if (i === heroIndex || i === allinIndex) continue;
+	        if (stacks[i] <= eps) continue;
+	        if (!pre.folded[i]) {
+	          setIcmError(`${formatPlayerLabel(i)} がフォールドしていません (このツールは「ヒーロー vs オールイン相手」の2人ショーダウンのみ対応です。アクション列にフォールドを追加してください)`);
+	          return;
+	        }
+	        if (pre.remaining[i] <= eps) {
+	          setIcmError(`${formatPlayerLabel(i)} がオールイン状態です (このツールは2人ショーダウンのみ対応です)。プレイヤー構成/スタック/アクションを見直してください`);
+	          return;
+	        }
+	      }
+
+	      const heroMaxBet = pre.betContributions[heroIndex] + pre.remaining[heroIndex];
+	      const villainMaxBet = pre.betContributions[allinIndex];
+	      const callTo = Math.min(heroMaxBet, villainMaxBet);
+	      const callAmount = Math.max(0, callTo - pre.betContributions[heroIndex]);
+
+      const callActions = actions.concat([{ type: 'callTo', playerIndex: heroIndex, toAmount: callTo }]);
+	      const called = applyIcmActions(stacks, callActions);
+	      if (called.error) {
+	        setIcmError(called.error);
+	        return;
+	      }
+
+	      const epsRefund = 1e-9;
+
+	      const foldEndFolded = pre.folded.slice();
+	      foldEndFolded[heroIndex] = true;
+	      const foldRefundCalc = computeUncalledRefunds(pre.betContributions, foldEndFolded);
+	      if (foldRefundCalc.error) {
+	        setIcmError(`フォールド時: ${foldRefundCalc.error}`);
+	        return;
+	      }
+	      const foldRefunds = foldRefundCalc.refunds;
+	      const foldPot = pre.pot - sumNumbers(foldRefunds);
+	      if (!Number.isFinite(foldPot) || foldPot < -epsRefund) {
+	        setIcmError('フォールド時ポット額が不正です');
+	        return;
+	      }
+
+	      const callRefundCalc = computeUncalledRefunds(called.betContributions, called.folded);
+	      if (callRefundCalc.error) {
+	        setIcmError(`コール時: ${callRefundCalc.error}`);
+	        return;
+	      }
+	      const callRefunds = callRefundCalc.refunds;
+	      const callPot = called.pot - sumNumbers(callRefunds);
+	      if (!Number.isFinite(callPot) || callPot < -epsRefund) {
+	        setIcmError('コール後ポット額が不正です');
+	        return;
+	      }
+
+	      const foldOutcome = buildIcmOutcomeStacks(pre, foldRefunds, foldPot, allinIndex);
+      if (foldOutcome.error) {
+        setIcmError(foldOutcome.error);
+        return;
+      }
+      const winOutcome = buildIcmOutcomeStacks(called, callRefunds, callPot, heroIndex);
+      if (winOutcome.error) {
+        setIcmError(winOutcome.error);
+        return;
+      }
+      const loseOutcome = buildIcmOutcomeStacks(called, callRefunds, callPot, allinIndex);
+      if (loseOutcome.error) {
+        setIcmError(loseOutcome.error);
+        return;
       }
 
-      const stacksFold = B.slice();
-      const stacksWin  = B.slice();
-      const stacksLose = B.slice();
+      const foldEV = computeICMRecursive(foldOutcome.stacks, prizes)[heroIndex];
+      const winEV = computeICMRecursive(winOutcome.stacks, prizes)[heroIndex];
+      const loseEV = computeICMRecursive(loseOutcome.stacks, prizes)[heroIndex];
 
-      stacksWin[heroIndex]  = Math.max(stacksWin[heroIndex] - callAmount, 0);
-      stacksLose[heroIndex] = Math.max(stacksLose[heroIndex] - callAmount, 0);
-      
-      stacksWin[heroIndex]   += pot + callAmount;
-      stacksLose[allinIndex] += pot + callAmount;
-      stacksFold[allinIndex] += pot;
+      const denom = winEV - loseEV;
+      if (denom === 0) {
+        setIcmError('必要勝率を算出できません (winEV と loseEV が同一です)');
+        return;
+      }
+	      const requiredPct = (foldEV - loseEV) / denom * 100;
 
-      const foldEV = computeICMRecursive(stacksFold, prizes)[heroIndex];
-      const winEV  = computeICMRecursive(stacksWin,  prizes)[heroIndex];
-      const loseEV = computeICMRecursive(stacksLose, prizes)[heroIndex];
+	      document.getElementById('effective-stack').textContent = callTo.toFixed(2);
+	      document.getElementById('villain-allin-to').textContent = pre.betContributions[allinIndex].toFixed(2);
+	      document.getElementById('pot-fold').textContent = foldPot.toFixed(2);
+	      document.getElementById('fold-uncalled-villain').textContent = foldRefunds[allinIndex].toFixed(2);
+	      document.getElementById('call-amount').textContent = callAmount.toFixed(2);
+	      document.getElementById('pot-call').textContent = callPot.toFixed(2);
+	      document.getElementById('call-uncalled-villain').textContent = callRefunds[allinIndex].toFixed(2);
+	      document.getElementById('fold-ev').textContent = foldEV.toFixed(2);
+	      document.getElementById('win-ev').textContent = winEV.toFixed(2);
+	      document.getElementById('lose-ev').textContent = loseEV.toFixed(2);
+	      document.getElementById('required-winrate').textContent = requiredPct.toFixed(2) + '%';
 
-      const requiredPct = (foldEV - loseEV) / (winEV - loseEV) * 100;
+      lastIcmResult = { heroIndex, foldEV, winEV, loseEV };
+      updateAssumedEvDisplay();
 
-      document.getElementById('total-pot').textContent = pot.toFixed(2);
-      document.getElementById('call-amount').textContent = callAmount.toFixed(2);
-      document.getElementById('fold-ev').textContent = foldEV.toFixed(2);
-      document.getElementById('win-ev').textContent = winEV.toFixed(2);
-      document.getElementById('lose-ev').textContent = loseEV.toFixed(2);
-      document.getElementById('required-winrate').textContent = requiredPct.toFixed(2) + '%';
+      renderIcmBreakdown({
+        preLog: pre.log,
+        callPot,
+        foldRefunds,
+        callRefunds,
+        heroIndex,
+        allinIndex,
+      });
 
       const allEV = computeICMRecursive(stacks, prizes);
       const evListDiv = document.getElementById('ev-list');
       evListDiv.innerHTML = '開始時ICM:<br>';
       allEV.forEach((val, idx) => {
-        evListDiv.innerHTML += `P${idx+1}: ${val.toFixed(2)}<br>`;
+        evListDiv.innerHTML += `${formatPlayerLabel(idx)}: ${val.toFixed(2)}<br>`;
       });
     }
 
@@ -1201,7 +2445,7 @@
     }
     
     // イベントリスナーの設定
-    document.addEventListener('DOMContentLoaded', () => {
+	    document.addEventListener('DOMContentLoaded', () => {
       // レンジグリッド生成
       generateRangeGrid();
       
@@ -1215,13 +2459,87 @@
         cell.addEventListener('click', handleRangeClick);
       });
       
-      // 計算ボタン
-      document.getElementById('calc-winrate-btn').addEventListener('click', calculateWinRate);
-      
-      // ICM関連
-      generatePlayerInputs();
+	      // 計算ボタン
+	      document.getElementById('calc-winrate-btn').addEventListener('click', calculateWinRate);
+	      document.getElementById('sample-count').addEventListener('change', updateEquityPrecalcDisplay);
+	      document.getElementById('cancel-winrate-btn').addEventListener('click', () => {
+	        winrateCancelRequested = true;
+	        const btn = document.getElementById('cancel-winrate-btn');
+	        if (!btn) return;
+	        btn.disabled = true;
+	        btn.textContent = 'キャンセル中...';
+	      });
+	      
+	      // ICM関連
+	      generatePlayerInputs();
       document.getElementById('generate-btn').addEventListener('click', generatePlayerInputs);
       document.getElementById('calc-icm-btn').addEventListener('click', calculateICM);
+      document.getElementById('assumed-winrate').addEventListener('input', updateAssumedEvDisplay);
+      document.getElementById('hero-index').addEventListener('change', () => {
+        rebuildIcmPlayerSelectOptions(document.getElementById('hero-index'), parseInt(document.getElementById('num-players').value));
+        rebuildIcmPlayerSelectOptions(document.getElementById('allin-index'), parseInt(document.getElementById('num-players').value));
+        updateIcmPlayerHighlights();
+        renderIcmPlayerActionSummary();
+      });
+      document.getElementById('allin-index').addEventListener('change', () => {
+        rebuildIcmPlayerSelectOptions(document.getElementById('hero-index'), parseInt(document.getElementById('num-players').value));
+        rebuildIcmPlayerSelectOptions(document.getElementById('allin-index'), parseInt(document.getElementById('num-players').value));
+        updateIcmPlayerHighlights();
+        renderIcmPlayerActionSummary();
+      });
+	      document.getElementById('bb-ante').addEventListener('input', renderIcmPlayerActionSummary);
+	      document.getElementById('use-equity-for-assumed-btn').addEventListener('click', () => {
+	        if (!Number.isFinite(lastEquityPctForIcm)) return;
+	        const input = document.getElementById('assumed-winrate');
+	        if (!input) return;
+	        input.value = lastEquityPctForIcm.toFixed(2);
+	        updateAssumedEvDisplay();
+	      });
+
+	      document.getElementById('add-icm-action-btn').addEventListener('click', () => addIcmActionRow());
+	      document.getElementById('fold-others-icm-action-btn').addEventListener('click', addIcmFoldOthers);
+	      document.getElementById('clear-icm-action-btn').addEventListener('click', clearIcmActionRows);
+
+      const actionRowsTbody = document.getElementById('icm-action-rows');
+	      actionRowsTbody.addEventListener('click', (e) => {
+	        const btn = e.target.closest('.icm-remove-action-btn');
+	        if (!btn) return;
+	        const row = btn.closest('tr');
+	        if (!row) return;
+	        row.remove();
+	        updateIcmActionRowNumbers();
+	        refreshIcmCallToAutoValues();
+	        renderIcmPlayerActionSummary();
+	      });
+	      actionRowsTbody.addEventListener('change', (e) => {
+	        const row = e.target.closest('tr');
+	        if (!row) return;
+	        if (e.target.classList.contains('icm-action-type')) {
+	          setIcmActionRowAmountMode(row);
+	          refreshIcmCallToAutoValues();
+	        }
+	        if (e.target.classList.contains('icm-action-player') || e.target.classList.contains('icm-action-type')) {
+	          renderIcmPlayerActionSummary();
+	        }
+	      });
+	      actionRowsTbody.addEventListener('input', (e) => {
+	        if (e.target.classList.contains('icm-action-to')) {
+	          refreshIcmCallToAutoValues();
+	          renderIcmPlayerActionSummary();
+	        }
+	      });
+
+      const playerInputsDiv = document.getElementById('player-inputs');
+      playerInputsDiv.addEventListener('change', (e) => {
+        if (!e.target || !e.target.id) return;
+        if (!e.target.id.startsWith('pos')) return;
+        const playerCount = parseInt(document.getElementById('num-players').value);
+        rebuildIcmPlayerSelectOptions(document.getElementById('hero-index'), playerCount);
+        rebuildIcmPlayerSelectOptions(document.getElementById('allin-index'), playerCount);
+        refreshIcmActionPlayerOptionTexts();
+        updateIcmPlayerHighlights();
+        renderIcmPlayerActionSummary();
+      });
       
       // タブ切り替え
       document.querySelectorAll('.tab-menu li').forEach(tab => {
