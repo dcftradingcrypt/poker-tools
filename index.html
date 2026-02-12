@@ -5,516 +5,1051 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Poker Equity Calculator</title>
   <style>
+    :root {
+      --felt-a: #063e2a;
+      --felt-b: #0a5a3b;
+      --felt-c: #0f6f4a;
+      --panel-bg: rgba(11, 24, 19, 0.78);
+      --panel-border: rgba(255, 214, 117, 0.24);
+      --panel-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+      --text-main: #f1f8f2;
+      --text-soft: #bcd6c3;
+      --text-dim: #90aa99;
+      --accent: #ffd469;
+      --accent-strong: #ffbf2f;
+      --danger: #ff6f6f;
+      --ok: #7de4a0;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 9px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --font-1: 12px;
+      --font-2: 14px;
+      --font-3: 16px;
+      --font-4: 20px;
+      --font-5: 26px;
+      --bottom-nav-height: 66px;
+      --safe-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+      --range-cell-size: 44px;
+      --range-font-size: 12px;
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 10px;
-      background-color: #f5f5f5;
+      min-height: 100vh;
+      padding: var(--space-3);
+      padding-bottom: calc(var(--safe-bottom) + var(--space-4));
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at 20% -10%, rgba(255, 224, 162, 0.15), transparent 45%),
+        radial-gradient(circle at 80% 120%, rgba(0, 0, 0, 0.55), transparent 48%),
+        linear-gradient(150deg, var(--felt-a), var(--felt-b) 55%, var(--felt-c));
+      line-height: 1.45;
+      -webkit-tap-highlight-color: transparent;
     }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 8px);
+      opacity: 0.22;
+      z-index: -1;
+    }
+
     .container {
-      max-width: 1200px;
+      max-width: 1080px;
       margin: 0 auto;
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-lg);
+      background: var(--panel-bg);
+      box-shadow: var(--panel-shadow);
+      padding: var(--space-4);
+      backdrop-filter: blur(8px);
     }
-    
-    /* モバイル対応 */
-    @media (max-width: 768px) {
-      body {
-        padding: 5px;
-      }
-      .container {
-        padding: 10px;
-        border-radius: 0;
-      }
-      h1 {
-        font-size: 1.5em;
-      }
-      h2 {
-        font-size: 1.2em;
-      }
+
+    .app-header {
+      margin-bottom: var(--space-4);
     }
-    
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 4.5vw, 34px);
+      letter-spacing: 0.01em;
+    }
+
+    h2 {
+      margin: var(--space-3) 0 var(--space-2);
+      font-size: clamp(18px, 3.8vw, 24px);
+    }
+
+    h3 {
+      margin: 0;
+      font-size: clamp(16px, 3.4vw, 20px);
+    }
+
+    p {
+      margin: var(--space-2) 0;
+    }
+
     .tab-menu {
-      display: flex;
-      list-style: none;
-      padding: 0;
-      margin: 0 0 20px 0;
-      border-bottom: 2px solid #ddd;
-      overflow-x: auto;
+      display: none;
     }
-    .tab-menu li {
-      padding: 10px 20px;
-      cursor: pointer;
-      background: #f0f0f0;
-      margin-right: 5px;
-      border-radius: 5px 5px 0 0;
-      transition: all 0.3s;
-      white-space: nowrap;
-    }
-    .tab-menu li:hover {
-      background: #e0e0e0;
-    }
-    .tab-menu li.active {
-      background: #007bff;
-      color: white;
-    }
+
     .tab-content {
       display: none;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 0 5px 5px 5px;
+      padding: var(--space-2) 0 var(--space-3);
+      animation: tabFade 0.24s ease;
     }
+
     .tab-content.active {
       display: block;
     }
-    
-    /* カードグリッド - モバイル対応 */
-    .card-grid-container {
-      overflow-x: auto;
-      margin: 10px 0;
-    }
-    #card-grid, #range-grid {
-      border-collapse: collapse;
-      cursor: pointer;
-    }
-    #card-grid td {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      text-align: center;
-      transition: all 0.2s;
-      font-weight: bold;
-      min-width: 40px;
-    }
-    
-    @media (max-width: 768px) {
-      #card-grid td {
-        padding: 6px 8px;
-        font-size: 14px;
-        min-width: 35px;
+
+    @keyframes tabFade {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
-    
-    #card-grid td:hover {
-      background-color: #f0f0f0;
+
+    .surface-card {
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      margin: var(--space-3) 0;
+      background: rgba(8, 18, 15, 0.6);
+      box-shadow: inset 0 1px 0 rgba(255, 240, 204, 0.08);
     }
-    #card-grid td.selected {
-      background: #007bff;
-      color: white;
+
+    .surface-card.tight {
+      padding: var(--space-2) var(--space-3);
     }
-    #card-grid td.disabled {
-      background: #ccc;
-      color: #666;
-      cursor: not-allowed;
+
+    .section-label {
+      margin: 0 0 var(--space-2);
+      color: var(--text-soft);
+      font-size: var(--font-2);
     }
-    
-    /* レンジグリッド - モバイル対応 */
-    .range-grid-container {
-      overflow-x: auto;
-      margin: 10px 0;
-    }
-    #range-grid td {
-      font-size: 12px;
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      text-align: center;
-      transition: all 0.2s;
-      font-weight: bold;
-      min-width: 35px;
-    }
-    
-    @media (max-width: 768px) {
-      #range-grid td {
-        font-size: 10px;
-        padding: 4px 6px;
-        min-width: 30px;
-      }
-    }
-    
-    #range-grid td.pair {
-      background-color: #ffe4e1;
-    }
-    #range-grid td.suited {
-      background-color: #e6f3ff;
-    }
-    #range-grid td.offsuit {
-      background-color: #f0f0f0;
-    }
-    #range-grid td:hover {
-      transform: scale(1.05);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    #range-grid td.active-range {
-      background: #28a745;
-      color: white;
-    }
-    #range-grid td.hero-hand {
-      border: 3px solid #ff0000;
-      box-shadow: 0 0 5px rgba(255,0,0,0.5);
-    }
-    
-    /* カラー */
-    .red { color: #ff0000; }
-    .black { color: #000000; }
-    
-    /* 結果表示 */
-    .results {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 5px;
-      border: 1px solid #dee2e6;
-    }
-    
-    @media (max-width: 768px) {
-      .results {
-        padding: 10px;
-      }
-      .results p {
-        font-size: 14px;
-        margin: 8px 0;
-      }
-    }
-    
-    .results h3 {
-      margin-top: 0;
-      color: #333;
-    }
-    .win-rate {
-      font-size: 2em;
-      font-weight: bold;
-      margin: 10px 0;
-    }
-    .profitable { color: #28a745; }
-    .unprofitable { color: #dc3545; }
-    
-    /* ボタン */
-	    button {
-	      padding: 10px 20px;
-	      margin: 10px 5px;
-	      cursor: pointer;
-	      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      transition: all 0.3s;
-      width: auto;
-	      min-width: 100px;
-	    }
-	    button.small {
-	      padding: 6px 10px;
-	      font-size: 14px;
-	      min-width: 0;
-	    }
-	    
-	    @media (max-width: 768px) {
-	      button {
-	        width: 100%;
-	        margin: 5px 0;
-	      }
-	    }
-    
-	    button:hover {
-	      background: #0056b3;
-	    }
-	    button.cancel {
-	      background: #dc3545;
-	    }
-	    button.cancel:hover {
-	      background: #a71d2a;
-	    }
-	    button:disabled {
-	      background: #6c757d;
-	      cursor: not-allowed;
-	    }
-    
-    /* クイックレンジボタン */
-    .quick-ranges {
-      margin: 10px 0;
-    }
-    .quick-ranges button {
-      padding: 5px 15px;
-      font-size: 14px;
-      margin: 3px;
-    }
-    .quick-ranges button.clear {
-      background: #dc3545;
-    }
-    
-    /* 選択中の表示 */
-    .selection-display {
-      padding: 10px;
-      background: #e9ecef;
-      border-radius: 5px;
-      margin: 10px 0;
-      font-size: 1em;
-    }
-    
-    @media (max-width: 768px) {
-      .selection-display {
-        font-size: 14px;
-        padding: 8px;
-      }
-    }
-    
-    .selection-display span {
-      font-weight: bold;
-      margin: 0 5px;
-    }
-    
-    /* サンプル数選択 */
-    .sample-select {
-      margin: 15px 0;
-    }
-    .sample-select label {
-      margin-right: 10px;
-      font-weight: bold;
-    }
-    .sample-select select {
-      padding: 5px 10px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-      font-size: 16px;
-    }
-    
-    @media (max-width: 768px) {
-      .sample-select {
-        display: flex;
-        flex-direction: column;
-      }
-      .sample-select label {
-        margin-bottom: 5px;
-      }
-      .sample-select select {
-        width: 100%;
-        padding: 8px;
-      }
-    }
-    
-    /* ICM計算用スタイル */
-    .controls {
-      margin: 20px 0;
-    }
-    .controls label {
-      margin-right: 15px;
+
+    .chip-text {
       display: inline-block;
-      margin-bottom: 10px;
+      margin-right: var(--space-2);
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.03em;
     }
-    .controls select, .controls input {
-      padding: 5px;
-      margin-right: 10px;
+
+    input,
+    select {
+      width: 100%;
+      margin-top: var(--space-1);
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 233, 179, 0.26);
+      border-radius: var(--radius-sm);
+      background: rgba(9, 22, 17, 0.9);
+      color: var(--text-main);
+      font-size: var(--font-3);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
-    .icm-hint {
-      margin: 10px 0 15px;
-      color: #666;
-      font-size: 0.9em;
-      line-height: 1.4;
+
+    input:focus,
+    select:focus {
+      outline: 2px solid rgba(255, 212, 105, 0.5);
+      outline-offset: 1px;
     }
-    
-    @media (max-width: 768px) {
-      .controls {
-        display: flex;
-        flex-direction: column;
-      }
-      .controls label {
-        margin-bottom: 5px;
-      }
-      .controls select, .controls input {
-        width: 100%;
-        margin-bottom: 10px;
-        padding: 8px;
-      }
+
+    button {
+      border: 1px solid rgba(255, 226, 153, 0.36);
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255, 245, 213, 0.3), transparent 60%),
+        linear-gradient(180deg, #9e7417 0%, #7b5312 50%, #5c3e0e 100%);
+      color: #fff6df;
+      font-size: var(--font-2);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      min-height: 42px;
+      padding: 10px 14px;
+      margin: var(--space-1) 0;
+      cursor: pointer;
+      transition: transform 0.14s ease, filter 0.14s ease, box-shadow 0.14s ease;
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+      touch-action: manipulation;
     }
-    
-    .player-inputs {
-      margin: 10px 0;
+
+    button:hover {
+      filter: brightness(1.08);
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    button.cancel,
+    .quick-ranges button.clear,
+    .danger-btn {
+      border-color: rgba(255, 175, 175, 0.55);
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255, 220, 220, 0.3), transparent 60%),
+        linear-gradient(180deg, #8f2f2f 0%, #6c1e1e 55%, #521313 100%);
+    }
+
+    button.secondary,
+    .ghost-btn {
+      border-color: rgba(158, 197, 174, 0.35);
+      background:
+        radial-gradient(circle at 30% 28%, rgba(224, 246, 236, 0.22), transparent 60%),
+        linear-gradient(180deg, #28543e 0%, #1f3e2f 100%);
+    }
+
+    button.small {
+      min-height: 36px;
+      padding: 8px 11px;
+      font-size: var(--font-1);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      filter: grayscale(0.35);
+      opacity: 0.6;
+    }
+
+    button[aria-pressed="true"] {
+      border-color: rgba(255, 233, 166, 0.7);
+      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.28), 0 6px 12px rgba(0, 0, 0, 0.32);
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
+    .selection-display {
+      margin-top: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 221, 131, 0.2);
+      background: rgba(8, 20, 15, 0.72);
+      color: var(--text-soft);
+      font-size: var(--font-2);
+    }
+
+    .selection-display span {
+      color: var(--text-main);
+      font-weight: 800;
+      margin: 0 var(--space-1);
+    }
+
+    .card-grid-container,
+    .range-grid-container,
+    .icm-table-container {
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 216, 123, 0.2);
+      background: rgba(8, 20, 16, 0.72);
+    }
+
+    #card-grid,
+    #range-grid {
+      border-collapse: separate;
+      border-spacing: 6px;
+      margin: 6px;
+    }
+
+    #card-grid td {
+      width: 46px;
+      min-width: 46px;
+      height: 62px;
+      border-radius: 10px;
+      border: 2px solid #e4e4e4;
+      background: linear-gradient(180deg, #ffffff 0%, #ececec 100%);
+      color: #111;
+      text-align: center;
+      font-weight: 800;
+      font-size: 17px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.24);
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+    }
+
+    #card-grid td:hover {
+      transform: translateY(-1px);
+    }
+
+    #card-grid td.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.38), 0 8px 14px rgba(0, 0, 0, 0.35);
+      transform: translateY(-2px);
+    }
+
+    #card-grid td.disabled {
+      color: #747474;
+      border-color: #8f8f8f;
+      cursor: not-allowed;
+      background:
+        repeating-linear-gradient(135deg, #ececec 0 6px, #dbdbdb 6px 12px);
+    }
+
+    #card-grid td.disabled::after {
+      content: "LOCK";
+      position: absolute;
+      inset: auto 4px 4px auto;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-size: 9px;
+      background: rgba(0, 0, 0, 0.68);
+      color: #fff;
+      letter-spacing: 0.04em;
+    }
+
+    #range-grid td {
+      width: var(--range-cell-size);
+      min-width: var(--range-cell-size);
+      height: var(--range-cell-size);
+      min-height: var(--range-cell-size);
+      padding: 2px;
+      border: 1px solid rgba(255, 244, 214, 0.33);
+      border-radius: 11px;
+      font-size: var(--range-font-size);
+      text-align: center;
+      font-weight: 800;
+      color: #f8f4e8;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      transition: transform 0.1s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+      position: relative;
+    }
+
+    #range-grid td.pair {
+      background: linear-gradient(180deg, #8d2f2f, #6f1f1f);
+    }
+
+    #range-grid td.suited {
+      background: linear-gradient(180deg, #2c5f9f, #1e4070);
+    }
+
+    #range-grid td.offsuit {
+      background: linear-gradient(180deg, #404040, #2f2f2f);
+    }
+
+    #range-grid td:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.28);
+    }
+
+    #range-grid td.active-range {
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.25), 0 8px 12px rgba(0, 0, 0, 0.28);
+      filter: saturate(1.18);
+      transform: translateY(-1px);
+    }
+
+    #range-grid td.hero-hand {
+      outline: 2px solid #ff6e6e;
+      outline-offset: 0;
+    }
+
+    #range-grid td.dragging-target {
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
+    }
+
+    #range-grid-container.zoom-sm {
+      --range-cell-size: 40px;
+      --range-font-size: 11px;
+    }
+
+    #range-grid-container.zoom-md {
+      --range-cell-size: 46px;
+      --range-font-size: 12px;
+    }
+
+    #range-grid-container.zoom-lg {
+      --range-cell-size: 56px;
+      --range-font-size: 14px;
+    }
+
+    .red {
+      color: #bf2f2f;
+    }
+
+    .black {
+      color: #181818;
+    }
+
+    #equity-hud {
+      position: sticky;
+      top: 0;
+      z-index: 55;
+      margin-bottom: var(--space-3);
+      border: 1px solid rgba(255, 212, 105, 0.4);
+      border-radius: var(--radius-md);
+      background:
+        linear-gradient(180deg, rgba(19, 33, 26, 0.95), rgba(11, 20, 15, 0.95));
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+    }
+
+    .hud-main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+      padding: var(--space-3);
+    }
+
+    .hud-row {
       display: flex;
+      justify-content: space-between;
       align-items: center;
+      gap: var(--space-2);
       flex-wrap: wrap;
     }
-    .player-inputs input {
-      width: 100px;
-      margin: 0 5px;
+
+    .hud-title {
+      color: var(--text-soft);
+      font-size: var(--font-1);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 2px;
     }
-    .player-inputs select {
-      margin-left: 5px;
+
+    .hud-number {
+      font-size: var(--font-4);
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 0.03em;
     }
-    
-    @media (max-width: 768px) {
-      .player-inputs {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .player-inputs input, .player-inputs select {
-        width: 100%;
-        margin: 5px 0;
-        padding: 8px;
-      }
+
+    #hud-equity-value {
+      font-size: var(--font-5);
     }
-    
-	    #icm-results {
-	      margin-top: 20px;
-	      padding: 15px;
-	      background: #f8f9fa;
-	      border-radius: 5px;
-	    }
-	    #icm-results p {
-	      margin: 5px 0;
-	    }
-	    .icm-summary {
-	      padding: 4px 0;
-	    }
-	    #icm-details {
-	      margin-top: 12px;
-	    }
-	    #icm-details summary {
-	      cursor: pointer;
-	      font-weight: bold;
-	      padding: 10px;
-	      background: #e9ecef;
-	      border-radius: 5px;
-	      user-select: none;
-	    }
-	    #icm-details[open] summary {
-	      border-bottom-left-radius: 0;
-	      border-bottom-right-radius: 0;
-	    }
-	    #icm-details .icm-details-body {
-	      padding: 10px;
-	      border: 1px solid #ddd;
-	      border-top: none;
-	      border-radius: 0 0 5px 5px;
-	      background: #fff;
-	    }
+
+    #hud-equity-error {
+      color: var(--text-soft);
+      font-size: var(--font-1);
+      margin-left: var(--space-1);
+    }
+
+    #hud-hero-cards {
+      display: flex;
+      gap: var(--space-1);
+    }
+
+    .hud-card {
+      min-width: 36px;
+      height: 48px;
+      border-radius: 8px;
+      border: 2px solid rgba(255, 235, 176, 0.65);
+      background: linear-gradient(180deg, #fefefe 0%, #ebebeb 100%);
+      color: #141414;
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .hud-card.red {
+      color: #b62929;
+    }
+
+    #hud-status-line {
+      border-top: 1px solid rgba(255, 220, 143, 0.22);
+      padding: var(--space-2) var(--space-3) calc(var(--space-2) + 1px);
+      font-size: var(--font-2);
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    #hud-status {
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .status-positive,
+    .status-negative,
+    .status-neutral {
+      font-weight: 800;
+    }
+
+    .status-positive::before {
+      content: "[OK] ";
+      font-weight: 900;
+    }
+
+    .status-negative::before {
+      content: "[NG] ";
+      font-weight: 900;
+    }
+
+    .status-neutral::before {
+      content: "[..] ";
+      font-weight: 900;
+    }
+
+    .status-positive {
+      color: var(--ok);
+    }
+
+    .status-negative {
+      color: var(--danger);
+    }
+
+    .status-neutral {
+      color: var(--text-soft);
+    }
+
+    .quick-ranges {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      margin: var(--space-2) 0;
+    }
+
+    .quick-ranges button {
+      margin: 0;
+      min-height: 38px;
+      padding: 7px 12px;
+      font-size: var(--font-1);
+    }
+
+    .range-tools {
+      display: grid;
+      gap: var(--space-2);
+      margin: var(--space-2) 0;
+    }
+
+    .range-tools .range-zoom {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .range-tools .range-zoom button {
+      margin: 0;
+      min-width: 0;
+      padding: 7px 12px;
+    }
+
+    .range-save {
+      display: grid;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+      border-top: 1px solid rgba(255, 221, 131, 0.2);
+      padding-top: var(--space-3);
+    }
+
+    .range-save .inline-2 {
+      display: grid;
+      gap: var(--space-2);
+      grid-template-columns: 1fr;
+    }
+
+    .sample-select {
+      margin-top: var(--space-3);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+
+    .mode-note {
+      margin: 0;
+      color: var(--text-dim);
+      font-size: var(--font-1);
+    }
+
+    #equity-precalc {
+      margin-top: var(--space-2);
+      border-style: dashed;
+    }
+
+    #equity-ev-panel {
+      margin-top: var(--space-3);
+    }
+
+    .ev-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+
+    .ev-result {
+      margin-top: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      background: rgba(6, 15, 12, 0.55);
+      border: 1px solid rgba(255, 218, 126, 0.2);
+      color: var(--text-soft);
+      font-size: var(--font-2);
+    }
+
+    #ev-diff {
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    #ev-diff.ev-positive {
+      color: var(--ok);
+    }
+
+    #ev-diff.ev-negative {
+      color: var(--danger);
+    }
+
+    .ev-neutral {
+      color: var(--text-soft);
+    }
+
+    .results {
+      margin-top: var(--space-3);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 219, 130, 0.25);
+      background: rgba(8, 16, 13, 0.68);
+      padding: var(--space-3);
+      color: var(--text-main);
+    }
+
+    .results h3 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+
+    .results hr {
+      border: none;
+      border-top: 1px solid rgba(255, 218, 126, 0.2);
+      margin: var(--space-2) 0;
+    }
+
+    #progress-wrap {
+      margin-top: var(--space-2);
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.13);
+      overflow: hidden;
+    }
+
+    #progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #f2be4d, #ffe9a3);
+      transition: width 0.16s linear;
+    }
+
+    .controls {
+      margin: var(--space-3) 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+
+    .controls label {
+      display: block;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
+    .icm-hint {
+      color: var(--text-dim);
+      font-size: var(--font-2);
+      margin: var(--space-2) 0;
+    }
+
+    #icm-results,
+    #trainer-panel,
+    #settings-panel {
+      margin-top: var(--space-3);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 222, 137, 0.22);
+      background: rgba(8, 18, 14, 0.7);
+      padding: var(--space-3);
+    }
+
+    #icm-results p {
+      margin: var(--space-1) 0;
+    }
+
+    .icm-summary {
+      padding: 2px 0;
+    }
+
+    #icm-details {
+      margin-top: var(--space-2);
+    }
+
+    #icm-details summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 212, 105, 0.12);
+      border: 1px solid rgba(255, 212, 105, 0.25);
+      font-weight: 800;
+      color: var(--accent);
+      user-select: none;
+    }
+
+    #icm-details[open] summary {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    #icm-details .icm-details-body {
+      background: rgba(4, 10, 8, 0.72);
+      border: 1px solid rgba(255, 212, 105, 0.2);
+      border-top: none;
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      padding: var(--space-3);
+    }
+
     #icm-error {
       display: none;
-      margin-bottom: 10px;
-      padding: 10px;
-      border: 1px solid #f5c2c7;
-      background: #f8d7da;
-      color: #842029;
-      border-radius: 5px;
+      margin-bottom: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid rgba(255, 127, 127, 0.5);
+      background: rgba(98, 26, 26, 0.6);
+      border-radius: var(--radius-sm);
       word-break: break-word;
+      color: #ffcece;
+      font-weight: 700;
     }
+
     #icm-error.active {
       display: block;
     }
+
     #assumed-ev {
       display: none;
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid #d1e7dd;
-      background: #d1e7dd;
-      color: #0f5132;
-      border-radius: 5px;
+      margin-top: var(--space-2);
+      padding: var(--space-2);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(125, 228, 160, 0.35);
+      background: rgba(20, 59, 34, 0.55);
+      color: #d4f8df;
     }
+
     #assumed-ev.active {
       display: block;
     }
+
     .ev-positive {
-      color: #0f5132;
+      color: var(--ok);
+      font-weight: 800;
     }
+
     .ev-negative {
-      color: #842029;
+      color: var(--danger);
+      font-weight: 800;
     }
+
     #icm-breakdown {
-      margin-top: 12px;
+      margin-top: var(--space-3);
       overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
     }
+
     .icm-section-title {
-      font-weight: bold;
-      margin: 10px 0 6px;
+      margin: var(--space-2) 0;
+      color: var(--accent);
+      font-weight: 900;
+      font-size: var(--font-2);
     }
-    .icm-table-container {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin-top: 8px;
-    }
-    .icm-table-container table {
+
+    .icm-table-container table,
+    #icm-breakdown table {
       width: 100%;
       border-collapse: collapse;
-      background: #fff;
+      background: rgba(11, 21, 17, 0.9);
     }
-    .icm-table-container th, .icm-table-container td {
-      border: 1px solid #ddd;
-      padding: 6px 8px;
-      font-size: 0.9em;
+
+    .icm-table-container th,
+    .icm-table-container td,
+    #icm-breakdown th,
+    #icm-breakdown td {
+      border: 1px solid rgba(255, 218, 129, 0.22);
+      padding: 7px 8px;
+      font-size: 13px;
       text-align: left;
       white-space: nowrap;
+      color: #f1f8f2;
     }
-	    .icm-table-container input, .icm-table-container select {
-	      width: 100%;
-	      box-sizing: border-box;
-	      min-width: 60px;
-	    }
-	    .icm-table-container input[readonly] {
-	      background: #f1f3f5;
-	    }
+
+    .icm-table-container input,
+    .icm-table-container select {
+      min-width: 76px;
+      margin-top: 0;
+      font-size: 13px;
+      padding: 6px 8px;
+    }
+
+    .icm-table-container input[readonly] {
+      opacity: 0.78;
+    }
+
     #icm-action-table th:last-child,
     #icm-action-table td:last-child {
       width: 1%;
       text-align: center;
     }
-	    #icm-action-table button {
-	      margin: 0;
-	      padding: 6px 10px;
-	      font-size: 14px;
-	      width: auto;
-	      min-width: 0;
-	    }
+
+    #icm-action-table button {
+      margin: 0;
+      min-height: 32px;
+      padding: 5px 10px;
+      min-width: 0;
+      font-size: 13px;
+    }
+
     #icm-player-table tr.icm-player-hero td {
-      background: #e7f1ff;
+      background: rgba(61, 117, 176, 0.45);
     }
+
     #icm-player-table tr.icm-player-villain td {
-      background: #fff3cd;
+      background: rgba(133, 102, 34, 0.5);
     }
-    #icm-breakdown table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
+
+    #trainer-panel {
+      display: grid;
+      gap: var(--space-2);
     }
-    #icm-breakdown th, #icm-breakdown td {
-      border: 1px solid #ddd;
-      padding: 6px 8px;
-      font-size: 0.9em;
-      text-align: left;
+
+    .trainer-row {
+      display: grid;
+      gap: var(--space-2);
+      grid-template-columns: 1fr;
     }
-    
-    /* スクロールヒント */
+
+    #trainer-prompt {
+      border: 1px solid rgba(255, 216, 123, 0.2);
+      border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-3);
+      background: rgba(7, 16, 13, 0.72);
+      color: var(--text-soft);
+    }
+
+    #trainer-feedback {
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid rgba(255, 216, 123, 0.2);
+      border-radius: var(--radius-sm);
+      background: rgba(7, 16, 13, 0.72);
+      min-height: 56px;
+    }
+
+    #trainer-history {
+      margin: 0;
+      padding-left: 16px;
+      max-height: 190px;
+      overflow: auto;
+      color: var(--text-soft);
+      font-size: var(--font-2);
+    }
+
     .scroll-hint {
       text-align: center;
-      color: #666;
-      font-size: 12px;
-      margin: 5px 0;
+      color: var(--text-dim);
+      font-size: 11px;
+      margin: 4px 0;
+    }
+
+    .hidden-mobile {
       display: none;
     }
-    
-    @media (max-width: 768px) {
-      .scroll-hint {
-        display: block;
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    #bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 80;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+      background: rgba(6, 15, 12, 0.92);
+      border-top: 1px solid rgba(255, 216, 123, 0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    #bottom-nav .nav-btn {
+      margin: 0;
+      min-height: 52px;
+      border-radius: 12px;
+      font-size: 11px;
+      line-height: 1.15;
+      border: 1px solid rgba(255, 222, 137, 0.2);
+      background: rgba(27, 51, 38, 0.8);
+      color: var(--text-soft);
+      font-weight: 700;
+      box-shadow: none;
+    }
+
+    #bottom-nav .nav-btn.active {
+      color: #2a2010;
+      border-color: rgba(255, 216, 123, 0.58);
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255, 246, 213, 0.55), transparent 58%),
+        linear-gradient(180deg, #ffd77f 0%, #f4be4a 100%);
+    }
+
+    #settings-panel .setting-row {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding: var(--space-5);
+        padding-bottom: calc(var(--safe-bottom) + var(--space-5));
+      }
+
+      .container {
+        padding: var(--space-5);
+      }
+
+      .button-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .range-save .inline-2 {
+        grid-template-columns: 1fr auto auto;
+      }
+
+      .sample-select {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .ev-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .controls.controls-setup {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .controls.controls-action {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .hud-main {
+        grid-template-columns: 1.05fr 1fr 1fr;
+      }
+
+      #bottom-nav {
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 680px;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        border-left: 1px solid rgba(255, 216, 123, 0.28);
+        border-right: 1px solid rgba(255, 216, 123, 0.28);
+      }
+
+      .hidden-mobile {
+        display: initial;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0ms !important;
+        animation-duration: 0ms !important;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Poker Equity Calculator</h1>
-    
-	    <ul class="tab-menu">
-	      <li data-tab="winrate-tab" class="active">エクイティ計算</li>
-	      <li data-tab="icm-tab">ICM計算</li>
-	    </ul>
+    <header class="app-header">
+      <h1>Poker Equity Calculator</h1>
+      <p class="section-label">モバイル最適化版: エクイティを判断に直結</p>
+    </header>
 
-	    <!-- エクイティ計算タブ -->
-	    <div id="winrate-tab" class="tab-content active">
-      <h2>ヒーローのハンド</h2>
-      <div id="card-selection">
-        <p>クリックして2枚のカードを選択してください:</p>
-        <div class="scroll-hint">← 横スクロール可能 →</div>
+    <!-- エクイティ計算タブ -->
+    <div id="winrate-tab" class="tab-content active">
+      <section id="equity-hud" aria-live="polite">
+        <div class="hud-main">
+          <div>
+            <p class="hud-title">Hero</p>
+            <div id="hud-hero-cards">
+              <span id="hud-hero-1" class="hud-card">--</span>
+              <span id="hud-hero-2" class="hud-card">--</span>
+            </div>
+          </div>
+          <div>
+            <p class="hud-title">Villain Range</p>
+            <div class="hud-number"><span id="hud-combos">0</span> / 1326</div>
+            <div class="section-label"><span id="hud-combo-pct">0.0</span>% 有効コンボ</div>
+          </div>
+          <div>
+            <p class="hud-title">Equity</p>
+            <div class="hud-number" id="hud-equity-value">--%</div>
+            <div id="hud-equity-error">誤差: --</div>
+          </div>
+        </div>
+        <div id="hud-status-line">
+          <span id="hud-status" class="status-neutral">待機中</span>
+          <span id="hud-progress">進捗 0.0%</span>
+        </div>
+      </section>
+
+      <section class="surface-card" id="card-selection">
+        <h2>ヒーローのハンド</h2>
+        <p class="section-label">タップして2枚選択</p>
+        <div class="scroll-hint">カードグリッドは横スクロール可</div>
         <div class="card-grid-container">
           <table id="card-grid">
             <tr>
@@ -580,52 +1115,128 @@
           </table>
         </div>
         <div class="selection-display">
-          選択中: <span id="hand-card1">--</span> <span id="hand-card2">--</span>
-          <span id="hand-category"></span>
+          選択中: <span id="hand-card1">--</span><span id="hand-card2">--</span><span id="hand-category"></span>
         </div>
-      </div>
+      </section>
 
-      <h2>相手のレンジ</h2>
-      <div class="quick-ranges">
-        <button onclick="selectRange('clear')" class="clear">クリア</button>
-      </div>
-      
-      <div id="range-selection">
-        <p>クリックしてレンジを選択:</p>
-        <div class="scroll-hint">← 横スクロール可能 →</div>
-        <div class="range-grid-container">
+      <section class="surface-card" id="range-selection">
+        <h2>相手のレンジ</h2>
+        <div class="quick-ranges">
+          <button type="button" onclick="selectRange('top5')">Top 5%</button>
+          <button type="button" onclick="selectRange('top10')">Top 10%</button>
+          <button type="button" onclick="selectRange('top15')">Top 15%</button>
+          <button type="button" onclick="selectRange('top20')">Top 20%</button>
+          <button type="button" onclick="selectRange('top30')">Top 30%</button>
+          <button type="button" onclick="selectRange('pairs')">全ポケット</button>
+          <button type="button" onclick="selectRange('broadway')">ブロードウェイ</button>
+          <button type="button" onclick="selectRange('suited-connectors')">SC</button>
+          <button type="button" onclick="selectRange('clear')" class="clear">クリア</button>
+        </div>
+
+        <div class="range-tools">
+          <div class="range-zoom">
+            <span class="chip-text">ズーム</span>
+            <button type="button" id="zoom-sm-btn" class="small secondary">小</button>
+            <button type="button" id="zoom-md-btn" class="small secondary">中</button>
+            <button type="button" id="zoom-lg-btn" class="small secondary">大</button>
+          </div>
+        </div>
+
+        <p class="section-label">セル長押し/ドラッグで連続選択対応</p>
+        <div class="scroll-hint">レンジグリッドは横スクロール可</div>
+        <div id="range-grid-container" class="range-grid-container zoom-md">
           <table id="range-grid">
             <!-- JavaScriptで生成 -->
           </table>
         </div>
         <div class="selection-display">
-          選択中: <span id="range-count">0</span> / 169 ハンド 
-          (<span id="range-percent">0.0</span>%)
+          169カテゴリ: <span id="range-count">0</span>/169 (<span id="range-percent">0.0</span>%)
         </div>
-      </div>
 
-	      <div class="sample-select">
-	        <label for="sample-count">サンプル数:</label>
-	        <select id="sample-count">
-	          <option value="5000">5,000回 (標準)</option>
-	          <option value="10000" selected>10,000回 (高精度)</option>
-	          <option value="25000">25,000回 (最高精度)</option>
-	        </select>
-	      </div>
-	      <div class="selection-display" id="equity-precalc">
-	        相手有効コンボ数: <span id="villain-combo-count">0</span>
-	        / 推定総試行回数: <span id="estimated-trials">0</span>
-	      </div>
+        <div class="range-save">
+          <label for="range-name-input">レンジ名</label>
+          <div class="inline-2">
+            <input id="range-name-input" type="text" maxlength="40" placeholder="例: BTN open 30%">
+            <button id="save-range-btn" type="button">保存</button>
+          </div>
+          <label for="saved-range-select">保存済みレンジ</label>
+          <div class="inline-2">
+            <select id="saved-range-select">
+              <option value="">選択してください</option>
+            </select>
+            <button id="load-range-btn" type="button" class="secondary">読込</button>
+            <button id="delete-range-btn" type="button" class="cancel">削除</button>
+          </div>
+          <label for="range-json-input">JSON入出力 (任意)</label>
+          <input id="range-json-input" type="text" placeholder='{"name":"sample","hands":["AA","AKs"]}'>
+          <div class="button-row">
+            <button id="range-export-btn" type="button" class="secondary">JSON出力</button>
+            <button id="range-import-btn" type="button" class="secondary">JSON読込</button>
+          </div>
+        </div>
+      </section>
 
-		      <button id="calc-winrate-btn">エクイティ計算</button>
-	      <button id="cancel-winrate-btn" type="button" class="cancel" style="display:none;" disabled>キャンセル</button>
-	      <div id="winrate-result" class="results"></div>
-	    </div>
+      <section class="surface-card tight">
+        <div class="sample-select">
+          <label for="calc-mode">計算モード
+            <select id="calc-mode">
+              <option value="precise" selected>精密 (全コンボ×サンプル)</option>
+              <option value="fast">高速 (レンジ直接サンプル)</option>
+            </select>
+          </label>
+          <label for="sample-count">サンプル数
+            <select id="sample-count">
+              <option value="25000">25,000回</option>
+              <option value="50000">50,000回</option>
+              <option value="100000">100,000回</option>
+            </select>
+          </label>
+        </div>
+        <p class="mode-note" id="calc-mode-note">精密: 広いレンジでは時間がかかります。高速: 推定値を素早く表示します。</p>
+        <div class="selection-display" id="equity-precalc">
+          相手有効コンボ数: <span id="villain-combo-count">0</span>
+          / 推定総試行回数: <span id="estimated-trials">0</span>
+        </div>
+        <div id="progress-wrap" aria-hidden="true">
+          <div id="progress-bar"></div>
+        </div>
+        <div class="button-row">
+          <button id="calc-winrate-btn" type="button">エクイティ計算</button>
+          <button id="cancel-winrate-btn" type="button" class="cancel" style="display:none;" disabled>キャンセル</button>
+        </div>
+      </section>
+
+      <section id="equity-ev-panel" class="surface-card">
+        <h2>ポットオッズ / EV判断</h2>
+        <div class="ev-grid">
+          <label for="pot-size-input">Pot (コール前)
+            <input id="pot-size-input" type="number" min="0" step="0.1" placeholder="例: 10">
+          </label>
+          <label for="call-size-input">Call額 (追加)
+            <input id="call-size-input" type="number" min="0" step="0.1" placeholder="例: 5">
+          </label>
+          <label for="rake-pct-input">Rake %
+            <input id="rake-pct-input" type="number" min="0" max="100" step="0.1" value="0">
+          </label>
+          <label for="rake-cap-input">Rake cap
+            <input id="rake-cap-input" type="number" min="0" step="0.1" value="0">
+          </label>
+        </div>
+        <div class="ev-result">
+          必要エクイティ: <strong id="required-equity-output">--</strong><br>
+          現在エクイティ: <strong id="current-equity-output">未計算</strong><br>
+          EV差 (Call - Fold): <strong id="ev-diff" class="ev-neutral">未計算</strong><br>
+          判定: <strong id="ev-status" class="status-neutral">未計算</strong>
+        </div>
+      </section>
+
+      <div id="winrate-result" class="results"></div>
+    </div>
 
     <!-- ICM計算タブ -->
     <div id="icm-tab" class="tab-content">
       <div class="controls controls-setup">
-        <label>プレイヤー数:
+        <label>プレイヤー数
           <select id="num-players">
             <option value="2">2</option>
             <option value="3">3</option>
@@ -637,28 +1248,34 @@
             <option value="9">9</option>
           </select>
         </label>
-        <button id="generate-btn">生成</button>
-        <label>BBアンティ:
+        <label>BBアンティ
           <input type="number" id="bb-ante" step="0.1" min="0" placeholder="0">
         </label>
+        <div class="actions">
+          <button id="generate-btn" type="button">生成</button>
+        </div>
       </div>
-      <p class="icm-hint">スタック/金額はBB換算(小数可)。ブラインドはSB=0.5 / BB=1.0固定。BBアンティは任意。計算は「ヒーロー vs オールイン相手」の2人ショーダウンを前提。</p>
+      <p class="icm-hint">スタック/金額はBB換算。SB=0.5 / BB=1.0固定。2人ショーダウン前提。</p>
+
       <div id="player-inputs"></div>
-	      <div class="controls controls-action">
-	        <label>ヒーロー:
-	          <select id="hero-index"></select>
-	        </label>
-	        <label>オールイン相手:
-	          <select id="allin-index"></select>
-	        </label>
-	        <label>想定勝率(%):
-	          <input type="number" id="assumed-winrate" step="0.1" min="0" max="100" placeholder="任意">
-	        </label>
-	        <button id="use-equity-for-assumed-btn" type="button" class="small" disabled>エクイティ→想定勝率</button>
-	      </div>
+      <div class="controls controls-action">
+        <label>ヒーロー
+          <select id="hero-index"></select>
+        </label>
+        <label>オールイン相手
+          <select id="allin-index"></select>
+        </label>
+        <label>想定勝率(%)
+          <input type="number" id="assumed-winrate" step="0.1" min="0" max="100" placeholder="任意">
+        </label>
+        <div class="actions">
+          <button id="use-equity-for-assumed-btn" type="button" class="small secondary" disabled>エクイティ→想定勝率</button>
+        </div>
+      </div>
+
       <div id="icm-actions">
         <div class="icm-section-title">アクション(オールイン前)</div>
-        <p class="icm-hint">下のアクションを順に適用した後、「オールイン相手」がオールインします(自動)。必要勝率はヒーローのコール/フォールドで算出。</p>
+        <p class="icm-hint">下のアクション後にオールイン相手が自動オールイン。</p>
         <div class="icm-table-container">
           <table id="icm-action-table">
             <thead>
@@ -680,44 +1297,111 @@
         </div>
       </div>
       <div class="actions">
-        <button id="calc-icm-btn">ICM計算</button>
+        <button id="calc-icm-btn" type="button">ICM計算</button>
       </div>
-		      <div id="icm-results">
-		        <div id="icm-error" role="alert"></div>
-		        <div class="icm-summary">
-		          <p>有効オールイン(ヒーローvs相手): <span id="effective-stack">0.00</span></p>
-		          <p>相手オールイン(to): <span id="villain-allin-to">0.00</span></p>
-		          <p>コール額(追加): <span id="call-amount">0.00</span></p>
-		          <p>ショーダウンポット: <span id="pot-call">0.00</span></p>
-		          <p>必要勝率: <span id="required-winrate">0.00%</span> / エクイティ: <span id="equity-for-icm">-</span></p>
-		        </div>
 
-		        <details id="icm-details">
-		          <summary>詳細</summary>
-		          <div class="icm-details-body">
-	            <p>フォールド時 相手純増(デッドポット): <span id="pot-fold">0.00</span></p>
-	            <p>フォールド時 未コール返却(相手): <span id="fold-uncalled-villain">0.00</span></p>
-	            <p>コール時 未コール返却(相手): <span id="call-uncalled-villain">0.00</span></p>
-	            <p>フォールド時EV: <span id="fold-ev">0.00</span></p>
-	            <p>勝利時EV: <span id="win-ev">0.00</span></p>
-	            <p>敗北時EV: <span id="lose-ev">0.00</span></p>
-	            <div id="assumed-ev">
-	              <p>想定勝率でのコールEV: <span id="assumed-call-ev">0.00</span></p>
-	              <p>EV差(コール-フォールド): <span id="assumed-ev-diff">0.00</span></p>
-	            </div>
-	            <div id="icm-breakdown"></div>
-	            <div id="ev-list"></div>
-	          </div>
-	        </details>
-	      </div>
-	    </div>
-	  </div>
+      <div id="icm-results">
+        <div id="icm-error" role="alert"></div>
+        <div class="icm-summary">
+          <p>有効オールイン(ヒーローvs相手): <span id="effective-stack">0.00</span></p>
+          <p>相手オールイン(to): <span id="villain-allin-to">0.00</span></p>
+          <p>コール額(追加): <span id="call-amount">0.00</span></p>
+          <p>ショーダウンポット: <span id="pot-call">0.00</span></p>
+          <p>必要勝率: <span id="required-winrate">0.00%</span> / エクイティ: <span id="equity-for-icm">-</span></p>
+        </div>
+
+        <details id="icm-details">
+          <summary>詳細</summary>
+          <div class="icm-details-body">
+            <p>フォールド時 相手純増(デッドポット): <span id="pot-fold">0.00</span></p>
+            <p>フォールド時 未コール返却(相手): <span id="fold-uncalled-villain">0.00</span></p>
+            <p>コール時 未コール返却(相手): <span id="call-uncalled-villain">0.00</span></p>
+            <p>フォールド時EV: <span id="fold-ev">0.00</span></p>
+            <p>勝利時EV: <span id="win-ev">0.00</span></p>
+            <p>敗北時EV: <span id="lose-ev">0.00</span></p>
+            <div id="assumed-ev">
+              <p>想定勝率でのコールEV: <span id="assumed-call-ev">0.00</span></p>
+              <p>EV差(コール-フォールド): <span id="assumed-ev-diff">0.00</span></p>
+            </div>
+            <div id="icm-breakdown"></div>
+            <div id="ev-list"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div id="trainer-tab" class="tab-content">
+      <div id="trainer-panel">
+        <h2>トレーナー</h2>
+        <p class="icm-hint">ランダム出題のエクイティ予想クイズ。実測は高速モードで算出。</p>
+        <div id="trainer-prompt">「出題」を押して開始してください。</div>
+        <div class="trainer-row">
+          <label for="trainer-guess-input">あなたの予想エクイティ(%)
+            <input id="trainer-guess-input" type="number" min="0" max="100" step="0.1" placeholder="例: 48.5">
+          </label>
+          <div class="button-row">
+            <button id="trainer-new-btn" type="button">出題</button>
+            <button id="trainer-check-btn" type="button" class="secondary">答え合わせ</button>
+          </div>
+        </div>
+        <div id="trainer-feedback"></div>
+        <div id="trainer-stats">平均誤差: -- (直近20問)</div>
+        <ol id="trainer-history"></ol>
+      </div>
+    </div>
+
+    <div id="settings-tab" class="tab-content">
+      <div id="settings-panel">
+        <h2>設定</h2>
+        <div class="setting-row">
+          <label for="default-zoom-select">初期レンジズーム
+            <select id="default-zoom-select">
+              <option value="zoom-sm">小</option>
+              <option value="zoom-md" selected>中</option>
+              <option value="zoom-lg">大</option>
+            </select>
+          </label>
+          <label for="default-mode-select">初期計算モード
+            <select id="default-mode-select">
+              <option value="precise" selected>精密</option>
+              <option value="fast">高速</option>
+            </select>
+          </label>
+          <button id="save-settings-btn" type="button">設定を保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav id="bottom-nav" aria-label="メインナビゲーション">
+    <button type="button" class="nav-btn active" data-tab="winrate-tab">エクイティ</button>
+    <button type="button" class="nav-btn" data-tab="icm-tab">ICM</button>
+    <button type="button" class="nav-btn" data-tab="trainer-tab">トレーナー</button>
+    <button type="button" class="nav-btn" data-tab="settings-tab">設定</button>
+  </nav>
 
   <script>
 		    // グローバル変数
 		    let selectedCards = [];
 		    let winrateCancelRequested = false;
 		    let lastEquityPctForIcm = null;
+		    let lastCalculatedEquity = null;
+		    let lastEquityErrorPct = null;
+		    let activeCalcMode = 'precise';
+		    let isRangePointerDown = false;
+		    let rangeDragMode = null;
+		    let rangeSuppressClickUntil = 0;
+		    let currentTrainerQuestion = null;
+		    let trainerHistory = [];
+
+		    const SAVED_RANGES_KEY = 'poker_tool_saved_ranges_v1';
+		    const TRAINER_HISTORY_KEY = 'poker_tool_trainer_history_v1';
+		    const SETTINGS_KEY = 'poker_tool_settings_v1';
+		    const TOTAL_HOLE_CARD_COMBOS = 1326;
+		    const SAMPLE_OPTIONS_BY_MODE = {
+		      precise: [5000, 10000, 25000],
+		      fast: [25000, 50000, 100000],
+		    };
 		    const HAND_CATEGORIES = [
       'AA','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s',
       'AKo','KK','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s',
@@ -754,7 +1438,72 @@
 	      return deck;
 	    }
 
-	    const FULL_DECK = createDeck();
+		    const FULL_DECK = createDeck();
+
+		    const CHEN_BASE = {
+		      A: 10, K: 8, Q: 7, J: 6, T: 5,
+		      9: 4.5, 8: 4, 7: 3.5, 6: 3, 5: 2.5, 4: 2, 3: 1.5, 2: 1,
+		    };
+
+		    const CATEGORY_COMBO_COUNT = (() => {
+		      const out = {};
+		      for (const cat of HAND_CATEGORIES) {
+		        if (cat.length === 2) out[cat] = 6;
+		        else if (cat.endsWith('s')) out[cat] = 4;
+		        else out[cat] = 12;
+		      }
+		      return out;
+		    })();
+
+		    function getCategoryComboCount(handCategory) {
+		      return CATEGORY_COMBO_COUNT[handCategory] || 0;
+		    }
+
+		    function scoreHandCategory(handCategory) {
+		      if (!handCategory) return 0;
+		      const r1 = handCategory[0];
+		      const r2 = handCategory[1];
+		      const isPair = handCategory.length === 2;
+		      if (isPair) {
+		        return CHEN_BASE[r1] * 2 + 5;
+		      }
+		      const hi = CHEN_BASE[r1] || 0;
+		      const lo = CHEN_BASE[r2] || 0;
+		      const i1 = ranks.indexOf(r1);
+		      const i2 = ranks.indexOf(r2);
+		      const gap = Math.max(0, Math.abs(i1 - i2) - 1);
+		      let score = Math.max(hi, lo);
+		      if (handCategory.endsWith('s')) score += 2;
+		      if (gap === 1) score -= 1;
+		      else if (gap === 2) score -= 2;
+		      else if (gap === 3) score -= 4;
+		      else if (gap >= 4) score -= 5;
+		      if (Math.abs(i1 - i2) === 1 && hi < CHEN_BASE.A) score += 1;
+		      return Math.max(0, score);
+		    }
+
+		    const CATEGORY_RANKING = HAND_CATEGORIES
+		      .map((cat, idx) => ({ cat, idx, score: scoreHandCategory(cat), combos: getCategoryComboCount(cat) }))
+		      .sort((a, b) => (b.score - a.score) || (b.combos - a.combos) || (a.idx - b.idx));
+
+		    function readJsonFromStorage(key, fallback) {
+		      try {
+		        const raw = localStorage.getItem(key);
+		        if (!raw) return fallback;
+		        const parsed = JSON.parse(raw);
+		        return parsed ?? fallback;
+		      } catch (err) {
+		        return fallback;
+		      }
+		    }
+
+		    function writeJsonToStorage(key, value) {
+		      try {
+		        localStorage.setItem(key, JSON.stringify(value));
+		      } catch (err) {
+		        // ignore storage failure
+		      }
+		    }
     
     // 組み合わせを生成
     function* combinations(array, k) {
@@ -922,6 +1671,273 @@
 	        deck[j] = tmp;
 	      }
 	    }
+
+	    function nextFrame() {
+	      return new Promise(resolve => setTimeout(resolve, 0));
+	    }
+
+	    function setProgressBar(progressPct) {
+	      const bar = document.getElementById('progress-bar');
+	      if (!bar) return;
+	      const pct = Math.max(0, Math.min(100, progressPct || 0));
+	      bar.style.width = pct.toFixed(1) + '%';
+	    }
+
+	    function setHudStatus(text, cls = 'status-neutral') {
+	      const hud = document.getElementById('hud-status');
+	      if (!hud) return;
+	      hud.className = cls;
+	      hud.textContent = text;
+	    }
+
+	    function setHudProgress(progressPct) {
+	      const el = document.getElementById('hud-progress');
+	      if (!el) return;
+	      const pct = Math.max(0, Math.min(100, progressPct || 0));
+	      el.textContent = `進捗 ${pct.toFixed(1)}%`;
+	      setProgressBar(pct);
+	    }
+
+	    function setHudEquityValue(equityPct, errorPct) {
+	      const equityEl = document.getElementById('hud-equity-value');
+	      const errorEl = document.getElementById('hud-equity-error');
+	      if (equityEl) {
+	        equityEl.textContent = Number.isFinite(equityPct) ? `${equityPct.toFixed(2)}%` : '--%';
+	      }
+	      if (errorEl) {
+	        errorEl.textContent = Number.isFinite(errorPct) ? `誤差: ±${errorPct.toFixed(2)}%` : '誤差: --';
+	      }
+	    }
+
+	    function setHudHeroCards() {
+	      const targets = [
+	        document.getElementById('hud-hero-1'),
+	        document.getElementById('hud-hero-2'),
+	      ];
+	      for (let i = 0; i < 2; i++) {
+	        const card = selectedCards[i];
+	        const target = targets[i];
+	        if (!target) continue;
+	        if (!card) {
+	          target.textContent = '--';
+	          target.className = 'hud-card';
+	          continue;
+	        }
+	        target.textContent = card[0] + suitSymbols[card[1]];
+	        target.className = 'hud-card ' + ((card[1] === 'h' || card[1] === 'd') ? 'red' : '');
+	      }
+	    }
+
+	    function setHudComboStats(combosCount) {
+	      const combosEl = document.getElementById('hud-combos');
+	      const pctEl = document.getElementById('hud-combo-pct');
+	      const combos = Math.max(0, combosCount || 0);
+	      if (combosEl) combosEl.textContent = combos.toLocaleString();
+	      if (pctEl) pctEl.textContent = ((combos / TOTAL_HOLE_CARD_COMBOS) * 100).toFixed(1);
+	    }
+
+	    function getSelectedRangeCells() {
+	      return Array.from(document.querySelectorAll('#range-grid td.active-range'));
+	    }
+
+	    function getSelectedRangeCategories() {
+	      return getSelectedRangeCells().map(cell => cell.dataset.hand).filter(Boolean);
+	    }
+
+	    function clearComputedEquityDisplays() {
+	      lastCalculatedEquity = null;
+	      lastEquityErrorPct = null;
+	      setHudEquityValue(null, null);
+	      setHudStatus('待機中', 'status-neutral');
+	      setHudProgress(0);
+	      const resultDiv = document.getElementById('winrate-result');
+	      if (resultDiv) resultDiv.innerHTML = '';
+	      updatePotOddsDecision();
+	    }
+
+	    function readNumeric(id) {
+	      const el = document.getElementById(id);
+	      if (!el) return null;
+	      const str = el.value.trim();
+	      if (str === '') return null;
+	      const n = parseFloat(str);
+	      return Number.isFinite(n) ? n : null;
+	    }
+
+	    function updatePotOddsDecision() {
+	      const pot = Math.max(0, readNumeric('pot-size-input') ?? 0);
+	      const call = Math.max(0, readNumeric('call-size-input') ?? 0);
+	      const rakePct = Math.max(0, readNumeric('rake-pct-input') ?? 0);
+	      const rakeCapInput = readNumeric('rake-cap-input');
+	      const rakeCap = Number.isFinite(rakeCapInput) ? Math.max(0, rakeCapInput) : 0;
+
+	      const requiredEl = document.getElementById('required-equity-output');
+	      const currentEl = document.getElementById('current-equity-output');
+	      const diffEl = document.getElementById('ev-diff');
+	      const statusEl = document.getElementById('ev-status');
+	      if (!requiredEl || !currentEl || !diffEl || !statusEl) return;
+
+	      if (call <= 0) {
+	        requiredEl.textContent = '--';
+	        currentEl.textContent = Number.isFinite(lastCalculatedEquity) ? `${lastCalculatedEquity.toFixed(2)}%` : '未計算';
+	        diffEl.textContent = '未計算';
+	        diffEl.className = 'ev-neutral';
+	        statusEl.textContent = '未計算';
+	        statusEl.className = 'status-neutral';
+	        if (!Number.isFinite(lastCalculatedEquity)) setHudStatus('待機中', 'status-neutral');
+	        return;
+	      }
+
+	      const grossPot = pot + call;
+	      const rawRake = grossPot * (rakePct / 100);
+	      const rake = rakeCap > 0 ? Math.min(rawRake, rakeCap) : rawRake;
+	      const winReturn = Math.max(0, grossPot - rake);
+
+	      if (winReturn <= 0) {
+	        requiredEl.textContent = '--';
+	        currentEl.textContent = Number.isFinite(lastCalculatedEquity) ? `${lastCalculatedEquity.toFixed(2)}%` : '未計算';
+	        diffEl.textContent = '未計算';
+	        diffEl.className = 'ev-neutral';
+	        statusEl.textContent = '未計算';
+	        statusEl.className = 'status-neutral';
+	        if (!Number.isFinite(lastCalculatedEquity)) setHudStatus('入力待ち', 'status-neutral');
+	        return;
+	      }
+
+	      const requiredEq = (call / winReturn) * 100;
+	      requiredEl.textContent = `${requiredEq.toFixed(2)}%`;
+
+	      if (!Number.isFinite(lastCalculatedEquity)) {
+	        currentEl.textContent = '未計算';
+	        diffEl.textContent = '未計算';
+	        diffEl.className = 'ev-neutral';
+	        statusEl.textContent = '未計算';
+	        statusEl.className = 'status-neutral';
+	        setHudStatus('エクイティ未計算', 'status-neutral');
+	        return;
+	      }
+
+	      currentEl.textContent = `${lastCalculatedEquity.toFixed(2)}%`;
+	      const callEv = (lastCalculatedEquity / 100) * winReturn - call;
+	      const sign = callEv >= 0 ? '+' : '';
+	      diffEl.textContent = `${sign}${callEv.toFixed(2)}`;
+	      diffEl.classList.remove('ev-neutral', 'ev-positive', 'ev-negative');
+	      statusEl.classList.remove('status-neutral', 'status-positive', 'status-negative');
+	      if (callEv >= 0) {
+	        diffEl.classList.add('ev-positive');
+	        statusEl.classList.add('status-positive');
+	        statusEl.textContent = 'コール推奨';
+	        setHudStatus('EV+ コール寄り', 'status-positive');
+	      } else {
+	        diffEl.classList.add('ev-negative');
+	        statusEl.classList.add('status-negative');
+	        statusEl.textContent = 'フォールド寄り';
+	        setHudStatus('EV- フォールド寄り', 'status-negative');
+	      }
+	    }
+
+	    function renderSampleOptions(mode, preferredValue = null) {
+	      const select = document.getElementById('sample-count');
+	      if (!select) return;
+	      const options = SAMPLE_OPTIONS_BY_MODE[mode] || SAMPLE_OPTIONS_BY_MODE.precise;
+	      const current = preferredValue ?? parseInt(select.value, 10);
+	      select.innerHTML = '';
+	      options.forEach((value, idx) => {
+	        const opt = document.createElement('option');
+	        opt.value = String(value);
+	        if (mode === 'precise') {
+	          const labels = ['標準', '高精度', '最高精度'];
+	          opt.textContent = `${value.toLocaleString()}回/コンボ (${labels[idx] || ''})`;
+	        } else {
+	          const labels = ['高速', '高精度', '超高精度'];
+	          opt.textContent = `${value.toLocaleString()}試行 (${labels[idx] || ''})`;
+	        }
+	        select.appendChild(opt);
+	      });
+	      if (Number.isFinite(current) && options.includes(current)) {
+	        select.value = String(current);
+	      } else {
+	        select.value = String(options[Math.min(1, options.length - 1)]);
+	      }
+	    }
+
+	    function applyCalcMode(mode, keepSample = false) {
+	      const normalized = mode === 'fast' ? 'fast' : 'precise';
+	      activeCalcMode = normalized;
+	      const modeSelect = document.getElementById('calc-mode');
+	      if (modeSelect) modeSelect.value = normalized;
+	      const defaultModeSelect = document.getElementById('default-mode-select');
+	      if (defaultModeSelect) defaultModeSelect.value = normalized;
+	      renderSampleOptions(normalized, keepSample ? parseInt(document.getElementById('sample-count')?.value, 10) : null);
+	      const note = document.getElementById('calc-mode-note');
+	      if (note) {
+	        note.textContent = normalized === 'fast'
+	          ? '高速: レンジから直接抽選し、広いレンジでも体感を維持します。'
+	          : '精密: 全コンボごとにサンプルを回すため、広いレンジでは時間がかかります。';
+	      }
+	      updateEquityPrecalcDisplay();
+	    }
+
+	    function applyRangeZoomClass(zoomClass) {
+	      const container = document.getElementById('range-grid-container');
+	      if (!container) return;
+	      const normalized = ['zoom-sm', 'zoom-md', 'zoom-lg'].includes(zoomClass) ? zoomClass : 'zoom-md';
+	      container.classList.remove('zoom-sm', 'zoom-md', 'zoom-lg');
+	      container.classList.add(normalized);
+	      const states = {
+	        'zoom-sm-btn': normalized === 'zoom-sm',
+	        'zoom-md-btn': normalized === 'zoom-md',
+	        'zoom-lg-btn': normalized === 'zoom-lg',
+	      };
+	      Object.entries(states).forEach(([id, isOn]) => {
+	        const btn = document.getElementById(id);
+	        if (!btn) return;
+	        btn.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+	      });
+	      const select = document.getElementById('default-zoom-select');
+	      if (select) select.value = normalized;
+	    }
+
+	    function readAppSettings() {
+	      const fallback = { zoom: 'zoom-md', mode: 'precise' };
+	      const raw = readJsonFromStorage(SETTINGS_KEY, fallback);
+	      return {
+	        zoom: ['zoom-sm', 'zoom-md', 'zoom-lg'].includes(raw.zoom) ? raw.zoom : fallback.zoom,
+	        mode: raw.mode === 'fast' ? 'fast' : 'precise',
+	      };
+	    }
+
+	    function saveAppSettings() {
+	      const zoomSelect = document.getElementById('default-zoom-select');
+	      const modeSelect = document.getElementById('default-mode-select');
+	      const settings = {
+	        zoom: zoomSelect ? zoomSelect.value : 'zoom-md',
+	        mode: modeSelect && modeSelect.value === 'fast' ? 'fast' : 'precise',
+	      };
+	      writeJsonToStorage(SETTINGS_KEY, settings);
+	    }
+
+	    function switchTab(tabId) {
+	      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+	      document.querySelectorAll('#bottom-nav .nav-btn').forEach(b => b.classList.remove('active'));
+	      const tab = document.getElementById(tabId);
+	      if (tab) tab.classList.add('active');
+	      const navBtn = document.querySelector(`#bottom-nav .nav-btn[data-tab="${tabId}"]`);
+	      if (navBtn) navBtn.classList.add('active');
+	    }
+
+	    function getTopPercentCategories(percent) {
+	      const capped = Math.max(0, Math.min(100, percent));
+	      const targetCombos = TOTAL_HOLE_CARD_COMBOS * (capped / 100);
+	      const selected = [];
+	      let running = 0;
+	      for (const entry of CATEGORY_RANKING) {
+	        selected.push(entry.cat);
+	        running += entry.combos;
+	        if (running >= targetCombos) break;
+	      }
+	      return selected;
+	    }
     
     // レンジグリッドの生成
     function generateRangeGrid() {
@@ -970,6 +1986,9 @@
     function handleCardClick(e) {
       const cell = e.currentTarget;
       const card = cell.dataset.card;
+	      if (cell.classList.contains('disabled') && !cell.classList.contains('selected')) {
+	        return;
+	      }
       
       const idx = selectedCards.indexOf(card);
       
@@ -1019,6 +2038,14 @@
         card2Display.className = '';
       }
       
+      // カードの有効/無効表示
+      document.querySelectorAll('#card-grid td').forEach(cardCell => {
+        cardCell.classList.remove('disabled');
+        if (selectedCards.length === 2 && !selectedCards.includes(cardCell.dataset.card)) {
+          cardCell.classList.add('disabled');
+        }
+      });
+
       // カテゴリー表示とヒーローハンド強調
       document.querySelectorAll('#range-grid td').forEach(cell => {
         cell.classList.remove('hero-hand');
@@ -1037,6 +2064,7 @@
 	      } else {
 	        categoryDisplay.textContent = '';
 	      }
+	      setHudHeroCards();
 	      updateEquityPrecalcDisplay();
 	    }
     
@@ -1066,28 +2094,32 @@
     // レンジ選択処理
     function handleRangeClick(e) {
       const cell = e.currentTarget;
+      if (!cell) return;
       cell.classList.toggle('active-range');
       updateRangeDisplay();
     }
-    
+
+    function updateRangeCountDisplay() {
+      const selectedCells = getSelectedRangeCells();
+      const count = selectedCells.length;
+      const percent = (count / 169 * 100).toFixed(1);
+      document.getElementById('range-count').textContent = String(count);
+      document.getElementById('range-percent').textContent = percent;
+    }
+
     // レンジ表示更新
 		    function updateRangeDisplay() {
 		      clearEquityForIcmDisplay();
-		      const selectedCells = document.querySelectorAll('#range-grid td.active-range');
-		      const count = selectedCells.length;
-		      const percent = (count / 169 * 100).toFixed(1);
-	      
-	      document.getElementById('range-count').textContent = count;
-	      document.getElementById('range-percent').textContent = percent;
-	      updateEquityPrecalcDisplay();
-	    }
+		      updateRangeCountDisplay();
+		      updateEquityPrecalcDisplay();
+		    }
 
 		    function updateEquityPrecalcDisplay() {
 		      const villainComboSpan = document.getElementById('villain-combo-count');
 		      const estimatedTrialsSpan = document.getElementById('estimated-trials');
 		      if (!villainComboSpan || !estimatedTrialsSpan) return;
 
-	      const villainCells = document.querySelectorAll('#range-grid td.active-range');
+	      const villainCells = getSelectedRangeCells();
 	      const blockedCards = selectedCards.length === 2 ? selectedCards : [];
 	      let combosCount = 0;
 	      for (const cell of villainCells) {
@@ -1096,9 +2128,11 @@
 	        combosCount += getCombosForHand(handCategory, blockedCards).length;
 	      }
 	      villainComboSpan.textContent = String(combosCount);
+	      setHudComboStats(combosCount);
 
-	      const sampleCount = parseInt(document.getElementById('sample-count')?.value);
-	      const trials = Number.isFinite(sampleCount) ? combosCount * sampleCount : 0;
+	      const sampleCount = parseInt(document.getElementById('sample-count')?.value, 10);
+	      const mode = document.getElementById('calc-mode')?.value === 'fast' ? 'fast' : 'precise';
+	      const trials = Number.isFinite(sampleCount) ? (mode === 'fast' ? sampleCount : combosCount * sampleCount) : 0;
 		      estimatedTrialsSpan.textContent = trials.toLocaleString();
 		    }
 
@@ -1108,6 +2142,7 @@
 		      if (span) span.textContent = '-';
 		      const btn = document.getElementById('use-equity-for-assumed-btn');
 		      if (btn) btn.disabled = true;
+		      clearComputedEquityDisplays();
 		    }
 
 		    function setEquityForIcmDisplay(equityPct) {
@@ -1119,17 +2154,221 @@
 		      const btn = document.getElementById('use-equity-for-assumed-btn');
 		      if (btn) btn.disabled = false;
 		    }
-	    
+
+	    function setCalculatedEquity(equityPct, errorPct) {
+	      lastCalculatedEquity = equityPct;
+	      lastEquityErrorPct = errorPct;
+	      setHudEquityValue(equityPct, errorPct);
+	      setEquityForIcmDisplay(equityPct);
+	      updatePotOddsDecision();
+	    }
+
+	    function applyRangeCategories(categories) {
+	      const set = new Set(categories);
+	      document.querySelectorAll('#range-grid td').forEach(td => {
+	        td.classList.toggle('active-range', set.has(td.dataset.hand));
+	      });
+	      updateRangeDisplay();
+	    }
+
+	    function readBroadwayCategories() {
+	      const broadwaySet = new Set(['A', 'K', 'Q', 'J', 'T']);
+	      return HAND_CATEGORIES.filter(cat => {
+	        if (cat.length === 2) return broadwaySet.has(cat[0]);
+	        return broadwaySet.has(cat[0]) && broadwaySet.has(cat[1]);
+	      });
+	    }
+
+	    function readSuitedConnectorCategories() {
+	      return HAND_CATEGORIES.filter(cat => {
+	        if (!cat.endsWith('s')) return false;
+	        const a = ranks.indexOf(cat[0]);
+	        const b = ranks.indexOf(cat[1]);
+	        return Math.abs(a - b) === 1;
+	      });
+	    }
+
 	    // プリセットレンジ選択
 	    function selectRange(type) {
-      // 全てクリア
-      document.querySelectorAll('#range-grid td').forEach(td => {
-        td.classList.remove('active-range');
-      });
-      
-      updateRangeDisplay();
-    }
-    
+	      const normalized = String(type || '').toLowerCase();
+	      if (normalized === 'clear') {
+	        applyRangeCategories([]);
+	        return;
+	      }
+	      if (normalized.startsWith('top')) {
+	        const pct = parseInt(normalized.replace('top', ''), 10);
+	        if (Number.isFinite(pct)) {
+	          applyRangeCategories(getTopPercentCategories(pct));
+	          return;
+	        }
+	      }
+	      if (normalized === 'pairs') {
+	        applyRangeCategories(HAND_CATEGORIES.filter(cat => cat.length === 2));
+	        return;
+	      }
+	      if (normalized === 'broadway') {
+	        applyRangeCategories(readBroadwayCategories());
+	        return;
+	      }
+	      if (normalized === 'suited-connectors') {
+	        applyRangeCategories(readSuitedConnectorCategories());
+	        return;
+	      }
+	      applyRangeCategories([]);
+	    }
+
+	    function setupRangePointerInteractions() {
+	      const table = document.getElementById('range-grid');
+	      if (!table) return;
+
+	      table.addEventListener('pointerdown', (e) => {
+	        const cell = e.target.closest('#range-grid td');
+	        if (!cell) return;
+	        if (e.pointerType === 'mouse' && e.button !== 0) return;
+	        e.preventDefault();
+	        rangeSuppressClickUntil = performance.now() + 400;
+	        isRangePointerDown = true;
+	        rangeDragMode = !cell.classList.contains('active-range');
+	        cell.classList.toggle('active-range', rangeDragMode);
+	        cell.classList.add('dragging-target');
+	        updateRangeCountDisplay();
+	      });
+
+	      table.addEventListener('pointerover', (e) => {
+	        if (!isRangePointerDown) return;
+	        const cell = e.target.closest('#range-grid td');
+	        if (!cell || cell.classList.contains('dragging-target')) return;
+	        cell.classList.add('dragging-target');
+	        cell.classList.toggle('active-range', rangeDragMode);
+	        updateRangeCountDisplay();
+	      });
+
+	      const stopDrag = () => {
+	        if (!isRangePointerDown) return;
+	        isRangePointerDown = false;
+	        rangeDragMode = null;
+	        document.querySelectorAll('#range-grid td.dragging-target').forEach(td => td.classList.remove('dragging-target'));
+	        updateRangeDisplay();
+	      };
+	      window.addEventListener('pointerup', stopDrag);
+	      window.addEventListener('pointercancel', stopDrag);
+	    }
+
+	    function getSavedRanges() {
+	      const raw = readJsonFromStorage(SAVED_RANGES_KEY, []);
+	      if (!Array.isArray(raw)) return [];
+	      const validHands = new Set(HAND_CATEGORIES);
+	      return raw
+	        .map(item => {
+	          const name = String(item?.name || '').trim();
+	          const hands = Array.isArray(item?.hands) ? item.hands.filter(h => validHands.has(h)) : [];
+	          if (!name || hands.length === 0) return null;
+	          return { name, hands: Array.from(new Set(hands)) };
+	        })
+	        .filter(Boolean);
+	    }
+
+	    function saveRanges(ranges) {
+	      writeJsonToStorage(SAVED_RANGES_KEY, ranges);
+	    }
+
+	    function refreshSavedRangeOptions(selectedName = '') {
+	      const select = document.getElementById('saved-range-select');
+	      if (!select) return;
+	      const prev = selectedName || select.value;
+	      const ranges = getSavedRanges();
+	      select.innerHTML = '<option value="">選択してください</option>';
+	      ranges.forEach(range => {
+	        const opt = document.createElement('option');
+	        opt.value = range.name;
+	        opt.textContent = `${range.name} (${range.hands.length}カテゴリ)`;
+	        select.appendChild(opt);
+	      });
+	      if (prev && ranges.some(r => r.name === prev)) {
+	        select.value = prev;
+	      }
+	    }
+
+	    function saveCurrentRange() {
+	      const nameInput = document.getElementById('range-name-input');
+	      const name = String(nameInput?.value || '').trim();
+	      if (!name) {
+	        window.alert('レンジ名を入力してください。');
+	        return;
+	      }
+	      const hands = getSelectedRangeCategories();
+	      if (hands.length === 0) {
+	        window.alert('保存するレンジが空です。');
+	        return;
+	      }
+	      const ranges = getSavedRanges();
+	      const next = ranges.filter(r => r.name !== name);
+	      next.push({ name, hands });
+	      saveRanges(next);
+	      refreshSavedRangeOptions(name);
+	    }
+
+	    function loadSelectedRange() {
+	      const select = document.getElementById('saved-range-select');
+	      if (!select || !select.value) return;
+	      const range = getSavedRanges().find(r => r.name === select.value);
+	      if (!range) return;
+	      applyRangeCategories(range.hands);
+	      const nameInput = document.getElementById('range-name-input');
+	      if (nameInput) nameInput.value = range.name;
+	    }
+
+	    function deleteSelectedRange() {
+	      const select = document.getElementById('saved-range-select');
+	      if (!select || !select.value) return;
+	      const targetName = select.value;
+	      const next = getSavedRanges().filter(r => r.name !== targetName);
+	      saveRanges(next);
+	      refreshSavedRangeOptions('');
+	    }
+
+	    function exportRangeJson() {
+	      const input = document.getElementById('range-json-input');
+	      if (!input) return;
+	      const select = document.getElementById('saved-range-select');
+	      const selectedName = select?.value || '';
+	      const selected = selectedName ? getSavedRanges().find(r => r.name === selectedName) : null;
+	      const nameField = document.getElementById('range-name-input');
+	      const payload = selected || {
+	        name: String(nameField?.value || 'range').trim() || 'range',
+	        hands: getSelectedRangeCategories(),
+	      };
+	      input.value = JSON.stringify(payload);
+	    }
+
+	    function importRangeJson() {
+	      const input = document.getElementById('range-json-input');
+	      if (!input) return;
+	      const raw = input.value.trim();
+	      if (!raw) {
+	        window.alert('JSONが空です。');
+	        return;
+	      }
+	      try {
+	        const parsed = JSON.parse(raw);
+	        const name = String(parsed?.name || '').trim();
+	        const hands = Array.isArray(parsed?.hands) ? parsed.hands.filter(h => HAND_CATEGORIES.includes(h)) : [];
+	        if (!name || hands.length === 0) {
+	          window.alert('JSON形式が不正です。name と hands[] を確認してください。');
+	          return;
+	        }
+	        const ranges = getSavedRanges().filter(r => r.name !== name);
+	        ranges.push({ name, hands: Array.from(new Set(hands)) });
+	        saveRanges(ranges);
+	        refreshSavedRangeOptions(name);
+	        applyRangeCategories(hands);
+	        const nameInput = document.getElementById('range-name-input');
+	        if (nameInput) nameInput.value = name;
+	      } catch (err) {
+	        window.alert('JSONの解析に失敗しました。');
+	      }
+	    }
+	    
 	    // 組み合わせを取得（ブロッカー考慮）
 	    function getCombosForHand(handCategory, blockedCards) {
 	      const combos = [];
@@ -1177,7 +2416,9 @@
 	      const winrateResultDiv = document.getElementById('winrate-result');
 	      const calcButton = document.getElementById('calc-winrate-btn');
 	      const cancelButton = document.getElementById('cancel-winrate-btn');
-	
+	      const modeSelect = document.getElementById('calc-mode');
+	      const sampleSelect = document.getElementById('sample-count');
+
 		      const setUiBusy = (busy) => {
 		        if (calcButton) {
 		          calcButton.disabled = busy;
@@ -1188,190 +2429,406 @@
 	          cancelButton.disabled = !busy;
 	          cancelButton.textContent = 'キャンセル';
 	        }
+	        if (modeSelect) modeSelect.disabled = busy;
+	        if (sampleSelect) sampleSelect.disabled = busy;
+	      };
+
+	      const setProgressText = (done, total) => {
+	        const pct = total > 0 ? (done / total) * 100 : 0;
+	        setHudProgress(pct);
+	        const progressText = document.getElementById('calc-progress-text');
+	        if (progressText) {
+	          progressText.textContent = `進捗: ${done.toLocaleString()} / ${total.toLocaleString()} (${pct.toFixed(1)}%)`;
+	        }
 	      };
 	      
 	      if (selectedCards.length !== 2) {
-	        winrateResultDiv.innerHTML = '<p style="color: red;">手札を2枚選択してください</p>';
+	        setHudStatus('手札を2枚選択してください', 'status-negative');
+	        winrateResultDiv.innerHTML = '<p class="status-negative">手札を2枚選択してください</p>';
 	        return;
 	      }
-      
-      // 選択されたレンジのカテゴリーを取得
-      const villainCells = document.querySelectorAll('#range-grid td.active-range');
-      if (villainCells.length === 0) {
-        winrateResultDiv.innerHTML = '<p style="color: red;">相手のレンジを選択してください</p>';
-        return;
-      }
-	
+
+	      const villainCells = getSelectedRangeCells();
+	      if (villainCells.length === 0) {
+	        setHudStatus('相手レンジを選択してください', 'status-negative');
+	        winrateResultDiv.innerHTML = '<p class="status-negative">相手のレンジを選択してください</p>';
+	        return;
+	      }
+
 	      setUiBusy(true);
 	      winrateCancelRequested = false;
 	      let canceled = false;
 	      try {
-	      
-	      const sampleCount = parseInt(document.getElementById('sample-count').value);
-	      const startTime = performance.now();
-      
-      // ヒーローハンド
-      const heroCards = selectedCards;
-      const heroCategory = getHandCategory(heroCards[0], heroCards[1]);
-      
-      // 相手の全組み合わせを取得（ブロッカー考慮）
-      const allVillainCombos = [];
-      villainCells.forEach(cell => {
-        const handCategory = cell.dataset.hand;
-        const combos = getCombosForHand(handCategory, heroCards);
-        allVillainCombos.push(...combos);
-      });
-      
-	      if (allVillainCombos.length === 0) {
-	        winrateResultDiv.innerHTML = '<p style="color: red;">ブロッカー効果により、相手の有効な組み合わせがありません</p>';
-	        return;
-	      }
-      
-	      // 進捗表示
-	      winrateResultDiv.innerHTML = `
-	        <p>計算中... (相手の組み合わせ: ${allVillainCombos.length})</p>
-	        <p>進捗: <span id="calc-progress">0</span> / ${allVillainCombos.length} (<span id="calc-progress-pct">0.0</span>%)</p>
-	      `;
-      
-		      // モンテカルロシミュレーション（非同期処理）
-		      let totalEquity = 0;
-		      let totalWins = 0;
-		      let totalTies = 0;
-		      let totalTrials = 0;
-		      let varianceSum = 0;
-		      let processedCombos = 0;
-		      const h0 = heroCards[0];
-		      const h1 = heroCards[1];
-		      const remainingDeck = new Array(FULL_DECK.length - 4);
-		      const board = new Array(5);
-		      const swapIndices = new Int32Array(5);
-		      const heroSeven = new Array(7);
-		      heroSeven[0] = h0;
-		      heroSeven[1] = h1;
-		      const villainSeven = new Array(7);
-	      
-	      // バッチ処理で計算
-	      const batchSize = 5; // 一度に処理する組み合わせ数
-      
-	      for (let batchStart = 0; batchStart < allVillainCombos.length; batchStart += batchSize) {
-	        // UIを更新するための非同期処理
-	        await new Promise(resolve => setTimeout(resolve, 0));
-	        if (winrateCancelRequested) {
-	          canceled = true;
-	          break;
+	        const sampleCount = parseInt(document.getElementById('sample-count').value, 10);
+	        if (!Number.isFinite(sampleCount) || sampleCount <= 0) {
+	          winrateResultDiv.innerHTML = '<p class="status-negative">サンプル数が不正です</p>';
+	          return;
 	        }
-	        
-	        const batchEnd = Math.min(batchStart + batchSize, allVillainCombos.length);
-	        
-		        for (let idx = batchStart; idx < batchEnd; idx++) {
-		          if (winrateCancelRequested) {
-		            canceled = true;
-		            break;
-		          }
-		          const villainCards = allVillainCombos[idx];
-		          const v0 = villainCards[0];
-		          const v1 = villainCards[1];
-		          villainSeven[0] = v0;
-		          villainSeven[1] = v1;
 
-		          let wins = 0;
-		          let ties = 0;
-	          
-		          // 使用済みカードを除外（配列生成を避けて48枚に詰める）
-		          let remainingLen = 0;
-		          for (const c of FULL_DECK) {
-		            if (c === h0 || c === h1 || c === v0 || c === v1) continue;
-		            remainingDeck[remainingLen++] = c;
-		          }
-		          remainingDeck.length = remainingLen;
+	        const mode = document.getElementById('calc-mode')?.value === 'fast' ? 'fast' : 'precise';
+	        const startTime = performance.now();
+	        const heroCards = selectedCards.slice();
+	        const heroCategory = getHandCategory(heroCards[0], heroCards[1]);
 
-				          // サンプルボード数だけシミュレーション
-					          for (let i = 0; i < sampleCount; i++) {
-					            if (winrateCancelRequested && (i & 255) === 0) {
-					              canceled = true;
-					              break;
-					            }
-					            drawBoardFromDeck(remainingDeck, board, swapIndices);
-			            
-			            heroSeven[2] = board[0];
-		            heroSeven[3] = board[1];
-		            heroSeven[4] = board[2];
-		            heroSeven[5] = board[3];
-		            heroSeven[6] = board[4];
-		            villainSeven[2] = board[0];
-		            villainSeven[3] = board[1];
-		            villainSeven[4] = board[2];
-		            villainSeven[5] = board[3];
-		            villainSeven[6] = board[4];
+	        const allVillainCombos = [];
+	        for (const cell of villainCells) {
+	          const handCategory = cell.dataset.hand;
+	          const combos = getCombosForHand(handCategory, heroCards);
+	          allVillainCombos.push(...combos);
+	        }
+	        if (allVillainCombos.length === 0) {
+	          setHudStatus('有効コンボがありません', 'status-negative');
+	          winrateResultDiv.innerHTML = '<p class="status-negative">ブロッカー効果で相手の有効コンボが0です</p>';
+	          return;
+	        }
 
-		            const heroScore = evaluate(heroSeven);
-		            const villainScore = evaluate(villainSeven);
-		            
-			            if (heroScore > villainScore) {
-		              wins++;
-		            } else if (heroScore === villainScore) {
-	              ties++;
+	        winrateResultDiv.innerHTML = `
+	          <h3>計算中...</h3>
+	          <p>モード: ${mode === 'fast' ? '高速' : '精密'}</p>
+	          <p>相手有効コンボ: ${allVillainCombos.length.toLocaleString()}</p>
+	          <p id="calc-progress-text">進捗: 0 / 0 (0.0%)</p>
+	        `;
+	        setHudStatus('計算中', 'status-neutral');
+	        setHudProgress(0);
+	        setHudEquityValue(null, null);
+
+	        let totalWins = 0;
+	        let totalTies = 0;
+	        let totalTrials = 0;
+
+	        const h0 = heroCards[0];
+	        const h1 = heroCards[1];
+	        const remainingDeck = new Array(FULL_DECK.length - 4);
+	        const board = new Array(5);
+	        const swapIndices = new Int32Array(5);
+	        const heroSeven = new Array(7);
+	        heroSeven[0] = h0;
+	        heroSeven[1] = h1;
+	        const villainSeven = new Array(7);
+
+	        if (mode === 'fast') {
+	          const totalSteps = sampleCount;
+	          setProgressText(0, totalSteps);
+	          for (let i = 0; i < sampleCount; i++) {
+	            if ((i & 255) === 0) {
+	              if (winrateCancelRequested) {
+	                canceled = true;
+	                break;
+	              }
+	              setProgressText(i, totalSteps);
+	              await nextFrame();
 	            }
-		          }
-		          if (canceled) break;
-		          
-		          const matchupEquity = (wins + ties * 0.5) / sampleCount;
-	          const matchupSecondMoment = (wins + ties * 0.25) / sampleCount;
-	          const matchupVariance = Math.max(0, matchupSecondMoment - matchupEquity * matchupEquity);
-	          totalEquity += matchupEquity;
-	          varianceSum += matchupVariance;
-	
-	          totalWins += wins;
-	          totalTies += ties;
-		          totalTrials += sampleCount;
-		          processedCombos++;
-		        }
-	        if (canceled) break;
-	        
-		        // 進捗更新
-		        const progressSpan = document.getElementById('calc-progress');
-		        if (progressSpan) progressSpan.textContent = String(processedCombos);
-		        const progressPctSpan = document.getElementById('calc-progress-pct');
-		        if (progressPctSpan) progressPctSpan.textContent = ((processedCombos / allVillainCombos.length) * 100).toFixed(1);
-	      }
-	      if (canceled) {
-	        winrateResultDiv.innerHTML = '<p style="color: #666;">計算をキャンセルしました</p>';
-	        return;
-	      }
-      
-	      const heroEquity = (totalEquity / allVillainCombos.length) * 100;
-	      const winPct = totalTrials > 0 ? (totalWins / totalTrials * 100) : 0;
-	      const tiePct = totalTrials > 0 ? (totalTies / totalTrials * 100) : 0;
-	      const losePct = Math.max(0, 100 - winPct - tiePct);
-	      const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
-	      const totalBoards = sampleCount * allVillainCombos.length;
-	      
-	      // 誤差範囲を計算（95%信頼区間）
-	      const stderr = Math.sqrt(varianceSum / (sampleCount * allVillainCombos.length * allVillainCombos.length));
-		      const errorMargin = (stderr * 1.96 * 100).toFixed(2);
 
-		      setEquityForIcmDisplay(heroEquity);
-	      
-	      // 結果を詳細に表示
-	      winrateResultDiv.innerHTML = `
-	        <h3>計算結果</h3>
-        <p>ヒーロー: <strong>${heroCards[0]} ${heroCards[1]} (${heroCategory})</strong></p>
-        <p>相手レンジ: ${villainCells.length}種類 / 169種類 (${(villainCells.length / 169 * 100).toFixed(1)}%)</p>
-	        <p>相手の実際の組み合わせ数: ${allVillainCombos.length} (ブロッカー考慮後)</p>
-	        <p>総シミュレーション数: ${totalBoards.toLocaleString()}回</p>
-	        <p>計算時間: ${elapsed}秒</p>
-	        <hr>
-	        <p>エクイティ(勝率+引分/2): <strong style="font-size: 1.5em; color: ${heroEquity >= 50 ? 'green' : 'red'}">${heroEquity.toFixed(2)}%</strong></p>
-	        <p>内訳: 勝ち ${winPct.toFixed(2)}% / 引き分け ${tiePct.toFixed(2)}% / 負け ${losePct.toFixed(2)}%</p>
-	        <p style="font-size: 0.9em; color: #666;">推定誤差(95%): ±${errorMargin}%</p>
-	      `;
-      
-	      // ボタンを有効化
+	            const villainCards = allVillainCombos[randomInt(allVillainCombos.length)];
+	            const v0 = villainCards[0];
+	            const v1 = villainCards[1];
+	            villainSeven[0] = v0;
+	            villainSeven[1] = v1;
+
+	            let remainingLen = 0;
+	            for (const c of FULL_DECK) {
+	              if (c === h0 || c === h1 || c === v0 || c === v1) continue;
+	              remainingDeck[remainingLen++] = c;
+	            }
+	            remainingDeck.length = remainingLen;
+
+	            drawBoardFromDeck(remainingDeck, board, swapIndices);
+	            heroSeven[2] = board[0];
+	            heroSeven[3] = board[1];
+	            heroSeven[4] = board[2];
+	            heroSeven[5] = board[3];
+	            heroSeven[6] = board[4];
+	            villainSeven[2] = board[0];
+	            villainSeven[3] = board[1];
+	            villainSeven[4] = board[2];
+	            villainSeven[5] = board[3];
+	            villainSeven[6] = board[4];
+
+	            const heroScore = evaluate(heroSeven);
+	            const villainScore = evaluate(villainSeven);
+	            if (heroScore > villainScore) totalWins++;
+	            else if (heroScore === villainScore) totalTies++;
+	            totalTrials++;
+	          }
+	          setProgressText(totalSteps, totalSteps);
+	        } else {
+	          let processedCombos = 0;
+	          const totalSteps = allVillainCombos.length;
+	          const batchSize = 4;
+	          setProgressText(0, totalSteps);
+
+	          for (let batchStart = 0; batchStart < allVillainCombos.length; batchStart += batchSize) {
+	            if (winrateCancelRequested) {
+	              canceled = true;
+	              break;
+	            }
+	            const batchEnd = Math.min(batchStart + batchSize, allVillainCombos.length);
+
+	            for (let idx = batchStart; idx < batchEnd; idx++) {
+	              const villainCards = allVillainCombos[idx];
+	              const v0 = villainCards[0];
+	              const v1 = villainCards[1];
+	              villainSeven[0] = v0;
+	              villainSeven[1] = v1;
+
+	              let remainingLen = 0;
+	              for (const c of FULL_DECK) {
+	                if (c === h0 || c === h1 || c === v0 || c === v1) continue;
+	                remainingDeck[remainingLen++] = c;
+	              }
+	              remainingDeck.length = remainingLen;
+
+	              for (let i = 0; i < sampleCount; i++) {
+	                if ((i & 255) === 0 && winrateCancelRequested) {
+	                  canceled = true;
+	                  break;
+	                }
+	                drawBoardFromDeck(remainingDeck, board, swapIndices);
+	                heroSeven[2] = board[0];
+	                heroSeven[3] = board[1];
+	                heroSeven[4] = board[2];
+	                heroSeven[5] = board[3];
+	                heroSeven[6] = board[4];
+	                villainSeven[2] = board[0];
+	                villainSeven[3] = board[1];
+	                villainSeven[4] = board[2];
+	                villainSeven[5] = board[3];
+	                villainSeven[6] = board[4];
+
+	                const heroScore = evaluate(heroSeven);
+	                const villainScore = evaluate(villainSeven);
+	                if (heroScore > villainScore) totalWins++;
+	                else if (heroScore === villainScore) totalTies++;
+	                totalTrials++;
+
+	                if ((i & 1023) === 0) {
+	                  await nextFrame();
+	                }
+	              }
+	              if (canceled) break;
+	              processedCombos++;
+	              setProgressText(processedCombos, totalSteps);
+	            }
+	            if (canceled) break;
+	            await nextFrame();
+	          }
+	        }
+
+	        if (canceled) {
+	          setHudStatus('計算をキャンセルしました', 'status-neutral');
+	          setHudProgress(0);
+	          winrateResultDiv.innerHTML = '<p class="status-neutral">計算をキャンセルしました</p>';
+	          return;
+	        }
+
+	        const totalOutcome = totalWins + totalTies * 0.5;
+	        const heroEquity = totalTrials > 0 ? (totalOutcome / totalTrials) * 100 : 0;
+	        const winPct = totalTrials > 0 ? (totalWins / totalTrials) * 100 : 0;
+	        const tiePct = totalTrials > 0 ? (totalTies / totalTrials) * 100 : 0;
+	        const losePct = Math.max(0, 100 - winPct - tiePct);
+	        const meanOutcome = totalTrials > 0 ? (totalOutcome / totalTrials) : 0;
+	        const secondMoment = totalTrials > 0 ? ((totalWins + totalTies * 0.25) / totalTrials) : 0;
+	        const variance = Math.max(0, secondMoment - meanOutcome * meanOutcome);
+	        const stderr = totalTrials > 0 ? Math.sqrt(variance / totalTrials) : 0;
+	        const errorMargin = stderr * 1.96 * 100;
+	        const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+
+	        setCalculatedEquity(heroEquity, errorMargin);
+	        setHudProgress(100);
+
+	        const sampleDesc = mode === 'fast'
+	          ? `${sampleCount.toLocaleString()} 試行`
+	          : `${sampleCount.toLocaleString()} 回/コンボ × ${allVillainCombos.length.toLocaleString()} コンボ`;
+	        winrateResultDiv.innerHTML = `
+	          <h3>計算結果</h3>
+	          <p>ヒーロー: <strong>${heroCards[0]} ${heroCards[1]} (${heroCategory})</strong></p>
+	          <p>相手レンジ: ${villainCells.length}カテゴリ / 169 (${(villainCells.length / 169 * 100).toFixed(1)}%)</p>
+	          <p>有効コンボ: ${allVillainCombos.length.toLocaleString()} / 1326 (${((allVillainCombos.length / 1326) * 100).toFixed(1)}%)</p>
+	          <p>モード: <strong>${mode === 'fast' ? '高速' : '精密'}</strong> / 試行: ${sampleDesc}</p>
+	          <p>計算時間: ${elapsed}秒</p>
+	          <hr>
+	          <p>エクイティ: <strong style="font-size:1.6em; color:${heroEquity >= 50 ? '#7de4a0' : '#ff8b8b'}">${heroEquity.toFixed(2)}%</strong> <span style="color:#bcd6c3">(±${errorMargin.toFixed(2)}%)</span></p>
+	          <p>内訳: 勝ち ${winPct.toFixed(2)}% / 引分 ${tiePct.toFixed(2)}% / 負け ${losePct.toFixed(2)}%</p>
+	        `;
 	      } finally {
 	        setUiBusy(false);
 	      }
 	    }
-    
+
+	    async function simulateFastEquity(heroCards, rangeCategories, sampleCount, onProgress = null) {
+	      const allVillainCombos = [];
+	      for (const cat of rangeCategories) {
+	        allVillainCombos.push(...getCombosForHand(cat, heroCards));
+	      }
+	      if (allVillainCombos.length === 0) return null;
+
+	      const h0 = heroCards[0];
+	      const h1 = heroCards[1];
+	      const remainingDeck = new Array(FULL_DECK.length - 4);
+	      const board = new Array(5);
+	      const swapIndices = new Int32Array(5);
+	      const heroSeven = new Array(7);
+	      heroSeven[0] = h0;
+	      heroSeven[1] = h1;
+	      const villainSeven = new Array(7);
+	      let totalWins = 0;
+	      let totalTies = 0;
+
+	      for (let i = 0; i < sampleCount; i++) {
+	        if ((i & 255) === 0) {
+	          if (onProgress) onProgress(i, sampleCount);
+	          await nextFrame();
+	        }
+	        const villainCards = allVillainCombos[randomInt(allVillainCombos.length)];
+	        const v0 = villainCards[0];
+	        const v1 = villainCards[1];
+	        villainSeven[0] = v0;
+	        villainSeven[1] = v1;
+
+	        let remainingLen = 0;
+	        for (const c of FULL_DECK) {
+	          if (c === h0 || c === h1 || c === v0 || c === v1) continue;
+	          remainingDeck[remainingLen++] = c;
+	        }
+	        remainingDeck.length = remainingLen;
+	        drawBoardFromDeck(remainingDeck, board, swapIndices);
+
+	        heroSeven[2] = board[0];
+	        heroSeven[3] = board[1];
+	        heroSeven[4] = board[2];
+	        heroSeven[5] = board[3];
+	        heroSeven[6] = board[4];
+	        villainSeven[2] = board[0];
+	        villainSeven[3] = board[1];
+	        villainSeven[4] = board[2];
+	        villainSeven[5] = board[3];
+	        villainSeven[6] = board[4];
+
+	        const heroScore = evaluate(heroSeven);
+	        const villainScore = evaluate(villainSeven);
+	        if (heroScore > villainScore) totalWins++;
+	        else if (heroScore === villainScore) totalTies++;
+	      }
+	      if (onProgress) onProgress(sampleCount, sampleCount);
+
+	      const totalTrials = sampleCount;
+	      const totalOutcome = totalWins + totalTies * 0.5;
+	      const equity = totalTrials > 0 ? (totalOutcome / totalTrials) * 100 : 0;
+	      const meanOutcome = totalTrials > 0 ? (totalOutcome / totalTrials) : 0;
+	      const secondMoment = totalTrials > 0 ? ((totalWins + totalTies * 0.25) / totalTrials) : 0;
+	      const variance = Math.max(0, secondMoment - meanOutcome * meanOutcome);
+	      const stderr = totalTrials > 0 ? Math.sqrt(variance / totalTrials) : 0;
+	      const errorPct = stderr * 1.96 * 100;
+
+	      return {
+	        equity,
+	        errorPct,
+	        combos: allVillainCombos.length,
+	        totalTrials,
+	      };
+	    }
+
+	    function loadTrainerHistory() {
+	      const raw = readJsonFromStorage(TRAINER_HISTORY_KEY, []);
+	      if (!Array.isArray(raw)) return [];
+	      return raw
+	        .map(item => ({
+	          hero: String(item?.hero || ''),
+	          guess: Number(item?.guess),
+	          actual: Number(item?.actual),
+	          error: Number(item?.error),
+	        }))
+	        .filter(item => item.hero && Number.isFinite(item.guess) && Number.isFinite(item.actual) && Number.isFinite(item.error))
+	        .slice(0, 20);
+	    }
+
+	    function saveTrainerHistory() {
+	      writeJsonToStorage(TRAINER_HISTORY_KEY, trainerHistory.slice(0, 20));
+	    }
+
+	    function renderTrainerHistory() {
+	      const list = document.getElementById('trainer-history');
+	      if (!list) return;
+	      list.innerHTML = '';
+	      trainerHistory.slice(0, 20).forEach((row, idx) => {
+	        const li = document.createElement('li');
+	        li.textContent = `${row.hero} 予想${row.guess.toFixed(1)}% / 実測${row.actual.toFixed(1)}% / 誤差${row.error.toFixed(1)}%`;
+	        list.appendChild(li);
+	      });
+	    }
+
+	    function renderTrainerStats() {
+	      const stats = document.getElementById('trainer-stats');
+	      if (!stats) return;
+	      if (trainerHistory.length === 0) {
+	        stats.textContent = '平均誤差: -- (直近20問)';
+	        return;
+	      }
+	      const avg = trainerHistory.reduce((sum, row) => sum + row.error, 0) / trainerHistory.length;
+	      stats.textContent = `平均誤差: ${avg.toFixed(2)}% (直近${trainerHistory.length}問)`;
+	    }
+
+	    function drawTrainerQuestion() {
+	      const idx1 = randomInt(FULL_DECK.length);
+	      let idx2 = randomInt(FULL_DECK.length - 1);
+	      if (idx2 >= idx1) idx2 += 1;
+	      const heroCards = [FULL_DECK[idx1], FULL_DECK[idx2]];
+	      const topPct = 15;
+	      const rangeCategories = getTopPercentCategories(topPct);
+	      currentTrainerQuestion = { heroCards, rangeCategories, label: `Top ${topPct}%` };
+
+	      const prompt = document.getElementById('trainer-prompt');
+	      if (prompt) {
+	        const hero = `${heroCards[0][0]}${suitSymbols[heroCards[0][1]]} ${heroCards[1][0]}${suitSymbols[heroCards[1][1]]}`;
+	        prompt.innerHTML = `Hero: <strong>${hero}</strong><br>Villain Range: <strong>${currentTrainerQuestion.label}</strong>`;
+	      }
+	      const feedback = document.getElementById('trainer-feedback');
+	      if (feedback) feedback.textContent = '予想を入力して「答え合わせ」を押してください。';
+	    }
+
+	    async function checkTrainerAnswer() {
+	      const guessInput = document.getElementById('trainer-guess-input');
+	      const feedback = document.getElementById('trainer-feedback');
+	      const newBtn = document.getElementById('trainer-new-btn');
+	      const checkBtn = document.getElementById('trainer-check-btn');
+	      if (!guessInput || !feedback || !newBtn || !checkBtn) return;
+
+	      if (!currentTrainerQuestion) {
+	        feedback.textContent = '先に「出題」を押してください。';
+	        return;
+	      }
+	      const guess = parseFloat(guessInput.value);
+	      if (!Number.isFinite(guess) || guess < 0 || guess > 100) {
+	        feedback.textContent = '0-100の範囲で予想値を入力してください。';
+	        return;
+	      }
+
+	      newBtn.disabled = true;
+	      checkBtn.disabled = true;
+	      feedback.textContent = '計算中...';
+	      try {
+	        const sim = await simulateFastEquity(currentTrainerQuestion.heroCards, currentTrainerQuestion.rangeCategories, 30000, (done, total) => {
+	          feedback.textContent = `計算中... ${((done / total) * 100).toFixed(1)}%`;
+	        });
+	        if (!sim) {
+	          feedback.textContent = '有効コンボがなく問題を生成できませんでした。';
+	          return;
+	        }
+	        const actual = sim.equity;
+	        const error = Math.abs(guess - actual);
+	        const heroLabel = `${currentTrainerQuestion.heroCards[0]} ${currentTrainerQuestion.heroCards[1]}`;
+	        feedback.innerHTML = `実測: <strong>${actual.toFixed(2)}%</strong> (±${sim.errorPct.toFixed(2)}%) / 誤差: <strong>${error.toFixed(2)}%</strong>`;
+	        trainerHistory.unshift({ hero: heroLabel, guess, actual, error });
+	        trainerHistory = trainerHistory.slice(0, 20);
+	        saveTrainerHistory();
+	        renderTrainerHistory();
+	        renderTrainerStats();
+	      } finally {
+	        newBtn.disabled = false;
+	        checkBtn.disabled = false;
+	      }
+	    }
+	    
 	    // ICM計算関数
 	    let lastIcmResult = null;
 
@@ -2444,30 +3901,92 @@
       return results;
     }
     
-    // イベントリスナーの設定
-	    document.addEventListener('DOMContentLoaded', () => {
-      // レンジグリッド生成
-      generateRangeGrid();
-      
-      // カードクリックイベント
-      document.querySelectorAll('#card-grid td').forEach(cell => {
-        cell.addEventListener('click', handleCardClick);
-      });
-      
-      // レンジクリックイベント
-      document.querySelectorAll('#range-grid td').forEach(cell => {
-        cell.addEventListener('click', handleRangeClick);
-      });
-      
+	    // イベントリスナーの設定
+		    document.addEventListener('DOMContentLoaded', () => {
+	      // レンジグリッド生成
+	      generateRangeGrid();
+	      setupRangePointerInteractions();
+	      refreshSavedRangeOptions();
+
+	      // 初期設定読み込み
+	      const settings = readAppSettings();
+	      applyRangeZoomClass(settings.zoom);
+	      const defaultModeSelect = document.getElementById('default-mode-select');
+	      if (defaultModeSelect) defaultModeSelect.value = settings.mode;
+	      const defaultZoomSelect = document.getElementById('default-zoom-select');
+	      if (defaultZoomSelect) defaultZoomSelect.value = settings.zoom;
+	      applyCalcMode(settings.mode);
+
+	      trainerHistory = loadTrainerHistory();
+	      renderTrainerHistory();
+	      renderTrainerStats();
+	      drawTrainerQuestion();
+	      setHudHeroCards();
+	      updateRangeCountDisplay();
+	      updateEquityPrecalcDisplay();
+	      updatePotOddsDecision();
+	      
+	      // カードクリックイベント
+	      document.querySelectorAll('#card-grid td').forEach(cell => {
+	        cell.addEventListener('click', handleCardClick);
+	      });
+	      
+	      // レンジクリックイベント
+	      document.querySelectorAll('#range-grid td').forEach(cell => {
+	        cell.addEventListener('click', (e) => {
+	          if (isRangePointerDown) return;
+	          if (performance.now() < rangeSuppressClickUntil) return;
+	          handleRangeClick(e);
+	        });
+	      });
+	      
 	      // 計算ボタン
 	      document.getElementById('calc-winrate-btn').addEventListener('click', calculateWinRate);
 	      document.getElementById('sample-count').addEventListener('change', updateEquityPrecalcDisplay);
+	      document.getElementById('calc-mode').addEventListener('change', (e) => {
+	        applyCalcMode(e.target.value, true);
+	        clearComputedEquityDisplays();
+	      });
 	      document.getElementById('cancel-winrate-btn').addEventListener('click', () => {
 	        winrateCancelRequested = true;
 	        const btn = document.getElementById('cancel-winrate-btn');
 	        if (!btn) return;
 	        btn.disabled = true;
 	        btn.textContent = 'キャンセル中...';
+	      });
+	      document.getElementById('zoom-sm-btn').addEventListener('click', () => applyRangeZoomClass('zoom-sm'));
+	      document.getElementById('zoom-md-btn').addEventListener('click', () => applyRangeZoomClass('zoom-md'));
+	      document.getElementById('zoom-lg-btn').addEventListener('click', () => applyRangeZoomClass('zoom-lg'));
+
+	      document.getElementById('save-range-btn').addEventListener('click', saveCurrentRange);
+	      document.getElementById('load-range-btn').addEventListener('click', loadSelectedRange);
+	      document.getElementById('delete-range-btn').addEventListener('click', deleteSelectedRange);
+	      document.getElementById('range-export-btn').addEventListener('click', exportRangeJson);
+	      document.getElementById('range-import-btn').addEventListener('click', importRangeJson);
+
+	      ['pot-size-input', 'call-size-input', 'rake-pct-input', 'rake-cap-input'].forEach(id => {
+	        const el = document.getElementById(id);
+	        if (el) el.addEventListener('input', updatePotOddsDecision);
+	      });
+
+	      document.getElementById('trainer-new-btn').addEventListener('click', drawTrainerQuestion);
+	      document.getElementById('trainer-check-btn').addEventListener('click', checkTrainerAnswer);
+
+	      document.getElementById('save-settings-btn').addEventListener('click', () => {
+	        saveAppSettings();
+	        const saved = readAppSettings();
+	        applyRangeZoomClass(saved.zoom);
+	        applyCalcMode(saved.mode, true);
+	      });
+	      if (defaultZoomSelect) {
+	        defaultZoomSelect.addEventListener('change', (e) => applyRangeZoomClass(e.target.value));
+	      }
+	      if (defaultModeSelect) {
+	        defaultModeSelect.addEventListener('change', (e) => applyCalcMode(e.target.value, true));
+	      }
+
+	      document.querySelectorAll('#bottom-nav .nav-btn').forEach(btn => {
+	        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 	      });
 	      
 	      // ICM関連
@@ -2530,30 +4049,17 @@
 	      });
 
       const playerInputsDiv = document.getElementById('player-inputs');
-      playerInputsDiv.addEventListener('change', (e) => {
-        if (!e.target || !e.target.id) return;
-        if (!e.target.id.startsWith('pos')) return;
+	      playerInputsDiv.addEventListener('change', (e) => {
+	        if (!e.target || !e.target.id) return;
+	        if (!e.target.id.startsWith('pos')) return;
         const playerCount = parseInt(document.getElementById('num-players').value);
         rebuildIcmPlayerSelectOptions(document.getElementById('hero-index'), playerCount);
         rebuildIcmPlayerSelectOptions(document.getElementById('allin-index'), playerCount);
         refreshIcmActionPlayerOptionTexts();
-        updateIcmPlayerHighlights();
-        renderIcmPlayerActionSummary();
-      });
-      
-      // タブ切り替え
-      document.querySelectorAll('.tab-menu li').forEach(tab => {
-        tab.addEventListener('click', function() {
-          const targetId = this.dataset.tab;
-          
-          document.querySelectorAll('.tab-menu li').forEach(t => t.classList.remove('active'));
-          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-          
-          this.classList.add('active');
-          document.getElementById(targetId).classList.add('active');
-        });
-      });
-    });
+	        updateIcmPlayerHighlights();
+	        renderIcmPlayerActionSummary();
+	      });
+	    });
   </script>
 </body>
 </html>

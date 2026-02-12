@@ -1,0 +1,130 @@
+/* タブメニュー */
+.tab-menu {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 10px;
+}
+.tab-menu li {
+  cursor: pointer;
+  padding: 8px 16px;
+  background: #ccc;
+  border: 1px solid #999;
+  border-bottom: none;
+  margin-right: 5px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+.tab-menu li.active {
+  background: #fff;
+  font-weight: bold;
+}
+/* タブコンテンツ表示制御 */
+.tab-content {
+  border: 1px solid #999;
+  padding: 15px;
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+
+/* ICMツールフォームのスタイル */
+.controls, .actions {
+  margin-bottom: 10px;
+}
+.controls label, .actions label {
+  margin-right: 5px;
+}
+#player-inputs {
+  margin: 10px 0;
+}
+.player-inputs {
+  margin-bottom: 5px;
+}
+.player-inputs input {
+  width: 80px;
+  margin-right: 5px;
+}
+.player-inputs select {
+  margin-left: 5px;
+}
+#icm-results p {
+  margin: 4px 0;
+}
+body {
+  font-family: sans-serif;
+}
+table {
+  border-collapse: collapse;
+}
+td {
+  border: 1px solid #ccc;
+  padding: 4px;
+  text-align: center;
+  cursor: pointer;
+}
+.suited {
+  background-color: #e0f7ff;
+}
+.offsuit {
+  background-color: #e9ffe0;
+}
+.pair {
+  background-color: #f0f0f0;
+}
+.red {
+  color: red;
+}
+
+/* カードセル */
+.card {
+  width: 16px;
+  height: 24px;
+  margin: 2px;
+  padding: 0;
+  text-align: center;
+  line-height: 24px;
+  border: 1px solid #666;
+  border-radius: 2px;
+  font-size: 14px;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* カード・レンジ選択時のハイライト */
+.hero-hand {
+  background-color: gold !important;
+  color: black;
+}
+
+.card.selected {
+  background: #ff0;  /* 選択カードは黄色ハイライト */
+}
+.active-range {
+  background: #d00;
+  color: #fff;
+}
+
+/* レンジ表セルのサイズ統一 */
+.pair, .suited, .offsuit {
+  width: 18px;
+  height: 18px;
+  text-align: center;
+  line-height: 18px;
+  font-size: 12px;
+  border: 1px solid #888;
+  cursor: pointer;
+  user-select: none;
+  padding: 0;
+}
+@media screen and (max-width: 480px) {
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .controls label {
+    width: 48%;
+    margin-bottom: 5px;
+  }
+}
