@@ -1520,10 +1520,10 @@
       </div>
     </div>
 
-    <div id="settings-tab" class="tab-content">
-      <div id="settings-panel">
-        <h2>設定</h2>
-        <div class="setting-row">
+	    <div id="settings-tab" class="tab-content">
+	      <div id="settings-panel">
+	        <h2>設定</h2>
+	        <div class="setting-row">
           <label for="default-zoom-select">初期レンジズーム
             <select id="default-zoom-select">
               <option value="zoom-sm">小</option>
@@ -1537,10 +1537,14 @@
               <option value="fast">高速</option>
             </select>
           </label>
-          <button id="save-settings-btn" type="button">設定を保存</button>
-        </div>
-      </div>
-    </div>
+	          <button id="save-settings-btn" type="button">設定を保存</button>
+	        </div>
+	        <div class="setting-row">
+	          <button id="run-ev-selftest-btn" type="button" class="secondary">EV電卓セルフテスト</button>
+	          <div id="ev-selftest-output" class="icm-hint">未実行</div>
+	        </div>
+	      </div>
+	    </div>
   </div>
 
   <nav id="bottom-nav" aria-label="メインナビゲーション">
@@ -2043,15 +2047,22 @@
 	      const f = foldPct / 100;
 	      const e = eqCalledPct / 100;
 	      const calledEv = e * (pot + bet) - (1 - e) * bet;
-	      const fBeDen = pot - calledEv;
-	      if (!Number.isFinite(fBeDen) || Math.abs(fBeDen) < 1e-12) {
-	        errEl.textContent = '入力エラー: F_be の計算で分母が0に近くなります';
+	      const ev = f * pot + (1 - f) * calledEv;
+	      if (!Number.isFinite(ev)) {
+	        errEl.textContent = '入力エラー: 計算結果が不正です';
 	        return;
 	      }
-	      const fBe = -calledEv / fBeDen;
-	      const ev = f * pot + (1 - f) * calledEv;
-	      if (!Number.isFinite(fBe) || !Number.isFinite(ev)) {
-	        errEl.textContent = '入力エラー: 計算結果が不正です';
+	      let fBe = 0;
+	      if (calledEv < 0) {
+	        const fBeDen = pot - calledEv;
+	        if (!Number.isFinite(fBeDen) || Math.abs(fBeDen) < 1e-12) {
+	          errEl.textContent = '入力エラー: F_be の計算で分母が0に近くなります';
+	          return;
+	        }
+	        fBe = -calledEv / fBeDen;
+	      }
+	      if (!Number.isFinite(fBe)) {
+	        errEl.textContent = '入力エラー: F_be の計算結果が不正です';
 	        return;
 	      }
 	      if (fBe < 0 || fBe > 1) {
@@ -2133,6 +2144,104 @@
 	      updateCallEvDecision();
 	      updateBetEvDecision();
 	      updateOutsHitRate();
+	    }
+
+	    function runEvCalculatorSelfTests() {
+	      const outputEl = document.getElementById('ev-selftest-output');
+	      if (!outputEl) return;
+
+	      const pctTol = 0.05;
+	      const evTol = 0.001;
+	      const rows = [];
+	      let passCount = 0;
+
+	      const addCheck = (name, actual, expected, tol, unit = '') => {
+	        const ok = Number.isFinite(actual) && Math.abs(actual - expected) <= tol;
+	        if (ok) passCount++;
+	        rows.push({
+	          name,
+	          ok,
+	          actual,
+	          expected,
+	          unit,
+	        });
+	      };
+
+	      const calcCall = (pAfter, c, r, ePct) => {
+	        const e = ePct / 100;
+	        const pFinal = pAfter + c - r;
+	        return {
+	          reqPct: (c / pFinal) * 100,
+	          ev: e * pFinal - c,
+	        };
+	      };
+
+	      const calcBet = (p, b, fPct, ePct) => {
+	        const f = fPct / 100;
+	        const e = ePct / 100;
+	        const calledEv = e * (p + 2 * b) - b;
+	        const ev = f * p + (1 - f) * calledEv;
+	        let fBe = 0;
+	        if (calledEv < 0) {
+	          const den = p - calledEv;
+	          fBe = -calledEv / den;
+	        }
+	        return {
+	          ev,
+	          fBePct: fBe * 100,
+	        };
+	      };
+
+	      const calcOuts = (outs, draws, unseen) => {
+	        if (draws === 1) return (outs / unseen) * 100;
+	        const total = combination(unseen, 2);
+	        const miss = combination(unseen - outs, 2);
+	        return (1 - miss / total) * 100;
+	      };
+
+	      const a1 = calcCall(10, 5, 0, 33.3333);
+	      addCheck('A1 req', a1.reqPct, 33.3333, pctTol, '%');
+	      addCheck('A1 EV', a1.ev, 0, evTol);
+
+	      const a2 = calcCall(10, 5, 0, 50);
+	      addCheck('A2 EV', a2.ev, 2.5, evTol);
+
+	      const a3 = calcCall(10, 3, 2, 27.2727);
+	      addCheck('A3 req', a3.reqPct, 27.2727, pctTol, '%');
+	      addCheck('A3 EV', a3.ev, 0, evTol);
+
+	      const b1 = calcBet(10, 5, 33.3333, 0);
+	      addCheck('B1 F_be', b1.fBePct, 33.3333, pctTol, '%');
+	      addCheck('B1 EV', b1.ev, 0, evTol);
+
+	      const b2 = calcBet(10, 5, 50, 0);
+	      addCheck('B2 EV', b2.ev, 2.5, evTol);
+
+	      const b3 = calcBet(10, 5, 0, 50);
+	      addCheck('B3 F_be', b3.fBePct, 0, pctTol, '%');
+	      addCheck('B3 EV', b3.ev, 5, evTol);
+
+	      const b4 = calcBet(0, 5, 0, 0);
+	      addCheck('B4 F_be', b4.fBePct, 100, pctTol, '%');
+
+	      const c1 = calcOuts(9, 1, 47);
+	      addCheck('C1 hit', c1, 19.1489, pctTol, '%');
+
+	      const c2 = calcOuts(9, 2, 47);
+	      addCheck('C2 hit', c2, 34.9676, pctTol, '%');
+
+	      const total = rows.length;
+	      const failCount = total - passCount;
+	      const lines = rows.map(r => {
+	        const mark = r.ok ? 'PASS' : 'FAIL';
+	        const actual = Number.isFinite(r.actual) ? r.actual.toFixed(4) : 'NaN';
+	        const expected = Number.isFinite(r.expected) ? r.expected.toFixed(4) : 'NaN';
+	        return `${mark} ${r.name}: actual=${actual}${r.unit} expected=${expected}${r.unit}`;
+	      });
+
+	      outputEl.innerHTML = `セルフテスト: ${passCount}/${total} PASS` + (failCount ? ` / ${failCount} FAIL` : '') + `<br>${lines.join('<br>')}`;
+	      outputEl.classList.remove('status-positive', 'status-negative', 'status-neutral');
+	      outputEl.classList.add(failCount === 0 ? 'status-positive' : 'status-negative');
 	    }
 
 	    function updatePotOddsDecision() {
@@ -4363,6 +4472,7 @@
 
 	      document.getElementById('trainer-new-btn').addEventListener('click', drawTrainerQuestion);
 	      document.getElementById('trainer-check-btn').addEventListener('click', checkTrainerAnswer);
+	      document.getElementById('run-ev-selftest-btn').addEventListener('click', runEvCalculatorSelfTests);
 
 	      document.getElementById('save-settings-btn').addEventListener('click', () => {
 	        saveAppSettings();
