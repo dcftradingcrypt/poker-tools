@@ -1119,7 +1119,7 @@
 
       <section class="surface-card ev-block">
         <h3>機能B: ベット損益分岐（1ストリート / Fold・Call 2択）</h3>
-        <p class="icm-hint ev-note">前提: 相手はFold/Callのみ（Raise/将来ストリート無視）。入力E_calledは“コールされた時点でのショーダウン勝率”。チェックEVは計算しない。</p>
+        <p class="icm-hint ev-note">前提: 相手はFold/Callのみ（Raise/将来ストリート無視）。入力E_calledは「コールされた時点でのショーダウン勝率」。これはベット単体EVで、チェックEVは計算しない。</p>
         <div class="ev-grid">
           <label for="evbet-pot">P (ベット前ポット)
             <input id="evbet-pot" type="number" min="0" step="0.1" placeholder="例: 10">
@@ -1141,7 +1141,7 @@
           <button type="button" id="evbet-set-pot" class="secondary">1.0P</button>
         </div>
         <div class="ev-out">
-          必要フォールド率F_be: <span id="evbet-fbe" class="ev-value">--</span><br>
+          必要フォールド率 F_be: <span id="evbet-fbe" class="ev-value">--</span><br>
           ベット単体EV（1ストリート）: <span id="bet-ev" class="ev-value">--</span><br>
           F - F_be: <span id="evbet-gap" class="ev-gap">--</span><br>
           判定（ベット単体）: <span id="bet-sign" class="status-neutral">未入力</span><br>
@@ -2038,12 +2038,25 @@
 	      }
 
 	      // ベット単体EV(1ストリート, 相手はFold/Callのみ):
-	      // F_be = B / (P + B)
-	      // EV_bet = F*P + (1-F) * (E_called*(P+B) - (1-E_called)*B)
+	      // EV_bet = F*P + (1-F) * (E*(P+B) - (1-E)*B)
+	      // F_be は EV_bet = 0 から導出
 	      const f = foldPct / 100;
 	      const e = eqCalledPct / 100;
-	      const fBe = bet / denom;
-	      const ev = f * pot + (1 - f) * (e * (pot + bet) - (1 - e) * bet);
+	      const calledEv = e * (pot + bet) - (1 - e) * bet;
+	      const fBeDen = pot - calledEv;
+	      if (!Number.isFinite(fBeDen) || Math.abs(fBeDen) < 1e-12) {
+	        errEl.textContent = '入力エラー: F_be の計算で分母が0に近くなります';
+	        return;
+	      }
+	      const fBe = -calledEv / fBeDen;
+	      const ev = f * pot + (1 - f) * calledEv;
+	      if (!Number.isFinite(fBe) || !Number.isFinite(ev)) {
+	        errEl.textContent = '入力エラー: 計算結果が不正です';
+	        return;
+	      }
+	      if (fBe < 0 || fBe > 1) {
+	        errEl.textContent = '注意: F_be が 0〜100% 範囲外です';
+	      }
 	      const gap = foldPct - fBe * 100;
 
 	      fbeEl.textContent = `${(fBe * 100).toFixed(2)}%`;
