@@ -246,6 +246,18 @@
       margin-top: var(--space-2);
     }
 
+    .sticky-action-bar {
+      position: sticky;
+      bottom: calc(var(--safe-bottom) + var(--space-2));
+      z-index: 18;
+      padding: var(--space-2);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 218, 126, 0.24);
+      background: rgba(7, 17, 13, 0.9);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+      backdrop-filter: blur(6px);
+    }
+
     .selection-display {
       margin-top: var(--space-2);
       padding: var(--space-2) var(--space-3);
@@ -605,6 +617,61 @@
       gap: var(--space-2);
     }
 
+    .ev-block h3 {
+      margin-bottom: var(--space-2);
+    }
+
+    .ev-note {
+      margin-top: 0;
+      margin-bottom: var(--space-2);
+    }
+
+    .ev-out {
+      margin-top: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 218, 126, 0.2);
+      background: rgba(6, 15, 12, 0.64);
+      color: var(--text-soft);
+      font-size: var(--font-2);
+      line-height: 1.55;
+    }
+
+    .ev-out .ev-value {
+      color: var(--text-main);
+      font-weight: 900;
+    }
+
+    .ev-out .ev-gap {
+      font-weight: 800;
+    }
+
+    .ev-quick-bets {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
+    .ev-quick-bets button {
+      margin: 0;
+      min-height: 40px;
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+
+    .ev-sticky-actions {
+      margin-top: var(--space-3);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-2);
+    }
+
+    .ev-sticky-actions button {
+      margin: 0;
+      min-height: 44px;
+    }
+
     .ev-result {
       margin-top: var(--space-2);
       padding: var(--space-2) var(--space-3);
@@ -910,7 +977,7 @@
       bottom: 0;
       z-index: 80;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 1px;
       padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
       background: rgba(6, 15, 12, 0.92);
@@ -922,7 +989,7 @@
       margin: 0;
       min-height: 52px;
       border-radius: 12px;
-      font-size: 11px;
+      font-size: 10px;
       line-height: 1.15;
       border: 1px solid rgba(255, 222, 137, 0.2);
       background: rgba(27, 51, 38, 0.8);
@@ -1018,8 +1085,111 @@
       <p class="section-label">モバイル最適化版: エクイティを判断に直結</p>
     </header>
 
+    <!-- EV電卓タブ -->
+    <div id="evcalc-tab" class="tab-content active">
+      <section class="surface-card tight">
+        <h2>EV電卓</h2>
+        <p class="section-label">実戦用1アクション専用: 1ストリートのチップEVを即確認</p>
+      </section>
+
+      <section class="surface-card ev-block">
+        <h3>機能A: コールEV（フォールド=0）</h3>
+        <div class="ev-grid">
+          <label for="evcall-pot-after">P_after (相手アクション後ポット)
+            <input id="evcall-pot-after" type="number" min="0" step="0.1" placeholder="例: 14.5">
+          </label>
+          <label for="evcall-cost">C (追加コール額)
+            <input id="evcall-cost" type="number" min="0" step="0.1" placeholder="例: 7.5">
+          </label>
+          <label for="evcall-uncalled">R (未コール返却)
+            <input id="evcall-uncalled" type="number" min="0" step="0.1" value="0">
+          </label>
+          <label for="evcall-equity">E (エクイティ%)
+            <input id="evcall-equity" type="number" min="0" max="100" step="0.1" placeholder="例: 42.3">
+          </label>
+        </div>
+        <div class="ev-out">
+          必要勝率 req: <span id="evcall-req" class="ev-value">--</span><br>
+          EV_call: <span id="evcall-ev" class="ev-value">--</span><br>
+          E - req: <span id="evcall-gap" class="ev-gap">--</span><br>
+          判定: <span id="evcall-sign" class="status-neutral">未入力</span><br>
+          <span id="evcall-error" class="icm-hint"></span>
+        </div>
+      </section>
+
+      <section class="surface-card ev-block">
+        <h3>機能B: ベット損益分岐（1ストリート / Fold・Call 2択）</h3>
+        <p class="icm-hint ev-note">前提: 相手はFold/Callのみ（Raiseなし・将来ストリート無視）。入力E_calledはコールされた時のショーダウン勝率。これはベット単体EVでチェック時期待値は自動計算しない。</p>
+        <div class="ev-grid">
+          <label for="evbet-pot">P (ベット前ポット)
+            <input id="evbet-pot" type="number" min="0" step="0.1" placeholder="例: 10">
+          </label>
+          <label for="evbet-size">B (ベット額)
+            <input id="evbet-size" type="number" min="0" step="0.1" placeholder="例: 6.7">
+          </label>
+          <label for="evbet-fold-rate">F (相手フォールド率%)
+            <input id="evbet-fold-rate" type="number" min="0" max="100" step="0.1" placeholder="例: 38">
+          </label>
+          <label for="evbet-equity-called">E_called (コール時エクイティ%)
+            <input id="evbet-equity-called" type="number" min="0" max="100" step="0.1" placeholder="例: 27">
+          </label>
+        </div>
+        <div class="ev-quick-bets">
+          <button type="button" id="evbet-set-third" class="secondary">1/3P</button>
+          <button type="button" id="evbet-set-half" class="secondary">1/2P</button>
+          <button type="button" id="evbet-set-two-third" class="secondary">2/3P</button>
+          <button type="button" id="evbet-set-pot" class="secondary">1.0P</button>
+        </div>
+        <div class="ev-out">
+          必要フォールド率 F_be: <span id="evbet-fbe" class="ev-value">--</span><br>
+          ベット単体EV（1ストリート）: <span id="bet-ev" class="ev-value">--</span><br>
+          F - F_be: <span id="evbet-gap" class="ev-gap">--</span><br>
+          判定（ベット単体）: <span id="bet-sign" class="status-neutral">未入力</span><br>
+          <span id="evbet-error" class="icm-hint"></span>
+        </div>
+      </section>
+
+      <section class="surface-card ev-block">
+        <h3>機能C: Outs → ヒット率</h3>
+        <div class="ev-grid">
+          <label for="evouts-count">outs
+            <input id="evouts-count" type="number" min="0" max="46" step="1" placeholder="例: 9">
+          </label>
+          <label for="evouts-draws">draws
+            <select id="evouts-draws">
+              <option value="1">1枚先</option>
+              <option value="2">2枚先</option>
+            </select>
+          </label>
+          <label for="evouts-unseen">unseen
+            <select id="evouts-unseen">
+              <option value="47">flop: 47</option>
+              <option value="46">turn: 46</option>
+            </select>
+          </label>
+        </div>
+        <div class="ev-out">
+          正確値: <span id="evouts-exact" class="ev-value">--</span><br>
+          2/4ルール近似: <span id="evouts-approx" class="ev-value">--</span><br>
+          <span id="evouts-error" class="icm-hint"></span>
+        </div>
+      </section>
+
+      <section class="sticky-action-bar">
+        <div class="ev-sticky-actions">
+          <button id="evcalc-calc-call-btn" type="button">コールEV更新</button>
+          <button id="evcalc-calc-bet-btn" type="button" class="secondary">ベット更新</button>
+          <button id="evcalc-calc-outs-btn" type="button" class="secondary">Outs更新</button>
+        </div>
+      </section>
+    </div>
+
     <!-- エクイティ計算タブ -->
-    <div id="winrate-tab" class="tab-content active">
+    <div id="winrate-tab" class="tab-content">
+      <section class="surface-card tight">
+        <h2>プリフロップエクイティ（HU）</h2>
+        <p class="section-label">レンジ vs ハンドの推定エクイティを算出</p>
+      </section>
       <section id="equity-hud" aria-live="polite">
         <div class="hud-main">
           <div>
@@ -1200,7 +1370,7 @@
         <div id="progress-wrap" aria-hidden="true">
           <div id="progress-bar"></div>
         </div>
-        <div class="button-row">
+        <div class="button-row sticky-action-bar">
           <button id="calc-winrate-btn" type="button">エクイティ計算</button>
           <button id="cancel-winrate-btn" type="button" class="cancel" style="display:none;" disabled>キャンセル</button>
         </div>
@@ -1374,7 +1544,8 @@
   </div>
 
   <nav id="bottom-nav" aria-label="メインナビゲーション">
-    <button type="button" class="nav-btn active" data-tab="winrate-tab">エクイティ</button>
+    <button type="button" class="nav-btn active" data-tab="evcalc-tab">EV電卓</button>
+    <button type="button" class="nav-btn" data-tab="winrate-tab">プリフロップ</button>
     <button type="button" class="nav-btn" data-tab="icm-tab">ICM</button>
     <button type="button" class="nav-btn" data-tab="trainer-tab">トレーナー</button>
     <button type="button" class="nav-btn" data-tab="settings-tab">設定</button>
@@ -1762,6 +1933,193 @@
 	      if (str === '') return null;
 	      const n = parseFloat(str);
 	      return Number.isFinite(n) ? n : null;
+	    }
+
+	    function formatSignedNumber(value, digits) {
+	      if (!Number.isFinite(value)) return '--';
+	      const sign = value >= 0 ? '+' : '';
+	      return `${sign}${value.toFixed(digits)}`;
+	    }
+
+	    function setDecisionSign(signEl, isPositive, positiveLabel, negativeLabel) {
+	      signEl.classList.remove('status-neutral', 'status-positive', 'status-negative');
+	      if (isPositive) {
+	        signEl.classList.add('status-positive');
+	        signEl.textContent = positiveLabel;
+	      } else {
+	        signEl.classList.add('status-negative');
+	        signEl.textContent = negativeLabel;
+	      }
+	    }
+
+	    function updateCallEvDecision() {
+	      const pAfter = readNumeric('evcall-pot-after');
+	      const call = readNumeric('evcall-cost');
+	      const returned = readNumeric('evcall-uncalled');
+	      const equityPct = readNumeric('evcall-equity');
+
+	      const reqEl = document.getElementById('evcall-req');
+	      const evEl = document.getElementById('evcall-ev');
+	      const gapEl = document.getElementById('evcall-gap');
+	      const signEl = document.getElementById('evcall-sign');
+	      const errEl = document.getElementById('evcall-error');
+	      if (!reqEl || !evEl || !gapEl || !signEl || !errEl) return;
+
+	      reqEl.textContent = '--';
+	      evEl.textContent = '--';
+	      gapEl.textContent = '--';
+	      signEl.className = 'status-neutral';
+	      signEl.textContent = '未入力';
+	      errEl.textContent = '';
+	      evEl.classList.remove('ev-positive', 'ev-negative');
+	      gapEl.classList.remove('ev-positive', 'ev-negative');
+
+	      if (pAfter === null || call === null || returned === null || equityPct === null) return;
+	      if (pAfter < 0 || call < 0 || returned < 0 || returned > pAfter || equityPct < 0 || equityPct > 100) {
+	        errEl.textContent = '入力エラー: P_after>=0, C>=0, 0<=R<=P_after, 0<=E<=100';
+	        return;
+	      }
+
+	      const pEff = pAfter - returned;
+	      if (pEff < 0) {
+	        errEl.textContent = '入力エラー: P_eff = P_after - R が負です';
+	        return;
+	      }
+	      const denom = pEff + call;
+	      if (denom <= 0) {
+	        errEl.textContent = '入力エラー: P_eff + C は正である必要があります';
+	        return;
+	      }
+
+	      const e = equityPct / 100;
+	      const req = call / denom;
+	      const ev = e * pEff - (1 - e) * call;
+	      const gap = equityPct - req * 100;
+
+	      reqEl.textContent = `${(req * 100).toFixed(2)}%`;
+	      evEl.textContent = formatSignedNumber(ev, 3);
+	      gapEl.textContent = `${formatSignedNumber(gap, 2)}pt`;
+	      evEl.classList.add(ev >= 0 ? 'ev-positive' : 'ev-negative');
+	      gapEl.classList.add(gap >= 0 ? 'ev-positive' : 'ev-negative');
+	      setDecisionSign(signEl, ev >= 0, 'コール +EV', 'コール -EV');
+	    }
+
+	    function updateBetEvDecision() {
+	      const pot = readNumeric('evbet-pot');
+	      const bet = readNumeric('evbet-size');
+	      const foldPct = readNumeric('evbet-fold-rate');
+	      const eqCalledPct = readNumeric('evbet-equity-called');
+
+	      const fbeEl = document.getElementById('evbet-fbe');
+	      const evEl = document.getElementById('bet-ev');
+	      const gapEl = document.getElementById('evbet-gap');
+	      const signEl = document.getElementById('bet-sign');
+	      const errEl = document.getElementById('evbet-error');
+	      if (!fbeEl || !evEl || !gapEl || !signEl || !errEl) return;
+
+	      fbeEl.textContent = '--';
+	      evEl.textContent = '--';
+	      gapEl.textContent = '--';
+	      signEl.className = 'status-neutral';
+	      signEl.textContent = '未入力';
+	      errEl.textContent = '';
+	      evEl.classList.remove('ev-positive', 'ev-negative');
+	      gapEl.classList.remove('ev-positive', 'ev-negative');
+
+	      if (pot === null || bet === null || foldPct === null || eqCalledPct === null) return;
+	      if (pot < 0 || bet < 0 || foldPct < 0 || foldPct > 100 || eqCalledPct < 0 || eqCalledPct > 100) {
+	        errEl.textContent = '入力エラー: P>=0, B>=0, 0<=F<=100, 0<=E_called<=100';
+	        return;
+	      }
+	      const denom = pot + bet;
+	      if (denom <= 0) {
+	        errEl.textContent = '入力エラー: P+B は正である必要があります';
+	        return;
+	      }
+
+	      // ベット単体EV(1ストリート, 相手はFold/Callのみ):
+	      // F_be = B / (P + B)
+	      // EV_bet = F*P + (1-F) * (E_called*(P+B) - (1-E_called)*B)
+	      const f = foldPct / 100;
+	      const e = eqCalledPct / 100;
+	      const fBe = bet / denom;
+	      const ev = f * pot + (1 - f) * (e * (pot + bet) - (1 - e) * bet);
+	      const gap = foldPct - fBe * 100;
+
+	      fbeEl.textContent = `${(fBe * 100).toFixed(2)}%`;
+	      evEl.textContent = formatSignedNumber(ev, 3);
+	      gapEl.textContent = `${formatSignedNumber(gap, 2)}pt`;
+	      evEl.classList.add(ev >= 0 ? 'ev-positive' : 'ev-negative');
+	      gapEl.classList.add(gap >= 0 ? 'ev-positive' : 'ev-negative');
+	      setDecisionSign(signEl, ev >= 0, 'ベット単体 +EV', 'ベット単体 -EV');
+	    }
+
+	    function setEvBetByPotRatio(ratio) {
+	      const pot = readNumeric('evbet-pot');
+	      if (!Number.isFinite(pot) || pot < 0) return;
+	      const betInput = document.getElementById('evbet-size');
+	      if (!betInput) return;
+	      betInput.value = (pot * ratio).toFixed(2);
+	      updateBetEvDecision();
+	    }
+
+	    function combination(n, r) {
+	      if (!Number.isInteger(n) || !Number.isInteger(r)) return 0;
+	      if (r < 0 || r > n) return 0;
+	      if (r === 0 || r === n) return 1;
+	      let k = Math.min(r, n - r);
+	      let result = 1;
+	      for (let i = 1; i <= k; i++) {
+	        result = (result * (n - k + i)) / i;
+	      }
+	      return result;
+	    }
+
+	    function updateOutsHitRate() {
+	      const outs = readNumeric('evouts-count');
+	      const draws = parseInt(document.getElementById('evouts-draws')?.value || '1', 10);
+	      const unseen = parseInt(document.getElementById('evouts-unseen')?.value || '47', 10);
+	      const exactEl = document.getElementById('evouts-exact');
+	      const approxEl = document.getElementById('evouts-approx');
+	      const errEl = document.getElementById('evouts-error');
+	      if (!exactEl || !approxEl || !errEl) return;
+
+	      exactEl.textContent = '--';
+	      approxEl.textContent = '--';
+	      errEl.textContent = '';
+
+	      if (outs === null) return;
+	      if (!Number.isInteger(outs) || outs < 0 || outs > 46 || outs > unseen) {
+	        errEl.textContent = '入力エラー: outsは整数で 0<=outs<=unseen';
+	        return;
+	      }
+	      if (draws !== 1 && draws !== 2) {
+	        errEl.textContent = '入力エラー: drawsは1または2';
+	        return;
+	      }
+	      if (unseen !== 47 && unseen !== 46) {
+	        errEl.textContent = '入力エラー: unseenは46または47';
+	        return;
+	      }
+
+	      const total = combination(unseen, draws);
+	      const miss = combination(unseen - outs, draws);
+	      if (total <= 0) {
+	        errEl.textContent = '入力エラー: 組み合わせ計算に失敗';
+	        return;
+	      }
+
+	      const exact = 1 - (miss / total);
+	      const exactPct = Math.max(0, Math.min(100, exact * 100));
+	      const approxPct = Math.max(0, Math.min(100, draws === 1 ? outs * 2 : outs * 4));
+	      exactEl.textContent = `${exactPct.toFixed(2)}%`;
+	      approxEl.textContent = `${approxPct.toFixed(2)}%`;
+	    }
+
+	    function refreshEvCalculator() {
+	      updateCallEvDecision();
+	      updateBetEvDecision();
+	      updateOutsHitRate();
 	    }
 
 	    function updatePotOddsDecision() {
@@ -3964,6 +4322,27 @@
 	      document.getElementById('range-export-btn').addEventListener('click', exportRangeJson);
 	      document.getElementById('range-import-btn').addEventListener('click', importRangeJson);
 
+	      ['evcall-pot-after', 'evcall-cost', 'evcall-uncalled', 'evcall-equity'].forEach(id => {
+	        const el = document.getElementById(id);
+	        if (el) el.addEventListener('input', updateCallEvDecision);
+	      });
+	      ['evbet-pot', 'evbet-size', 'evbet-fold-rate', 'evbet-equity-called'].forEach(id => {
+	        const el = document.getElementById(id);
+	        if (el) el.addEventListener('input', updateBetEvDecision);
+	      });
+	      ['evouts-count', 'evouts-draws', 'evouts-unseen'].forEach(id => {
+	        const el = document.getElementById(id);
+	        if (el) el.addEventListener('input', updateOutsHitRate);
+	        if (el) el.addEventListener('change', updateOutsHitRate);
+	      });
+	      document.getElementById('evbet-set-third').addEventListener('click', () => setEvBetByPotRatio(1 / 3));
+	      document.getElementById('evbet-set-half').addEventListener('click', () => setEvBetByPotRatio(1 / 2));
+	      document.getElementById('evbet-set-two-third').addEventListener('click', () => setEvBetByPotRatio(2 / 3));
+	      document.getElementById('evbet-set-pot').addEventListener('click', () => setEvBetByPotRatio(1));
+	      document.getElementById('evcalc-calc-call-btn').addEventListener('click', updateCallEvDecision);
+	      document.getElementById('evcalc-calc-bet-btn').addEventListener('click', updateBetEvDecision);
+	      document.getElementById('evcalc-calc-outs-btn').addEventListener('click', updateOutsHitRate);
+
 	      ['pot-size-input', 'call-size-input', 'rake-pct-input', 'rake-cap-input'].forEach(id => {
 	        const el = document.getElementById(id);
 	        if (el) el.addEventListener('input', updatePotOddsDecision);
@@ -3988,6 +4367,8 @@
 	      document.querySelectorAll('#bottom-nav .nav-btn').forEach(btn => {
 	        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 	      });
+
+	      refreshEvCalculator();
 	      
 	      // ICM関連
 	      generatePlayerInputs();
