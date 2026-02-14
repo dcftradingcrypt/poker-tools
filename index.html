@@ -1945,6 +1945,36 @@
 	      return `${sign}${value.toFixed(digits)}`;
 	    }
 
+	    function calcCallEv(pAfter, call, returned, equity) {
+	      const pShow = pAfter + call - returned;
+	      const req = call / pShow;
+	      const ev = equity * pShow - call;
+	      return { pShow, req, ev };
+	    }
+
+	    function calcBetEv(pot, bet, foldRate, equityCalled) {
+	      const calledEv = equityCalled * (pot + bet) - (1 - equityCalled) * bet;
+	      const ev = foldRate * pot + (1 - foldRate) * calledEv;
+	      if (calledEv >= 0) {
+	        return { calledEv, ev, fBe: 0, fBeIndeterminate: false };
+	      }
+	      const den = pot - calledEv;
+	      if (!Number.isFinite(den) || Math.abs(den) < 1e-12) {
+	        return { calledEv, ev, fBe: null, fBeIndeterminate: true };
+	      }
+	      const fBe = -calledEv / den;
+	      return { calledEv, ev, fBe, fBeIndeterminate: false };
+	    }
+
+	    function calcOutsHitRate(outs, draws, unseen) {
+	      if (draws === 1) {
+	        return outs / unseen;
+	      }
+	      const total = combination(unseen, 2);
+	      const miss = combination(unseen - outs, 2);
+	      return 1 - (miss / total);
+	    }
+
 	    function setDecisionSign(signEl, isPositive, positiveLabel, negativeLabel) {
 	      signEl.classList.remove('status-neutral', 'status-positive', 'status-negative');
 	      if (isPositive) {
@@ -1989,15 +2019,16 @@
 	        errEl.textContent = '入力エラー: P_eff = P_after - R が負です';
 	        return;
 	      }
-	      const denom = pEff + call;
-	      if (denom <= 0) {
-	        errEl.textContent = '入力エラー: P_eff + C は正である必要があります';
+	      const pShow = pAfter + call - returned;
+	      if (pShow <= 0) {
+	        errEl.textContent = '入力エラー: P_show = P_after + C - R は正である必要があります';
 	        return;
 	      }
 
 	      const e = equityPct / 100;
-	      const req = call / denom;
-	      const ev = e * pEff - (1 - e) * call;
+	      const callCalc = calcCallEv(pAfter, call, returned, e);
+	      const req = callCalc.req;
+	      const ev = callCalc.ev;
 	      const gap = equityPct - req * 100;
 
 	      reqEl.textContent = `${(req * 100).toFixed(2)}%`;
@@ -2031,13 +2062,8 @@
 	      gapEl.classList.remove('ev-positive', 'ev-negative');
 
 	      if (pot === null || bet === null || foldPct === null || eqCalledPct === null) return;
-	      if (pot < 0 || bet < 0 || foldPct < 0 || foldPct > 100 || eqCalledPct < 0 || eqCalledPct > 100) {
-	        errEl.textContent = '入力エラー: P>=0, B>=0, 0<=F<=100, 0<=E_called<=100';
-	        return;
-	      }
-	      const denom = pot + bet;
-	      if (denom <= 0) {
-	        errEl.textContent = '入力エラー: P+B は正である必要があります';
+	      if (pot < 0 || bet <= 0 || foldPct < 0 || foldPct > 100 || eqCalledPct < 0 || eqCalledPct > 100) {
+	        errEl.textContent = '入力エラー: P>=0, B>0, 0<=F<=100, 0<=E_called<=100';
 	        return;
 	      }
 
@@ -2046,31 +2072,26 @@
 	      // F_be は EV_bet = 0 から導出
 	      const f = foldPct / 100;
 	      const e = eqCalledPct / 100;
-	      const calledEv = e * (pot + bet) - (1 - e) * bet;
-	      const ev = f * pot + (1 - f) * calledEv;
-	      if (!Number.isFinite(ev)) {
+	      const betCalc = calcBetEv(pot, bet, f, e);
+	      const calledEv = betCalc.calledEv;
+	      const ev = betCalc.ev;
+	      if (!Number.isFinite(ev) || !Number.isFinite(calledEv)) {
 	        errEl.textContent = '入力エラー: 計算結果が不正です';
 	        return;
 	      }
-	      let fBe = 0;
-	      if (calledEv < 0) {
-	        const fBeDen = pot - calledEv;
-	        if (!Number.isFinite(fBeDen) || Math.abs(fBeDen) < 1e-12) {
-	          errEl.textContent = '入力エラー: F_be の計算で分母が0に近くなります';
+	      let fBe = betCalc.fBe;
+	      if (betCalc.fBeIndeterminate) {
+	        fbeEl.textContent = '--';
+	        errEl.textContent = '注意: Fに依存せずEV≈P の領域です';
+	      } else {
+	        if (!Number.isFinite(fBe)) {
+	          errEl.textContent = '入力エラー: F_be の計算結果が不正です';
 	          return;
 	        }
-	        fBe = -calledEv / fBeDen;
+	        fbeEl.textContent = `${(fBe * 100).toFixed(2)}%`;
 	      }
-	      if (!Number.isFinite(fBe)) {
-	        errEl.textContent = '入力エラー: F_be の計算結果が不正です';
-	        return;
-	      }
-	      if (fBe < 0 || fBe > 1) {
-	        errEl.textContent = '注意: F_be が 0〜100% 範囲外です';
-	      }
-	      const gap = foldPct - fBe * 100;
-
-	      fbeEl.textContent = `${(fBe * 100).toFixed(2)}%`;
+	      const fBeForGap = Number.isFinite(fBe) ? fBe : 0;
+	      const gap = foldPct - fBeForGap * 100;
 	      evEl.textContent = formatSignedNumber(ev, 3);
 	      gapEl.textContent = `${formatSignedNumber(gap, 2)}pt`;
 	      evEl.classList.add(ev >= 0 ? 'ev-positive' : 'ev-negative');
@@ -2126,14 +2147,11 @@
 	        return;
 	      }
 
-	      const total = combination(unseen, draws);
-	      const miss = combination(unseen - outs, draws);
-	      if (total <= 0) {
+	      const exact = calcOutsHitRate(outs, draws, unseen);
+	      if (!Number.isFinite(exact)) {
 	        errEl.textContent = '入力エラー: 組み合わせ計算に失敗';
 	        return;
 	      }
-
-	      const exact = 1 - (miss / total);
 	      const exactPct = Math.max(0, Math.min(100, exact * 100));
 	      const approxPct = Math.max(0, Math.min(100, draws === 1 ? outs * 2 : outs * 4));
 	      exactEl.textContent = `${exactPct.toFixed(2)}%`;
@@ -2150,8 +2168,8 @@
 	      const outputEl = document.getElementById('ev-selftest-output');
 	      if (!outputEl) return;
 
-	      const pctTol = 0.05;
-	      const evTol = 0.001;
+	      const pctTol = 1e-4;
+	      const evTol = 1e-6;
 	      const rows = [];
 	      let passCount = 0;
 
@@ -2167,68 +2185,36 @@
 	        });
 	      };
 
-	      const calcCall = (pAfter, c, r, ePct) => {
-	        const e = ePct / 100;
-	        const pFinal = pAfter + c - r;
-	        return {
-	          reqPct: (c / pFinal) * 100,
-	          ev: e * pFinal - c,
-	        };
-	      };
-
-	      const calcBet = (p, b, fPct, ePct) => {
-	        const f = fPct / 100;
-	        const e = ePct / 100;
-	        const calledEv = e * (p + 2 * b) - b;
-	        const ev = f * p + (1 - f) * calledEv;
-	        let fBe = 0;
-	        if (calledEv < 0) {
-	          const den = p - calledEv;
-	          fBe = -calledEv / den;
-	        }
-	        return {
-	          ev,
-	          fBePct: fBe * 100,
-	        };
-	      };
-
-	      const calcOuts = (outs, draws, unseen) => {
-	        if (draws === 1) return (outs / unseen) * 100;
-	        const total = combination(unseen, 2);
-	        const miss = combination(unseen - outs, 2);
-	        return (1 - miss / total) * 100;
-	      };
-
-	      const a1 = calcCall(10, 5, 0, 33.3333);
-	      addCheck('A1 req', a1.reqPct, 33.3333, pctTol, '%');
+	      const a1 = calcCallEv(10, 5, 0, 1 / 3);
+	      addCheck('A1 req', a1.req * 100, 100 / 3, pctTol, '%');
 	      addCheck('A1 EV', a1.ev, 0, evTol);
 
-	      const a2 = calcCall(10, 5, 0, 50);
+	      const a2 = calcCallEv(10, 5, 0, 0.5);
 	      addCheck('A2 EV', a2.ev, 2.5, evTol);
 
-	      const a3 = calcCall(10, 3, 2, 27.2727);
-	      addCheck('A3 req', a3.reqPct, 27.2727, pctTol, '%');
+	      const a3 = calcCallEv(10, 3, 2, 3 / 11);
+	      addCheck('A3 req', a3.req * 100, (3 / 11) * 100, pctTol, '%');
 	      addCheck('A3 EV', a3.ev, 0, evTol);
 
-	      const b1 = calcBet(10, 5, 33.3333, 0);
-	      addCheck('B1 F_be', b1.fBePct, 33.3333, pctTol, '%');
+	      const b1 = calcBetEv(10, 5, 1 / 3, 0);
+	      addCheck('B1 F_be', (b1.fBe ?? NaN) * 100, 100 / 3, pctTol, '%');
 	      addCheck('B1 EV', b1.ev, 0, evTol);
 
-	      const b2 = calcBet(10, 5, 50, 0);
+	      const b2 = calcBetEv(10, 5, 0.5, 0);
 	      addCheck('B2 EV', b2.ev, 2.5, evTol);
 
-	      const b3 = calcBet(10, 5, 0, 50);
-	      addCheck('B3 F_be', b3.fBePct, 0, pctTol, '%');
+	      const b3 = calcBetEv(10, 5, 0, 0.5);
+	      addCheck('B3 F_be', (b3.fBe ?? NaN) * 100, 0, pctTol, '%');
 	      addCheck('B3 EV', b3.ev, 5, evTol);
 
-	      const b4 = calcBet(0, 5, 0, 0);
-	      addCheck('B4 F_be', b4.fBePct, 100, pctTol, '%');
+	      const b4 = calcBetEv(0, 5, 0, 0);
+	      addCheck('B4 F_be', (b4.fBe ?? NaN) * 100, 100, pctTol, '%');
 
-	      const c1 = calcOuts(9, 1, 47);
-	      addCheck('C1 hit', c1, 19.1489, pctTol, '%');
+	      const c1 = calcOutsHitRate(9, 1, 47) * 100;
+	      addCheck('C1 hit', c1, (9 / 47) * 100, pctTol, '%');
 
-	      const c2 = calcOuts(9, 2, 47);
-	      addCheck('C2 hit', c2, 34.9676, pctTol, '%');
+	      const c2 = calcOutsHitRate(9, 2, 47) * 100;
+	      addCheck('C2 hit', c2, (1 - (703 / 1081)) * 100, pctTol, '%');
 
 	      const total = rows.length;
 	      const failCount = total - passCount;
