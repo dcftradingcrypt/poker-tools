@@ -219,6 +219,20 @@
 - テスト結果: 旧混線経路0件・禁止語0件・重複ID0件・`manifest.json` 構文OK。純関数式の再計算は `13/13 PASS`。
 - 再発防止: Windowsパスを JS 文字列へ直書きする場合はバックスラッシュを必ず二重化し、`rg -n \"C:\\repos\\popker|C:\\\\repos\\\\popker\" index.html` で未エスケープ混入を監査する。
 
+### 2026-02-18 02:58:40 KST
+- 対象: `git push origin main` の失敗要因確定（DNS/疎通/認証の切り分け）
+- 根拠:
+  - サンドボックス内: `GIT_TRACE=1 GIT_CURL_VERBOSE=1 git push origin main` が `Could not resolve host: github.com` で停止
+  - 昇格実行: 同コマンドで `Host github.com:443 was resolved` / `Connected to github.com` / `HTTP/2 401` の後、`fatal: could not read Username for 'https://github.com': No such device or address`
+  - 追加確認: 昇格 `python3` DNSで `github.com -> 20.27.177.113`、昇格 `curl -I https://github.com` で `HTTP/2 200`
+- diff要約: コード変更なし。運用ログとして push 失敗の事実と判定条件を追記。
+- 実行コマンド: `pwd` / `git status -sb` / `git remote -v` / `git config --show-origin -l | rg ...` / `env | rg ...` / `cat /etc/resolv.conf` / `python3` DNS / `curl -I` / `GIT_TRACE=1 GIT_CURL_VERBOSE=1 git push origin main`
+- テスト結果: DNS/疎通は昇格実行で成立、push停止点は認証（HTTPS username/password入力経路）で確定。`git status -sb` は `ahead 3` のまま。
+- 再発防止:
+  - push失敗時は必ず `GIT_TRACE=1 GIT_CURL_VERBOSE=1 git push origin main` を保存し、`Could not resolve host` か `HTTP 401 + could not read Username` かをログで分類する。
+  - HTTPS運用を継続する場合は `git config --global credential.helper manager-core`（または同等helper）を有効化して非対話でも資格情報を供給できる状態を先に確認する。
+  - 認証を単純化する場合は SSHへ統一し、`git remote set-url origin git@github.com:dcftradingcrypt/poker-tools.git` と `ssh -T git@github.com` 成功後に push する。
+
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
 - 正規リポジトリ（Windows）: `C:\repos\popker`
