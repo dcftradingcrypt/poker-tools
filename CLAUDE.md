@@ -72,3 +72,157 @@
 - ミス: セルフテストが13件固定でもPASS/FAILの実行結果を必須として明記しない運用が続いた
 - ミス: 「Bet vs Check」等の文言混在防止を最終チェックで確実化していなかった
 - 再発防止: `runEvCalculatorSelfTests` を pure 関数3つのみで実装し、`git grep` 禁止語検査と 13/13 PASS を必須ログ化する
+
+### 2026-02-15 04:07:00 KST
+- ミス: どの index.html を開いているかを目視で確認する手段が Settings になく、popker_backup / DO_NOT_USE の見分けが曖昧だった
+- ミス: 設定情報の表示面で URL/ファイル同定を運用ログに含めず、混線時の原因切り分けが遅くなりやすかった
+- ミス: 変更検証を Settings 起点の手順として固定化していなかった
+- 再発防止: Settings に window.location.href 表示を追加し、起動時に DOM 初期化で反映する。必要時に `settings-current-url` を確認する運用を追加
+
+
+### 2026-02-15 06:02:13 KST
+- ミス: Settings 画面で現在ファイルを視覚的に確認できず、`popker_backup` / `DO_NOT_USE` 利用時の判定が実運用でできていなかった
+- ミス: URLベースのワークスペース誤開封時警告を Settings に実装せず、混線時に早期検知ができない状態を放置した
+- ミス: `window.location.href` と `settings-current-url` の表示確認を設定導線に固定していなかった
+- 再発防止: `settings-current-url` + `workspace-warning` を Settings 初期化時に反映し、`popker_backup|DO_NOT_USE` 判定で赤字警告を出す運用を追加。`workspace-warning` ID の有無と表示状態を確認コマンドに固定
+
+### 2026-02-15 06:20:11 KST
+- ミス: 既存のworkspace警告条件が OneDrive を含まず、OneDrive 配下の誤開封を見逃す可能性を残した
+- ミス: 構成確認ログに OneDrive 条件の明示がなく、監査時に再確認が漏れていた
+- ミス: 同一指摘で混線対策の有効性判定を「1回の実行」に依存せず運用に固定しきれなかった
+- 再発防止: `workspace-warning` 条件を `OneDrive|popker_backup|DO_NOT_USE` へ固定化し、`git grep` 監査と `settings-current-url`/`workspace-warning` の表示確認を固定コマンド化する
+
+### 2026-02-15 06:40:00 KST
+- ミス: ワークスペース警告条件が ARCHIVE を含まず、3系統判定（OneDrive / popker_backup / DO_NOT_USE）との整合を欠いた
+- ミス: 警告文が `C:\repos\popker を開け` 固定だったため、正規環境誘導を明文化しきれていなかった
+- ミス: ARCHIVE 含有時の判定結果を固定コマンド（findstr）での運用手順に繋げていなかった
+- 再発防止: `ARCHIVE` をワークスペース警告正規表現へ追加し、警告文を `それはバックアップ/隔離コピー。正規は C:\repos\popker を開け` に固定。対象確認は既存grepコマンドに固定化
+
+### 2026-02-15 10:26:00 KST
+
+- ミス: ポットオッズの手入力パスがなく、手計算エクイティが無い状態でEV差/判定に進めなかった
+
+- ミス: lastCalculatedEquity と入力値の優先順位を明文化しないままポットオッズ更新を運用していた
+
+- ミス: pot-equity-input の入力イベントを追加しないと、入力内容が画面に即反映されない状態が残っていた
+
+- 再発防止: pot-equity-input を追加し、updatePotOddsDecision のエクイティ選択順（手入力優先→未入力時はlastCalculatedEquity）を固定。変更後は  と id 重複検査を必須化
+
+
+### 2026-02-15 10:26:00 KST
+- ミス: ポットオッズの手入力経路がなく、手計算エクイティが無い状態でEV差/判定を表示できなかった
+- ミス: lastCalculatedEquity のみ参照する前提で手入力優先を見落としていた
+- ミス: pot-equity-input の入力イベントを追加しないと入力値が即時反映されない導線が残っていた
+- 再発防止: ポットオッズで pot-equity-input を追加し、updatePotOddsDecision を「手入力(0-100)優先→未入力時は lastCalculatedEquity」で固定。
+
+### 2026-02-15 10:39:10 KST
+- ミス: 更新対象 `pot-equity-input` の優先順位が未定義だったため、lastCalculatedEquity と手入力の衝突時の挙動が運用不明だった
+- ミス: ポットオッズの `input` イベント接続で `pot-equity-input` を含めず、編集しても即時更新されない状態が残っていた
+- ミス: 限定タスクなのに Settings/警告追加差分と混在し、差分起点が広くなっていた
+- 再発防止: 今回から対象変更行は `equity-ev-panel` / `updatePotOddsDecision` / 該当 `addEventListener` のみで扱い、`git diff` と禁止語・重複id監査を同時に必須化する
+
+### 2026-02-15 21:06:45 KST
+- ミス: ポットオッズ/EV判断をEV電卓Aへ一本化する編集で、`updateBetEvDecision` の関数定義を壊す変更を混入した
+- ミス: `equity-ev-panel` 関連の混線経路を整理しながら `updatePotOddsDecision` 側参照の残存チェックを遅らせた
+- ミス: 構文エラー修正後の最終監査を省き、差分提出の直前までJS構文状態を確認しきれていなかった
+- 再発防止: `updateBetEvDecision` のシグネチャとポットオッズ旧ID(`pot-size-input`等)を `rg` で固定監査し、禁止語・重複IDチェックを必須ログとして毎回実行する
+
+### 2026-02-15 22:12:10 KST
+- ミス: プリフロップ残骸（`equity-ev-panel`）と旧ポット計算ルートが残っており、監査しやすい構造ではなかった
+- ミス: `updatePotOddsDecision` 参照除去後、残骸の最終検査を固定しなかった
+- ミス: 既存UI整理中に `equity-ev-panel` のCSS名残が 1 箇所残ったままで grep 想定とズレた
+- 再発防止: `equity-ev-panel/updatePotOddsDecision/required-equity-output` の 3系統 grep を毎回実行し、`function updateCallEvDecision` と `evcall-req` の表示仕様のみを維持する運用に固定
+
+### 2026-02-16 01:25:30 KST
+- ミス: `equity-ev-panel`・`updatePotOddsDecision` 相当の旧フローが残っていないかの最終確認を、`updateCallEvDecision` の `req` 単独表示要件と紐付けて証跡化していなかった
+- ミス: 同一検査で `ev-diff` 系（`assumed-ev-diff`）が混在し、grep パターン誤差で旧パネル残骸監査と混線する可能性があった
+- ミス: 既存 `updateCallEvDecision` の `if (pAfter === null || call === null || returned === null) return;` の意味を確認せずに、「req未入力表示」の成立条件を断定しがちだった
+- 再発防止: タスク受け入れ時は必ず `equity-ev-panel|updatePotOddsDecision|pot-size-input|call-size-input|required-equity-output|ev-status` grep、`function updateCallEvDecision` 行番号、`if (pAfter === null` 行の3点を最小証跡として記録し、差分を index/CLAUDE のみで閉じる
+
+### 2026-02-16 04:56:06 KST
+- ミス: プリフロップ（HU）タブの"ポットオッズ / EV判断"固定文が残り、運用上"何を見ればよいか"が曖昧な状態を放置した
+- ミス: 要件どおり "見出し/案内文"の置換ではなく、従来行のまま混在させる変更に依存しうる状態を残した
+- ミス: 変更対象を winrate-tab に限定しながら、"更新確認"だけで終わるため監査ログ残しが不足していた
+- 再発防止: 変更前後で"ポットオッズ / EV判断"文字列の有無を明示確認し、"winrate-tab"以外の監査対象で"updatePotOddsDecision"等旧参照0件を前提に作業を終了
+
+### 2026-02-16 06:22:06 KST
+- ミス: プリフロップ（HU）タブの旧ポットオッズ/EV判断残骸が残ると混線が再発する運用リスクを残した
+- ミス: 旧導線の監査条件（`equity-ev-panel` 系ID/関数）を固定してゼロ確認していなかった
+- ミス: タスク対象（winrate-tab）とその他機能（ワークスペース警告など）との差分境界を明示してログ化しきれていなかった
+- 再発防止: 作業前後で `equity-ev-panel|updatePotOddsDecision|pot-size-input|call-size-input|required-equity-output|current-equity-output|ev-status|ev-diff(旧呼称)` を0ヒット監査し、`updateCallEvDecision` における `req=calcCallEv(...,0)` と `if (equityPct === null)` の存在を必須確認
+
+### 2026-02-16 19:01:23 KST
+- ミス: updateCallEvDecision で P_after/C のいずれか欠落時、共通returnでreq表示まで止めていた
+- ミス: updateBetEvDecision で F が空欄でもベットEV/GAPの表示を抑え、F_beのみ見せる仕様が未対応だった
+- ミス: setEvBetByPotRatio とアウト入力不足でエラー文を出さずに return しており、ボタンが無反応に見えた
+- 再発防止: 4関数は「必須不足=ev...-error表示」「R空欄=0」「F空欄ならF_be表示のみ」を固定仕様にし、編集後は git diff・重複ID・対象関数 grep を必須監査ログに記録する
+
+### 2026-02-16 23:56:50 KST
+- ミス: EV電卓B/Outsの入力不足時に黙って return する仕様が残り、ボタン押下時にUI変化が起きず"無反応"状態が発生していた
+- ミス: 機能BのF未入力時にF_beを先に提示しないため、ベット判定まで進められない経路を残した
+- ミス: クイックベットやアウト計算の未入力時に具体的エラーメッセージ表示が不足し、原因切り分けが遅くなった
+- 再発防止: 更新対象3関数は入力不足でも error/部分値を必ず更新し、毎回"重複IDチェック"+"禁止語チェック"+対象関数grepを必須ログ化する
+
+### 2026-02-17 01:43:59 KST
+- ミス: EV電卓B/Outsの入力不足時に黙ってreturnしていた既存フローを最終手順で固定していなかった
+- ミス: 無反応状態を回避するための手動確認をタスク完了条件として固定していなかった
+- ミス: R未入力時の req 表示要件を運用監査しないままの遷移があり得た
+- 再発防止: 対象3関数は「必須不足=error/部分表示」「R空欄=0」「F空欄でもF_be表示」を毎回の仕様監査チェック項目に固定し、手動確認を実施したログを残す
+
+### 2026-02-17 02:55:12 KST
+- ミス: updateCallEvDecision で P_after/C 未入力時に黙って return し、どこに入力不足かが分からなかった
+- ミス: updateBetEvDecision が F 未入力時に F_be の表示を残しつつ導線文言が不足し、ユーザーが次手順を迷う状態だった
+- ミス: updateOutsHitRate が outs 未入力時にエラー表示のみで停止し、フォーカス誘導がなかった
+- 再発防止: 対象4関数は「必須不足はエラー表示＋誘導」「F未入力時はF_beのみ表示」「outs未入力はfocus」「P_after/C不足はfocus」を固定し、diffと重複ID監査を併記する
+
+### 2026-02-17 07:48:25 KST
+- ミス: no-op を防ぐ仕様整理中、入力不足時の return 処理を他導線でも再確認しなければ誤って残しうる運用状態だった
+- ミス: クイックベット押下時の P 未入力で focus や error 表示がないと「ボタン壊れ」体感が続く状態が残る
+- ミス: updateBetEvDecision を F 必須扱いしたままでは、F_be が出せる条件での判断が遅延する混線が起きる
+- 再発防止: 対象4関数は「必須不足は明示エラー＋誘導」「必要値は必ず表示」「未入力 F は部分表示で継続」を1セットで監査し、毎回禁止語とID整合を必須ログ化する
+
+### 2026-02-17 09:06:21 KST
+- ミス: 実装後に手動確認のログが残っておらず、P未入力のクイックベット/outs未入力の無反応が残りうる運用監査を見落とした
+- ミス: 前回差分では P_after/C/R と F 未入力時の表示導線を一度で固定し、停止条件（req/F_be更新）を再検証しきれていなかった
+- ミス: no-op排除と合わせて、`updateCallEvDecision`/`updateBetEvDecision`/`setEvBetByPotRatio`/`updateOutsHitRate` の更新条件を最終的に差分ログへ固定化していなかった
+- 再発防止: 今回より、上記4関数のエラー表示・focus・部分更新を必須ログとして `git diff` と `DUP_IDS/MISSING_IDS` と禁止語0件を毎回残し、対象機能の結果確認を完了条件に組み込む
+
+### 2026-02-17 10:27:47 KST
+- ミス: no-op 監査前に4関数の要件を静的diffだけで終えた場合、P_after/C欠落・outs欠落・F欠落の「何か起きる更新」保証を見逃す危険があった。
+- ミス: 1/3P/1/2Pなどのクイックベットで P 未入力時に evbet-error と focus 導線がないと、ボタン無反応と見誤る運用が残る余地があった。
+- ミス: エラー表示が出た際も focus 導線を検証せずに完了扱いすると、入力不足の原因切り分けが遅延する再発可能性があった。
+- 再発防止: 対象4関数のno-op条件を4点（evcall/evbet/setEvBetByPotRatio/outs）で必須監査し、`git grep`, `DUP_IDS/MISSING_IDS`, 禁止語0件を同一バッチで毎回ログ化する
+
+### 2026-02-17 18:53:19 KST
+- ミス: A/B/C 4関数の no-op 監査を終えてから再度静的差分へ戻る運用だと、req/F_be/エラー導線の成立を取り違える再発リスクがあった
+- ミス: クイックベットやouts未入力時のエラー表示のみで、focus導線を停止条件へ固定していなかった
+- ミス: P_after/C または E 未入力時に求める「部分結果」が出ているか、手順が固定されていなかった
+- 再発防止: 指定4関数を1回の監査コマンドセット（4関数grep・イベントID確認・禁止語0件・DUP_IDS/MISSING_IDS）で固定し、停止条件「req/F_be必出」「state遷移必須」を必ず記録する
+
+### 2026-02-17 18:54:45 KST
+- ミス: 再実施時に 4 関数の no-op 監査を完了前に簡易確認を流し込むと、停止条件（req/F_be表示・focus）を見逃しやすい
+- ミス: 監査時のコマンド実行で python が無く python3 で置換する追加確認が必要だった
+- ミス: index の既存差分が大きく、no-op 差分だけを視覚的に抽出しづらい状態だった
+- 再発防止: setEvBetByPotRatio/updateCallEvDecision/updateBetEvDecision/updateOutsHitRate の4関数を毎回監査し、禁止語・DUP_IDS/MISSING_IDS 0を完了条件として固定する
+
+### 2026-02-17 22:20:06 KST
+- ミス: manifest.json が single quote 形式の不正JSONで、読み込み時にパース失敗する状態を残した
+- ミス: 作業ルートが `/mnt/c/Users/fujit/OneDrive/Desktop/popker` と `/mnt/c/repos/popker` で混線し、引継ぎ起点が不明確だった
+- ミス: 引継ぎに必要な現状要約（正規パス/未解決/次アクション）を CLAUDE.md に固定化していなかった
+- 再発防止: manifest.json は `python3 -m json.tool` で毎回検証し、CLAUDE.md 末尾に引継ぎサマリを更新してから完了とする
+
+### 2026-02-17 23:50:46 KST
+- 対象: `index.html` の `workspaceWarningEl.textContent`（`index.html:4358`）
+- 根拠: `nl -ba index.html | sed -n '4348,4362p'` の実行ログで `C:\repos\popker` が JS 文字列に未エスケープで埋め込まれていた（`\r` が改行扱いになりうる）。
+- diff要約: 警告文のパス表記を `C:\repos\popker` から `C:\\repos\\popker` に最小1行変更し、表示文字列の崩れを防止。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `nl -ba index.html | sed -n '4348,4362p'` / `rg -n \"equity-ev-panel|updatePotOddsDecision|pot-size-input|call-size-input|required-equity-output|current-equity-output|ev-status\" index.html` / `rg -n \"Bet vs Check|ベットEV（HU）|checkEV|Bet vs\" index.html` / `python3 -m json.tool manifest.json >/tmp/manifest_check.out` / `python3` で A/B/C 13 ケース再計算。
+- テスト結果: 旧混線経路0件・禁止語0件・重複ID0件・`manifest.json` 構文OK。純関数式の再計算は `13/13 PASS`。
+- 再発防止: Windowsパスを JS 文字列へ直書きする場合はバックスラッシュを必ず二重化し、`rg -n \"C:\\repos\\popker|C:\\\\repos\\\\popker\" index.html` で未エスケープ混入を監査する。
+
+## 引継ぎサマリ（最新）
+- 正規リポジトリ: `/mnt/c/repos/popker`
+- 正規リポジトリ（Windows）: `C:\repos\popker`
+- 現在の未コミット変更: `index.html`, `CLAUDE.md`, `manifest.json`
+- 静的監査: `DUP_IDS []`, `MISSING_IDS []`, 禁止語（Bet vs Check / ベットEV（HU） / checkEV / Bet vs）0件
+- 既知の未解決: ブラウザ手動確認（EV電卓A/B/Cの入力不足時表示遷移）は未実施
+- 次アクション: ブラウザ確認後に差分を絞ってコミット
