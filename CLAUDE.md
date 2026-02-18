@@ -17,7 +17,7 @@
 5. C-1（outs未入力でno-opしない）: EV電卓Cで `outs` 空欄のまま `Outs更新` を押す。期待結果は `evouts-error` に `outsを入力` が出て `evouts-count` へfocus。根拠は `index.html:2178` `index.html:2179` `index.html:2180` `index.html:4451`。
 6. C-2（正常入力で部分結果更新）: EV電卓Cで `outs=9`、`draws=1`、`unseen=47` を入力して `Outs更新`。期待結果は `evouts-exact` と `evouts-approx` が `%` 表示で更新される。根拠は `index.html:2201` `index.html:2202` `index.html:2203` `index.html:2204`。
 7. T-1（reqドリル）: トレーナーで `ドリル種別=req` を選び `出題` → 回答入力 → `答え合わせ`。期待結果は `trainer-feedback` に `正答: ... / 誤差: ...` が表示され、履歴と平均誤差が更新される。根拠は `index.html:1503` `index.html:3212` `index.html:3222` `index.html:3281` `index.html:3284` `index.html:3286`。
-8. T-2（F_be/outsドリル）: トレーナーで `ドリル種別=fbe` と `outs` を順に選んで同様に出題/答え合わせ。期待結果は各モードで正答が一意に表示される。根拠は `index.html:3225` `index.html:3233` `index.html:3241` `index.html:3245` `index.html:4456`。
+8. T-2（MDFドリル）: トレーナーで `ドリル種別=mdf` を選んで `出題` → 回答入力 → `答え合わせ`。期待結果は `最小防衛頻度 MDF(%)` の正答が一意に表示される。根拠は `index.html:1497` `index.html:3177` `index.html:3180` `index.html:3185` `index.html:3201`。
 9. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1547` `index.html:2274` `index.html:4466`。
 
 ## 修正ログ
@@ -295,10 +295,30 @@
   - EV電卓BのUI変更時は `rg -n "必要フォールド率|F - F_be|ベット単体EV" index.html` をコミット前ゲートに固定する。
   - 計算トリガー変更時は `rg -n "updateBetEvDecision" index.html` で input連動が混入していないことを必ず確認する。
 
+### 2026-02-19 05:39:28 KST
+- 対象: `index.html`（トレーナーを `req/MDF` 2ドリルへ固定、outs/F_beドリル撤去、EV電卓Bラベル明確化）、`CLAUDE.md`（手動確認T-2更新）
+- 根拠:
+  - トレーナーUI: `index.html:1491`（`req / MDF`）`index.html:1497`（`value="mdf"`）で2択化。
+  - トレーナー出題ロジック: `index.html:3163`（`mode==='mdf'` のみ分岐）`index.html:3174`（req問題文を日本語状況説明へ変更）`index.html:3185`（MDF問題文）。
+  - EV電卓Bラベル: `index.html:1149`（`最小防衛頻度（MDF）`）。
+- diff要約:
+  - トレーナーのモード選択を `req` / `MDF` の2択へ変更し、`outs` と `F_be` ドリル表記・分岐を削除。
+  - reqドリル問題文を `P_after` 変数名中心の文言から、日本語の状況説明文へ置換。
+  - EV電卓Bの表示ラベルを `最小防衛頻度（MDF）` に変更（計算式は未変更）。
+  - `CLAUDE.md` の手動確認 `T-2` を `MDFドリル` に更新。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `git remote -v` / `rg -n "トレーナー|trainer-mode-select|buildTrainerQuestion|checkTrainerAnswer" index.html` / `rg -n "outs（ヒット率）|outsドリル|value=\"outs\"|value=\"fbe\"|F_be" index.html` / `rg -n "最小防衛頻度（MDF）|trainer-mode-select|value=\"mdf\"|reqドリル: 相手のベット後ポット|MDFドリル（純ブラフ）|buildTrainerQuestion" index.html`
+- テスト結果:
+  - トレーナーから `outsドリル|value="outs"|value="fbe"` を撤去できる状態。
+  - EV電卓Bラベルは `最小防衛頻度（MDF）` へ更新済み。
+  - 追加ゲート（禁止語/重複ID/manifest/13ケース再計算）はコミット前に実行して記録。
+- 再発防止:
+  - トレーナー変更時は `rg -n "value=\"outs\"|value=\"fbe\"|outsドリル" index.html` をゼロ確認してから完了扱いにする。
+  - 問題文変更時は `rg -n "P_after=.*reqドリル|reqドリル: P_after" index.html` を実行し、変数名直書き文言の再混入を防ぐ。
+
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
 - 正規リポジトリ（Windows）: `C:\repos\popker`
 - 現在の未コミット変更: `index.html`, `CLAUDE.md`
 - 静的監査: `DUP_IDS []`, `MISSING_IDS []`, 禁止語（Bet vs Check / ベットEV（HU） / checkEV / Bet vs）0件
-- 既知の未解決: ブラウザ目視確認（EV電卓B純ブラフ挙動 / トレーナー3モード / Settingsの `セルフテスト: 13/13 PASS` 表示）が未回収
+- 既知の未解決: ブラウザ目視確認（EV電卓BのMDF表示 / トレーナーreq・MDFの2モード / Settingsの `セルフテスト: 13/13 PASS` 表示）が未回収
 - 次アクション: ユーザー目視結果（PASS/FAIL）を転記し、未解決をクローズ後にコミット・push

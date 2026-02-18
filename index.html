@@ -1146,7 +1146,7 @@
           <button type="button" id="evbet-set-pot" class="secondary">1.0P</button>
         </div>
         <div class="ev-out">
-          MDF: <span id="evbet-mdf" class="ev-value">--</span><br>
+          最小防衛頻度（MDF）: <span id="evbet-mdf" class="ev-value">--</span><br>
           <span id="evbet-error" class="icm-hint"></span>
         </div>
       </section>
@@ -1488,14 +1488,13 @@
     <div id="trainer-tab" class="tab-content">
       <div id="trainer-panel">
         <h2>トレーナー</h2>
-        <p class="icm-hint">即答ドリル（req / F_be / outs）。出題条件から正答を計算して答える。</p>
+        <p class="icm-hint">即答ドリル（req / MDF）。出題条件から正答を計算して答える。</p>
         <div id="trainer-prompt">「出題」を押して開始してください。</div>
         <div class="trainer-row">
           <label for="trainer-mode-select">ドリル種別
             <select id="trainer-mode-select">
               <option value="req">req（必要勝率）</option>
-              <option value="fbe">F_be（閾値）</option>
-              <option value="outs">outs（ヒット率）</option>
+              <option value="mdf">MDF（最小防衛頻度）</option>
             </select>
           </label>
           <label for="trainer-guess-input">あなたの回答(%)
@@ -3161,7 +3160,7 @@
 	    }
 
 	    function buildTrainerQuestion(mode) {
-	      const normalizedMode = mode === 'fbe' || mode === 'outs' ? mode : 'req';
+	      const normalizedMode = mode === 'mdf' ? mode : 'req';
 	      if (normalizedMode === 'req') {
 	        const pAfter = randomInt(31) + 10;
 	        const call = randomInt(16) + 2;
@@ -3171,32 +3170,21 @@
 	        return {
 	          mode: normalizedMode,
 	          answerPct: reqPct,
-	          label: `req / P_after=${pAfter}, C=${call}, R=${returned}`,
-	          promptHtml: `reqドリル: P_after=<strong>${pAfter}</strong>, C=<strong>${call}</strong>, R=<strong>${returned}</strong><br>必要勝率 req(%) は?`,
+	          label: `req / ポット${pAfter}, コール${call}, 返却${returned}`,
+	          promptHtml: `reqドリル: 相手のベット後ポットが<strong>${pAfter}</strong>、あなたが追加で払うコール額が<strong>${call}</strong>、未コール返却が<strong>${returned}</strong>の状況です。<br>コールの必要勝率 req(%) は?`,
 	        };
 	      }
-	      if (normalizedMode === 'fbe') {
+	      if (normalizedMode === 'mdf') {
 	        const pot = randomInt(31) + 10;
 	        const bet = randomInt(16) + 2;
-	        const fBePct = (calcBetEv(pot, bet, 0).fBe ?? NaN) * 100;
+	        const mdfPct = (calcBetEv(pot, bet, 0).mdf ?? NaN) * 100;
 	        return {
 	          mode: normalizedMode,
-	          answerPct: fBePct,
-	          label: `F_be / P=${pot}, B=${bet}`,
-	          promptHtml: `F_beドリル（純ブラフ）: P=<strong>${pot}</strong>, B=<strong>${bet}</strong><br>F_be(%) は?`,
+	          answerPct: mdfPct,
+	          label: `MDF / P=${pot}, B=${bet}`,
+	          promptHtml: `MDFドリル（純ブラフ）: P=<strong>${pot}</strong>, B=<strong>${bet}</strong><br>最小防衛頻度 MDF(%) は?`,
 	        };
 	      }
-	      const draws = randomInt(2) + 1;
-	      const unseen = randomInt(2) === 0 ? 47 : 46;
-	      const maxOuts = Math.min(15, unseen);
-	      const outs = randomInt(maxOuts) + 1;
-	      const hitPct = calcOutsHitRate(outs, draws, unseen) * 100;
-	      return {
-	        mode: normalizedMode,
-	        answerPct: hitPct,
-	        label: `outs / outs=${outs}, draws=${draws}, unseen=${unseen}`,
-	        promptHtml: `outsドリル: outs=<strong>${outs}</strong>, draws=<strong>${draws}</strong>, unseen=<strong>${unseen}</strong><br>ヒット率(%) は?`,
-	      };
 	    }
 
 	    function drawTrainerQuestion() {
