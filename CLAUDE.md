@@ -8,6 +8,16 @@
 5. 修正後は必ず検証コマンドを実行し、結果を確認する。
 6. ユーザーへ python3/rg/sed/curl 等のコマンド実行を依頼しない。依頼できるのは `git push` と結果確認（目視）だけ。検証・修正・コミット・ログ採取はCODEXが実行し、ログを添えて報告する。
 
+## チェックリスト（毎回）
+### 手動確認（ブラウザ）
+1. A-1（必須不足でno-opしない）: EV電卓Aで `P_after` と `C` を空欄のまま `コールEV更新` を押す。期待結果は `evcall-error` に `P_after と C を入力` が出て、`evcall-pot-after` へfocus。根拠は `index.html:2010` `index.html:2011` `index.html:2012` `index.html:4425`。
+2. A-2（reqはE不要）: EV電卓Aで `P_after` と `C` を入力、`R` と `E` は空欄で `コールEV更新`。期待結果は `R` が 0 扱いで `evcall-req` が更新され、`evcall-ev` と `evcall-gap` は `--` のまま。根拠は `index.html:2016` `index.html:2033` `index.html:2034` `index.html:2036` `index.html:2037` `index.html:2038`。
+3. B-1（F未入力でもF_be表示）: EV電卓Bで `P` `B` `E_called` を入力し `F` は空欄で `ベット更新`。期待結果は `evbet-fbe` が更新され、`evbet-error` に `F未入力: F_beのみ表示`、`bet-ev` と `evbet-gap` は `--` のまま。根拠は `index.html:2116` `index.html:2118` `index.html:2119` `index.html:2073` `index.html:2074` `index.html:4426`。
+4. B-2（クイックベットの必須誘導）: EV電卓Bで `P` 空欄のまま `1/2P` などを押す。期待結果は `evbet-error` に `先にPを入力` が出て `evbet-pot` へfocus。根拠は `index.html:2135` `index.html:2136` `index.html:2137` `index.html:4421`。
+5. C-1（outs未入力でno-opしない）: EV電卓Cで `outs` 空欄のまま `Outs更新` を押す。期待結果は `evouts-error` に `outsを入力` が出て `evouts-count` へfocus。根拠は `index.html:2172` `index.html:2173` `index.html:2174` `index.html:4427`。
+6. C-2（正常入力で部分結果更新）: EV電卓Cで `outs=9`、`draws=1`、`unseen=47` を入力して `Outs更新`。期待結果は `evouts-exact` と `evouts-approx` が `%` 表示で更新される。根拠は `index.html:2195` `index.html:2196` `index.html:2197` `index.html:2198`。
+7. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1541` `index.html:2268` `index.html:4432`。
+
 ## 修正ログ
 
 ### 2026-02-13 19:57:19 KST
@@ -234,10 +244,21 @@
   - HTTPS運用を継続する場合は `git config --global credential.helper manager-core`（または同等helper）を有効化して非対話でも資格情報を供給できる状態を先に確認する。
   - 認証を単純化する場合は SSHへ統一し、`git remote set-url origin git@github.com:dcftradingcrypt/poker-tools.git` と `ssh -T git@github.com` 成功後に push する。
 
+### 2026-02-18 19:06:25 KST
+- 対象: `CLAUDE.md` の `チェックリスト（毎回）` に `手動確認（ブラウザ）` を追加し、EV電卓A/B/Cの no-op 監査手順を固定化
+- 根拠:
+  - 未解決起点: `CLAUDE.md` の `既知の未解決: ブラウザ手動確認（EV電卓A/B/Cの入力不足時表示遷移）は未実施`
+  - A/B/C根拠行: `index.html:1986` `index.html:2058` `index.html:2131` `index.html:2158` `index.html:2011` `index.html:2012` `index.html:2033` `index.html:2036` `index.html:2119` `index.html:2136` `index.html:2137` `index.html:2173` `index.html:2174`
+  - ボタン接続根拠: `index.html:4421` `index.html:4425` `index.html:4426` `index.html:4427`
+- diff要約: `CLAUDE.md` にブラウザ手動確認7項目（A必須不足、A reqのみ、B F_beのみ、クイックベットfocus、outs focus、Outs正常更新、Settingsセルフテスト）を最小追記。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `rg -n \"既知の未解決|ブラウザ手動確認|引継ぎサマリ\" CLAUDE.md` / `nl -ba CLAUDE.md | sed -n '1,60p'` / `nl -ba CLAUDE.md | sed -n '230,290p'` / `rg -n \"function (updateCallEvDecision|updateBetEvDecision|setEvBetByPotRatio|updateOutsHitRate)\" index.html` / `nl -ba index.html | sed -n '1978,2210p'` / `nl -ba index.html | sed -n '4402,4432p'` / `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d` / `rg -n \"Bet vs Check|ベットEV（HU）|checkEV|Bet vs\" index.html` / `rg -n \"equity-ev-panel|updatePotOddsDecision|pot-size-input|call-size-input|required-equity-output|current-equity-output|ev-status\" index.html` / `python3 -m json.tool manifest.json`
+- テスト結果: 静的監査は `DUP_IDS []` / 禁止語0件 / 旧混線0件 / `manifest.json` 構文OK。ブラウザ目視結果はユーザー確認待ち。
+- 再発防止: no-op確認は `手動確認（ブラウザ）` 7項目を毎回実施し、PASS/FAILとFAIL時のエラー文言・focus先をCLAUDE.mdへ転記してから完了扱いにする。
+
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
 - 正規リポジトリ（Windows）: `C:\repos\popker`
-- 現在の未コミット変更: `index.html`, `CLAUDE.md`, `manifest.json`
+- 現在の未コミット変更: `CLAUDE.md`
 - 静的監査: `DUP_IDS []`, `MISSING_IDS []`, 禁止語（Bet vs Check / ベットEV（HU） / checkEV / Bet vs）0件
-- 既知の未解決: ブラウザ手動確認（EV電卓A/B/Cの入力不足時表示遷移）は未実施
-- 次アクション: ブラウザ確認後に差分を絞ってコミット
+- 既知の未解決: ブラウザ手動確認チェックリスト（7項目）と Settings の `セルフテスト: 13/13 PASS` 目視結果の回収待ち
+- 次アクション: ユーザー目視結果（PASS/FAIL）を転記し、未解決をクローズする
