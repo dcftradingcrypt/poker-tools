@@ -258,7 +258,7 @@
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
 - 正規リポジトリ（Windows）: `C:\repos\popker`
-- 現在の未コミット変更: `CLAUDE.md`
+- 現在の未コミット変更: なし
 - 静的監査: `DUP_IDS []`, `MISSING_IDS []`, 禁止語（Bet vs Check / ベットEV（HU） / checkEV / Bet vs）0件
 - 既知の未解決: ブラウザ手動確認チェックリスト（7項目）と Settings の `セルフテスト: 13/13 PASS` 目視結果の回収待ち
 - 次アクション: ユーザー目視結果（PASS/FAIL）を転記し、未解決をクローズする
