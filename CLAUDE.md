@@ -10,13 +10,15 @@
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
-1. A-1（必須不足でno-opしない）: EV電卓Aで `P_after` と `C` を空欄のまま `コールEV更新` を押す。期待結果は `evcall-error` に `P_after と C を入力` が出て、`evcall-pot-after` へfocus。根拠は `index.html:2010` `index.html:2011` `index.html:2012` `index.html:4425`。
-2. A-2（reqはE不要）: EV電卓Aで `P_after` と `C` を入力、`R` と `E` は空欄で `コールEV更新`。期待結果は `R` が 0 扱いで `evcall-req` が更新され、`evcall-ev` と `evcall-gap` は `--` のまま。根拠は `index.html:2016` `index.html:2033` `index.html:2034` `index.html:2036` `index.html:2037` `index.html:2038`。
-3. B-1（F未入力でもF_be表示）: EV電卓Bで `P` `B` `E_called` を入力し `F` は空欄で `ベット更新`。期待結果は `evbet-fbe` が更新され、`evbet-error` に `F未入力: F_beのみ表示`、`bet-ev` と `evbet-gap` は `--` のまま。根拠は `index.html:2116` `index.html:2118` `index.html:2119` `index.html:2073` `index.html:2074` `index.html:4426`。
-4. B-2（クイックベットの必須誘導）: EV電卓Bで `P` 空欄のまま `1/2P` などを押す。期待結果は `evbet-error` に `先にPを入力` が出て `evbet-pot` へfocus。根拠は `index.html:2135` `index.html:2136` `index.html:2137` `index.html:4421`。
-5. C-1（outs未入力でno-opしない）: EV電卓Cで `outs` 空欄のまま `Outs更新` を押す。期待結果は `evouts-error` に `outsを入力` が出て `evouts-count` へfocus。根拠は `index.html:2172` `index.html:2173` `index.html:2174` `index.html:4427`。
-6. C-2（正常入力で部分結果更新）: EV電卓Cで `outs=9`、`draws=1`、`unseen=47` を入力して `Outs更新`。期待結果は `evouts-exact` と `evouts-approx` が `%` 表示で更新される。根拠は `index.html:2195` `index.html:2196` `index.html:2197` `index.html:2198`。
-7. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1541` `index.html:2268` `index.html:4432`。
+1. A-1（必須不足でno-opしない）: EV電卓Aで `P_after` と `C` を空欄のまま `コールEV更新` を押す。期待結果は `evcall-error` に `P_after と C を入力` が出て、`evcall-pot-after` へfocus。根拠は `index.html:2017` `index.html:2018` `index.html:2019` `index.html:4449`。
+2. A-2（reqはE不要）: EV電卓Aで `P_after` と `C` を入力、`R` と `E` は空欄で `コールEV更新`。期待結果は `R` が 0 扱いで `evcall-req` が更新され、`evcall-ev` と `evcall-gap` は `--` のまま。根拠は `index.html:2023` `index.html:2040` `index.html:2041` `index.html:2043` `index.html:2044` `index.html:2045`。
+3. B-1（MDFのみ表示）: EV電卓Bで `P` `B` を入力して `ベット更新`。期待結果は `evbet-mdf` のみ更新される。根拠は `index.html:1149` `index.html:2059` `index.html:2060` `index.html:2064` `index.html:2089` `index.html:4399`。
+4. B-2（クイックベットの必須誘導）: EV電卓Bで `P` 空欄のまま `1/2P` などを押す。期待結果は `evbet-error` に `先にPを入力` が出て `evbet-pot` へfocus。根拠は `index.html:2096` `index.html:2097` `index.html:2098` `index.html:4395`。
+5. C-1（outs未入力でno-opしない）: EV電卓Cで `outs` 空欄のまま `Outs更新` を押す。期待結果は `evouts-error` に `outsを入力` が出て `evouts-count` へfocus。根拠は `index.html:2178` `index.html:2179` `index.html:2180` `index.html:4451`。
+6. C-2（正常入力で部分結果更新）: EV電卓Cで `outs=9`、`draws=1`、`unseen=47` を入力して `Outs更新`。期待結果は `evouts-exact` と `evouts-approx` が `%` 表示で更新される。根拠は `index.html:2201` `index.html:2202` `index.html:2203` `index.html:2204`。
+7. T-1（reqドリル）: トレーナーで `ドリル種別=req` を選び `出題` → 回答入力 → `答え合わせ`。期待結果は `trainer-feedback` に `正答: ... / 誤差: ...` が表示され、履歴と平均誤差が更新される。根拠は `index.html:1503` `index.html:3212` `index.html:3222` `index.html:3281` `index.html:3284` `index.html:3286`。
+8. T-2（F_be/outsドリル）: トレーナーで `ドリル種別=fbe` と `outs` を順に選んで同様に出題/答え合わせ。期待結果は各モードで正答が一意に表示される。根拠は `index.html:3225` `index.html:3233` `index.html:3241` `index.html:3245` `index.html:4456`。
+9. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1547` `index.html:2274` `index.html:4466`。
 
 ## 修正ログ
 
@@ -255,10 +257,48 @@
 - テスト結果: 静的監査は `DUP_IDS []` / 禁止語0件 / 旧混線0件 / `manifest.json` 構文OK。ブラウザ目視結果はユーザー確認待ち。
 - 再発防止: no-op確認は `手動確認（ブラウザ）` 7項目を毎回実施し、PASS/FAILとFAIL時のエラー文言・focus先をCLAUDE.mdへ転記してから完了扱いにする。
 
+### 2026-02-18 23:39:52 KST
+- 対象: `index.html`（EV電卓Bの純ブラフ再定義 / トレーナーに req・F_be・outs ドリル追加）
+- 根拠:
+  - B再定義: `index.html:1133`（純ブラフ前提文）`index.html:1153`（MDF表示）`index.html:1957`（`calcBetEv` を純ブラフ式へ変更）`index.html:2065`（`updateBetEvDecision` で `E_called` 依存を除去）
+  - no-op抑止: `index.html:2091`（`P と B を入力`）`index.html:2093` `index.html:2094`（focus）`index.html:2123` `index.html:2124`（F未入力でも F_be/MDF 表示）
+  - トレーナー拡張: `index.html:1501`（モード切替UI）`index.html:3210`（`buildTrainerQuestion`）`index.html:3250`（モード別出題）`index.html:3260`（即答判定）
+  - イベント接続: `index.html:4436`（B入力監視から `evbet-equity-called` 除去）`index.html:4456`（モード変更ハンドラ）
+- diff要約:
+  - 機能Bから `E_called` 入力を削除し、`F_be` と `MDF` を常時表示する純ブラフモデルへ変更。
+  - 機能Bの式を `EV_bluff = F*P + (1-F)*(-B)` / `F_be=B/(P+B)` / `MDF=P/(P+B)` に固定。
+  - トレーナーをモード切替式（`req` / `F_be` / `outs`）の一意正答ドリルへ置換。
+  - Settingsセルフテストは13件のまま維持し、Bケースだけ純ブラフ仕様へ差し替え（`B1 MDF` を追加、件数は固定）。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `rg -n \"機能B|E_called|updateBetEvDecision|calcBetEv|evbet-\" index.html` / `nl -ba index.html | sed -n '1124,1188p'` / `nl -ba index.html | sed -n '1938,2275p'` / `nl -ba index.html | sed -n '1492,1538p'` / `nl -ba index.html | sed -n '3170,3275p'` / `nl -ba index.html | sed -n '4398,4438p'` / `rg -n \"Bet vs Check|checkEV|Bet vs|ベットEV（HU）\" index.html || true` / `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d` / `rg -n \"equity-ev-panel|updatePotOddsDecision|pot-size-input|call-size-input|required-equity-output|current-equity-output|ev-status\" index.html || true` / `python3 -m json.tool manifest.json >/dev/null` / `python3` で13ケース再計算
+- テスト結果:
+  - 静的監査: 禁止語0件 / 重複ID0件 / 旧混線経路0件 / `manifest.json` 妥当性OK
+  - 数式再計算: `セルフテスト(式再計算): 13/13 PASS`
+  - ブラウザ目視（B画面挙動・トレーナー操作・Settingsセルフテスト表示）はユーザー確認待ち
+- 再発防止:
+  - 機能B修正時は `E_called` 文字列の残存を `rg -n \"E_called|evbet-equity-called\" index.html` でゼロ確認してから完了扱いにする。
+  - トレーナー修正時は「モードUI (`trainer-mode-select`)」「出題関数 (`buildTrainerQuestion`)」「判定関数 (`checkTrainerAnswer`)」の3点を同一差分で監査し、正答一意性を崩す非決定要素（シミュレーション依存）を入れない。
+
+### 2026-02-19 05:05:12 KST
+- 対象: `index.html`（EV電卓BをMDF表示専用へ整理）、`CLAUDE.md`（手動確認項目を現仕様へ更新）
+- 根拠:
+  - UI根拠: `index.html:1149` が `MDF` 表示のみ。`ベット更新` ボタン接続は `index.html:4399`。
+  - 計算導線根拠: `updateBetEvDecision` は `index.html:2058` で `P/B` を読み、`index.html:2089` で `evbet-mdf` を更新。
+  - 自動更新停止根拠: `rg -n "updateBetEvDecision" index.html` が定義行と `click` ハンドラ行のみ（input連動なし）。
+- diff要約:
+  - EV電卓B出力から `必要フォールド率` / `ベット単体EV` / `F - F_be` を削除し、`MDF` のみ表示に固定。
+  - EV電卓Bの手動確認項目を `MDFのみ表示` と `クイックベットのfocus誘導` に更新。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `rg -n "必要フォールド率" index.html` / `rg -n "F - F_be|ベット単体EV" index.html` / `rg -o 'id="[^"]+"' index.html | sort | uniq -d` / `rg -n "Bet vs Check|checkEV|Bet vs|ベットEV（HU）" index.html || true` / `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK` / `python3` 固定13ケース再計算
+- テスト結果:
+  - `必要フォールド率` 0件、`F - F_be|ベット単体EV` 0件、重複ID 0件、禁止語 0件、`MANIFEST_OK`
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`
+- 再発防止:
+  - EV電卓BのUI変更時は `rg -n "必要フォールド率|F - F_be|ベット単体EV" index.html` をコミット前ゲートに固定する。
+  - 計算トリガー変更時は `rg -n "updateBetEvDecision" index.html` で input連動が混入していないことを必ず確認する。
+
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
 - 正規リポジトリ（Windows）: `C:\repos\popker`
-- 現在の未コミット変更: なし
+- 現在の未コミット変更: `index.html`, `CLAUDE.md`
 - 静的監査: `DUP_IDS []`, `MISSING_IDS []`, 禁止語（Bet vs Check / ベットEV（HU） / checkEV / Bet vs）0件
-- 既知の未解決: ブラウザ手動確認チェックリスト（7項目）と Settings の `セルフテスト: 13/13 PASS` 目視結果の回収待ち
-- 次アクション: ユーザー目視結果（PASS/FAIL）を転記し、未解決をクローズする
+- 既知の未解決: ブラウザ目視確認（EV電卓B純ブラフ挙動 / トレーナー3モード / Settingsの `セルフテスト: 13/13 PASS` 表示）が未回収
+- 次アクション: ユーザー目視結果（PASS/FAIL）を転記し、未解決をクローズ後にコミット・push
