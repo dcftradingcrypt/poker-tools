@@ -315,6 +315,19 @@
   - トレーナー変更時は `rg -n "value=\"outs\"|value=\"fbe\"|outsドリル" index.html` をゼロ確認してから完了扱いにする。
   - 問題文変更時は `rg -n "P_after=.*reqドリル|reqドリル: P_after" index.html` を実行し、変数名直書き文言の再混入を防ぐ。
 
+### 2026-02-19 05:42:13 KST
+- 対象: `index.html`（トレーナー履歴から `outs/F_be` 旧モード記録を除外）
+- 根拠:
+  - 履歴ロード関数: `index.html:3122` `loadTrainerHistory`
+  - モード限定フィルタ: `index.html:3134`（`mode === 'req' || mode === 'MDF'`）
+- diff要約:
+  - `loadTrainerHistory` にモード判定を追加し、`req/MDF` 以外の履歴行（旧 `outs` / `F_be`）を表示対象から除外。
+- 実行コマンド: `date` / `rg -n "function loadTrainerHistory|supportedMode|mode === 'req'|mode === 'MDF'" index.html` / `nl -ba index.html | sed -n '3120,3140p'`
+- テスト結果:
+  - 旧モード履歴は `loadTrainerHistory` で読み込み対象外となり、トレーナー履歴表示は `req/MDF` のみ。
+- 再発防止:
+  - トレーナーモード変更時は `loadTrainerHistory` の許可モード集合を同時更新し、旧モード履歴が残らないことをレビュー項目に固定する。
+
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
 - 正規リポジトリ（Windows）: `C:\repos\popker`
