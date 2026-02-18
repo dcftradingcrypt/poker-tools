@@ -1104,25 +1104,25 @@
       </section>
 
       <section class="surface-card ev-block">
-        <h3>機能A: コールEV（フォールド=0）</h3>
+        <h3>機能A: コール判断（必要勝率とコールEV）</h3>
         <div class="ev-grid">
-          <label for="evcall-pot-after">P_after (相手アクション後ポット)
+          <label for="evcall-pot-after">相手ベット後のポット額（P_after）
             <input id="evcall-pot-after" type="number" min="0" step="0.1" placeholder="例: 14.5">
           </label>
-          <label for="evcall-cost">C (追加コール額)
+          <label for="evcall-cost">追加で払うコール額（C）
             <input id="evcall-cost" type="number" min="0" step="0.1" placeholder="例: 7.5">
           </label>
-          <label for="evcall-uncalled">R (未コール返却)
+          <label for="evcall-uncalled">未コールで返ってくる額（R）
             <input id="evcall-uncalled" type="number" min="0" step="0.1" value="0">
           </label>
-          <label for="evcall-equity">E (エクイティ%)
+          <label for="evcall-equity">あなたの想定勝率（E, %）
             <input id="evcall-equity" type="number" min="0" max="100" step="0.1" placeholder="例: 42.3">
           </label>
         </div>
         <div class="ev-out">
-          必要勝率 req: <span id="evcall-req" class="ev-value">--</span><br>
-          EV_call: <span id="evcall-ev" class="ev-value">--</span><br>
-          E - req: <span id="evcall-gap" class="ev-gap">--</span><br>
+          コールに必要な勝率（req）: <span id="evcall-req" class="ev-value">--</span><br>
+          コールしたときの期待値: <span id="evcall-ev" class="ev-value">--</span><br>
+          あなたの勝率 - 必要勝率: <span id="evcall-gap" class="ev-gap">--</span><br>
           判定: <span id="evcall-sign" class="status-neutral">未入力</span><br>
           <span id="evcall-error" class="icm-hint"></span>
         </div>
@@ -1506,7 +1506,7 @@
           </div>
         </div>
         <div id="trainer-feedback"></div>
-        <div id="trainer-stats">平均誤差: -- (直近20問)</div>
+        <div id="trainer-stats">req平均誤差: -- (0問) / MDF平均誤差: -- (0問)</div>
         <ol id="trainer-history"></ol>
       </div>
     </div>
@@ -2007,25 +2007,25 @@
       gapEl.classList.remove('ev-positive', 'ev-negative');
 
       if (pAfter === null || call === null) {
-        errEl.textContent = 'P_after と C を入力';
+        errEl.textContent = 'ポット額とコール額を入力';
         if (pAfter === null && pAfterInput) pAfterInput.focus();
         else if (call === null && callInput) callInput.focus();
         return;
       }
       if (returned === null) returned = 0;
       if (pAfter < 0 || call < 0 || returned < 0 || returned > pAfter) {
-        errEl.textContent = '入力エラー: P_after>=0, C>=0, 0<=R<=P_after';
+        errEl.textContent = '入力エラー: ポット額>=0, コール額>=0, 0<=返却額<=ポット額';
         return;
       }
 
       const pEff = pAfter - returned;
       if (pEff < 0) {
-        errEl.textContent = '入力エラー: P_eff = P_after - R が負です';
+        errEl.textContent = '入力エラー: 実効ポット（ポット額-返却額）が負です';
         return;
       }
       const pShow = pAfter + call - returned;
       if (pShow <= 0) {
-        errEl.textContent = '入力エラー: P_show = P_after + C - R は正である必要があります';
+        errEl.textContent = '入力エラー: ショーダウン対象ポット（ポット額+コール額-返却額）は正である必要があります';
         return;
       }
 
@@ -2038,7 +2038,7 @@
         return;
       }
       if (equityPct < 0 || equityPct > 100) {
-        errEl.textContent = '入力エラー: 0<=E<=100';
+        errEl.textContent = '入力エラー: 0<=勝率<=100';
         return;
       }
 
@@ -3155,16 +3155,19 @@
 	      });
 	    }
 
-	    function renderTrainerStats() {
-	      const stats = document.getElementById('trainer-stats');
-	      if (!stats) return;
-	      if (trainerHistory.length === 0) {
-	        stats.textContent = '平均誤差: -- (直近20問)';
-	        return;
-	      }
-	      const avg = trainerHistory.reduce((sum, row) => sum + row.error, 0) / trainerHistory.length;
-	      stats.textContent = `平均誤差: ${avg.toFixed(2)}% (直近${trainerHistory.length}問)`;
-	    }
+    function renderTrainerStats() {
+      const stats = document.getElementById('trainer-stats');
+      if (!stats) return;
+      const calcModeAvg = (mode) => {
+        const rows = trainerHistory.filter((row) => row.hero.startsWith(`${mode} /`));
+        if (rows.length === 0) return '-- (0問)';
+        const avg = rows.reduce((sum, row) => sum + row.error, 0) / rows.length;
+        return `${avg.toFixed(2)}% (${rows.length}問)`;
+      };
+      const reqAvg = calcModeAvg('req');
+      const mdfAvg = calcModeAvg('MDF');
+      stats.innerHTML = `req平均誤差: ${reqAvg}<br>MDF平均誤差: ${mdfAvg}`;
+    }
 
 	    function buildTrainerQuestion(mode) {
 	      const normalizedMode = mode === 'mdf' ? mode : 'req';
@@ -3178,10 +3181,10 @@
 	          mode: normalizedMode,
 	          answerPct: reqPct,
 	          label: `req / ポット${pAfter}, コール${call}, 返却${returned}`,
-	          promptHtml: `reqドリル: 相手のベット後ポットが<strong>${pAfter}</strong>、あなたが追加で払うコール額が<strong>${call}</strong>、未コール返却が<strong>${returned}</strong>の状況です。<br>コールの必要勝率 req(%) は?`,
-	        };
-	      }
-	      if (normalizedMode === 'mdf') {
+          promptHtml: `コールドリル: 相手のベット後ポットが<strong>${pAfter}</strong>、あなたが追加で払うコール額が<strong>${call}</strong>、未コール返却が<strong>${returned}</strong>の状況です。<br>あなたがコールしてよい最低勝率(%)は?`,
+        };
+      }
+      if (normalizedMode === 'mdf') {
 	        const pot = randomInt(31) + 10;
 	        const bet = randomInt(16) + 2;
 	        const mdfPct = (calcBetEv(pot, bet, 0).mdf ?? NaN) * 100;
@@ -3189,9 +3192,9 @@
 	          mode: normalizedMode,
 	          answerPct: mdfPct,
 	          label: `MDF / P=${pot}, B=${bet}`,
-	          promptHtml: `MDFドリル（純ブラフ）: P=<strong>${pot}</strong>, B=<strong>${bet}</strong><br>最小防衛頻度 MDF(%) は?`,
-	        };
-	      }
+          promptHtml: `MDFドリル（純ブラフ）: ポットが<strong>${pot}</strong>、相手のベット額が<strong>${bet}</strong>です。<br>あなたが最低限守るべき頻度(%)は?`,
+        };
+      }
 	    }
 
 	    function drawTrainerQuestion() {

@@ -10,14 +10,14 @@
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
-1. A-1（必須不足でno-opしない）: EV電卓Aで `P_after` と `C` を空欄のまま `コールEV更新` を押す。期待結果は `evcall-error` に `P_after と C を入力` が出て、`evcall-pot-after` へfocus。根拠は `index.html:2017` `index.html:2018` `index.html:2019` `index.html:4449`。
+1. A-1（必須不足でno-opしない）: EV電卓Aで `相手ベット後ポット` と `コール額` を空欄のまま `コールEV更新` を押す。期待結果は `evcall-error` に `ポット額とコール額を入力` が出て、`evcall-pot-after` へfocus。根拠は `index.html:2009` `index.html:2010` `index.html:2011` `index.html:4386`。
 2. A-2（reqはE不要）: EV電卓Aで `P_after` と `C` を入力、`R` と `E` は空欄で `コールEV更新`。期待結果は `R` が 0 扱いで `evcall-req` が更新され、`evcall-ev` と `evcall-gap` は `--` のまま。根拠は `index.html:2023` `index.html:2040` `index.html:2041` `index.html:2043` `index.html:2044` `index.html:2045`。
 3. B-1（MDFのみ表示）: EV電卓Bで `P` `B` を入力して `ベット更新`。期待結果は `evbet-mdf` のみ更新される。根拠は `index.html:1149` `index.html:2059` `index.html:2060` `index.html:2064` `index.html:2089` `index.html:4399`。
 4. B-2（クイックベットの必須誘導）: EV電卓Bで `P` 空欄のまま `1/2P` などを押す。期待結果は `evbet-error` に `先にPを入力` が出て `evbet-pot` へfocus。根拠は `index.html:2096` `index.html:2097` `index.html:2098` `index.html:4395`。
 5. C-1（outs未入力でno-opしない）: EV電卓Cで `outs` 空欄のまま `Outs更新` を押す。期待結果は `evouts-error` に `outsを入力` が出て `evouts-count` へfocus。根拠は `index.html:2178` `index.html:2179` `index.html:2180` `index.html:4451`。
 6. C-2（正常入力で部分結果更新）: EV電卓Cで `outs=9`、`draws=1`、`unseen=47` を入力して `Outs更新`。期待結果は `evouts-exact` と `evouts-approx` が `%` 表示で更新される。根拠は `index.html:2201` `index.html:2202` `index.html:2203` `index.html:2204`。
-7. T-1（reqドリル）: トレーナーで `ドリル種別=req` を選び `出題` → 回答入力 → `答え合わせ`。期待結果は `trainer-feedback` に `正答: ... / 誤差: ...` が表示され、履歴と平均誤差が更新される。根拠は `index.html:1503` `index.html:3212` `index.html:3222` `index.html:3281` `index.html:3284` `index.html:3286`。
-8. T-2（MDFドリル）: トレーナーで `ドリル種別=mdf` を選んで `出題` → 回答入力 → `答え合わせ`。期待結果は `最小防衛頻度 MDF(%)` の正答が一意に表示される。根拠は `index.html:1497` `index.html:3177` `index.html:3180` `index.html:3185` `index.html:3201`。
+7. T-1（reqドリル）: トレーナーで `ドリル種別=req` を選び `出題` → 回答入力 → `答え合わせ`。期待結果は `trainer-feedback` に `正答: ... / 誤差: ...` が表示され、`req平均誤差` が更新される。根拠は `index.html:1496` `index.html:3184` `index.html:3201` `index.html:3222` `index.html:3169`。
+8. T-2（MDFドリル）: トレーナーで `ドリル種別=mdf` を選んで `出題` → 回答入力 → `答え合わせ`。期待結果は `最小防衛頻度` の正答が一意に表示され、`MDF平均誤差` が更新される。根拠は `index.html:1497` `index.html:3195` `index.html:3201` `index.html:3222` `index.html:3169`。
 9. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1547` `index.html:2274` `index.html:4466`。
 
 ## 修正ログ
@@ -327,6 +327,27 @@
   - 旧モード履歴は `loadTrainerHistory` で読み込み対象外となり、トレーナー履歴表示は `req/MDF` のみ。
 - 再発防止:
   - トレーナーモード変更時は `loadTrainerHistory` の許可モード集合を同時更新し、旧モード履歴が残らないことをレビュー項目に固定する。
+
+### 2026-02-19 08:54:11 KST
+- 対象: `index.html`（EV電卓A/トレーナー文言の日本語統一、トレーナー統計の req/MDF 分割表示）、`CLAUDE.md`（手動確認文言更新）
+- 根拠:
+  - EV電卓A表示: `index.html:1107`（見出し）`index.html:1109` `index.html:1112` `index.html:1115` `index.html:1118`（入力ラベル）`index.html:1123` `index.html:1124` `index.html:1125`（出力ラベル）
+  - EV電卓Aエラー表示: `index.html:2010`（必須不足文言）`index.html:2017` `index.html:2023` `index.html:2028` `index.html:2041`（入力エラー文言）
+  - トレーナー統計分割: `index.html:1509`（初期表示）`index.html:3158` `index.html:3169`（req/MDF別集計表示）
+  - トレーナー問題文: `index.html:3184`（req）`index.html:3195`（MDF）
+- diff要約:
+  - EV電卓Aをプレイヤー視点の日本語文言へ変更（変数名主体の表示を縮小）。
+  - トレーナー問題文をプレイヤー視点の状況説明に統一。
+  - トレーナー統計を `req平均誤差` / `MDF平均誤差` の2行表示に分割。
+  - 計算式・純関数・セルフテスト対象式は未変更。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `rg -n "P_after\\s*\\(|P_after=|reqドリル" index.html` / `rg -n "平均誤差" index.html` / `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d` / `rg -n "Bet vs Check|checkEV|Bet vs|ベットEV（HU）" index.html || true` / `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK` / `python3` 固定13ケース再計算
+- テスト結果:
+  - 旧表記チェック: `P_after\\s*\\(|P_after=|reqドリル` は 0件
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`
+- 再発防止:
+  - 文言変更時は「UIラベル」「エラー文言」「手動確認チェックリスト」の3点を同一コミットで同期し、文言ドリフトを防ぐ。
+  - トレーナー統計変更時は `renderTrainerStats` のモード分割条件（`req` / `MDF`）を `loadTrainerHistory` の許可モードと同時に確認する。
 
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
