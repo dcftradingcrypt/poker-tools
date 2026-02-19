@@ -3280,6 +3280,42 @@
 	      return Math.max(0, Math.min(100, accuracyScore * 0.7 + speedScore * 0.3));
 	    }
 
+	    function computeTrainerScoreDetail(error, sessionMode, elapsedSec, timeLimitSec) {
+	      const accuracyScore = Math.max(0, Math.min(100, 100 - error));
+	      if (sessionMode !== 'drill') {
+	        return {
+	          accuracyScore,
+	          speedScore: null,
+	          score: accuracyScore,
+	          safeLimit: null,
+	        };
+	      }
+	      const safeLimit = Number.isFinite(timeLimitSec) && timeLimitSec > 0 ? timeLimitSec : 8;
+	      const speedScore = Math.max(0, Math.min(100, ((safeLimit - elapsedSec) / safeLimit) * 100));
+	      const score = computeTrainerScore(error, sessionMode, elapsedSec, safeLimit);
+	      return {
+	        accuracyScore,
+	        speedScore,
+	        score,
+	        safeLimit,
+	      };
+	    }
+
+	    function buildTrainerSolutionHtml(question) {
+	      if (!question) return '解法: 問題情報がありません。';
+	      if (question.mode === 'req') {
+	        const pAfter = Number(question.pAfter);
+	        const call = Number(question.call);
+	        const returned = Number(question.returned);
+	        const pShow = Number(question.pShow);
+	        return `解法: req = C / (P_after + C - R)<br>途中値: C=${call}, P_after+C-R=${pAfter}+${call}-${returned}=${pShow}<br>計算: req=${call}/${pShow}=${question.answerPct.toFixed(2)}%`;
+	      }
+	      const pot = Number(question.pot);
+	      const bet = Number(question.bet);
+	      const den = Number(question.den);
+	      return `解法: MDF = P / (P + B)<br>途中値: P=${pot}, B=${bet}, P+B=${pot}+${bet}=${den}<br>計算: MDF=${pot}/${den}=${question.answerPct.toFixed(2)}%`;
+	    }
+
 	    function pushTrainerResult(row) {
 	      trainerHistory.unshift(row);
 	      trainerHistory = trainerHistory.slice(0, 20);
@@ -3294,8 +3330,9 @@
 	      const prompt = document.getElementById('trainer-prompt');
 	      const modeLabel = currentTrainerQuestion.mode === 'mdf' ? 'MDF' : 'req';
 	      const limitSec = Number.isFinite(currentTrainerQuestion.timeLimitSec) ? currentTrainerQuestion.timeLimitSec : 0;
+	      const solutionHtml = buildTrainerSolutionHtml(currentTrainerQuestion);
 	      if (feedback) {
-	        feedback.innerHTML = `TIMEOUT: <strong>${limitSec.toFixed(1)}秒</strong> 以内に回答できなかったため得点 <strong>0.0点</strong>`;
+	        feedback.innerHTML = `TIMEOUT: <strong>${limitSec.toFixed(1)}秒</strong> 以内に回答できなかったため得点 <strong>0.0点</strong><br>正答: <strong>${currentTrainerQuestion.answerPct.toFixed(2)}%</strong><br><span class="icm-hint">${solutionHtml}</span><br><span class="icm-hint">得点内訳: accuracy=0.0 / speed=0.0 / 合成=0.0 (TIMEOUT)</span>`;
 	      }
 	      if (prompt) {
 	        prompt.textContent = '時間切れです。もう一度「出題」を押してください。';
@@ -3324,22 +3361,31 @@
 	        const call = randomInt(16) + 2;
 	        const returnedMax = Math.min(5, pAfter);
 	        const returned = randomInt(returnedMax + 1);
-	        const reqPct = calcCallEv(pAfter, call, returned, 0).req * 100;
+	        const reqCalc = calcCallEv(pAfter, call, returned, 0);
+	        const reqPct = reqCalc.req * 100;
 	        return {
 	          mode: normalizedMode,
 	          answerPct: reqPct,
 	          label: `req / ポット${pAfter}, コール${call}, 返却${returned}`,
 	          promptHtml: `コールドリル: 相手のベット後ポットが<strong>${pAfter}</strong>、あなたが追加で払うコール額が<strong>${call}</strong>、未コール返却が<strong>${returned}</strong>の状況です。<br>あなたがコールしてよい最低勝率(%)は?`,
+	          pAfter,
+	          call,
+	          returned,
+	          pShow: reqCalc.pShow,
 	        };
 	      }
 	      const pot = randomInt(31) + 10;
 	      const bet = randomInt(16) + 2;
-	      const mdfPct = (calcBetEv(pot, bet, 0).mdf ?? NaN) * 100;
+	      const mdfCalc = calcBetEv(pot, bet, 0);
+	      const mdfPct = (mdfCalc.mdf ?? NaN) * 100;
 	      return {
 	        mode: normalizedMode,
 	        answerPct: mdfPct,
 	        label: `MDF / P=${pot}, B=${bet}`,
 	        promptHtml: `MDFドリル（純ブラフ）: ポットが<strong>${pot}</strong>、相手のベット額が<strong>${bet}</strong>です。<br>あなたが最低限守るべき頻度(%)は?`,
+	        pot,
+	        bet,
+	        den: pot + bet,
 	      };
 	    }
 
@@ -3437,13 +3483,18 @@
 	      }
 
 	      const error = Math.abs(guess - actual);
-	      const score = computeTrainerScore(
+	      const scoreDetail = computeTrainerScoreDetail(
 	        error,
 	        currentTrainerQuestion.sessionMode,
 	        elapsedSec,
 	        currentTrainerQuestion.timeLimitSec,
 	      );
-	      feedback.innerHTML = `正答: <strong>${actual.toFixed(2)}%</strong> / 誤差: <strong>${error.toFixed(2)}%</strong> / 回答時間: <strong>${elapsedSec.toFixed(2)}秒</strong> / 得点: <strong>${score.toFixed(1)}点</strong>`;
+	      const solutionHtml = buildTrainerSolutionHtml(currentTrainerQuestion);
+	      const scoreText = `正答: <strong>${actual.toFixed(2)}%</strong> / 誤差: <strong>${error.toFixed(2)}%</strong> / 回答時間: <strong>${elapsedSec.toFixed(2)}秒</strong> / 得点: <strong>${scoreDetail.score.toFixed(1)}点</strong>`;
+	      const drillBreakdownText = currentTrainerQuestion.sessionMode === 'drill'
+	        ? `<br><span class="icm-hint">得点内訳: accuracy=${scoreDetail.accuracyScore.toFixed(1)} / speed=${scoreDetail.speedScore.toFixed(1)} / 合成=${scoreDetail.score.toFixed(1)} (0.7*accuracy + 0.3*speed)</span>`
+	        : '';
+	      feedback.innerHTML = `${scoreText}${drillBreakdownText}<br><span class="icm-hint">${solutionHtml}</span>`;
 	      if (prompt) prompt.textContent = '答え合わせ完了。もう一度「出題」を押してください。';
 
 	      pushTrainerResult({
@@ -3453,7 +3504,7 @@
 	        actual,
 	        error,
 	        elapsedSec,
-	        score,
+	        score: scoreDetail.score,
 	        outcome: 'ok',
 	      });
 	      currentTrainerQuestion = null;

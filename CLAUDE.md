@@ -17,9 +17,10 @@
 5. C-1（outs未入力でno-opしない）: EV電卓Cで `outs` 空欄のまま `Outs更新` を押す。期待結果は `evouts-error` に `outsを入力` が出て `evouts-count` へfocus。根拠は `index.html:2178` `index.html:2179` `index.html:2180` `index.html:4451`。
 6. C-2（正常入力で部分結果更新）: EV電卓Cで `outs=9`、`draws=1`、`unseen=47` を入力して `Outs更新`。期待結果は `evouts-exact` と `evouts-approx` が `%` 表示で更新される。根拠は `index.html:2201` `index.html:2202` `index.html:2203` `index.html:2204`。
 7. T-1（練習/鍛錬の切替）: トレーナーで `進行モード` を `練習` と `鍛錬` で切り替える。期待結果は問題状態がリセットされ、`残り時間` 表示が初期化される。根拠は `index.html:1500` `index.html:3218` `index.html:3261` `index.html:4633` `index.html:4639`。
-8. T-2（鍛錬TIMEOUT）: `進行モード=鍛錬` で出題し、制限秒数を超えるまで待つ。期待結果は `TIMEOUT` 表示と `得点 0.0点` が出て問題終了、履歴へ保存される。根拠は `index.html:1506` `index.html:3291` `index.html:3298` `index.html:3303` `index.html:3382`。
-9. T-3（得点と統計）: req/MDF それぞれで回答する。期待結果は `trainer-feedback` に `回答時間` と `得点` が表示され、履歴と `req平均得点` / `MDF平均得点` が更新される。根拠は `index.html:3189` `index.html:3215` `index.html:3446` `index.html:3450`。
-10. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1548` `index.html:2278` `index.html:4643`。
+8. T-2（鍛錬TIMEOUT）: `進行モード=鍛錬` で出題し、制限秒数を超えるまで待つ。期待結果は `TIMEOUT` 表示と `得点 0.0点` が出て問題終了し、`正答` と `解法`（式+途中値）が表示され履歴へ保存される。根拠は `index.html:1506` `index.html:3327` `index.html:3335` `index.html:3340` `index.html:3425`。
+9. T-3（解法表示）: req/MDF それぞれで回答する。期待結果は `trainer-feedback` に `解法`（req: `req=C/(P_after+C-R)`、MDF: `MDF=P/(P+B)`）と数値代入の途中値が表示される。根拠は `index.html:3304` `index.html:3311` `index.html:3316` `index.html:3492` `index.html:3497`。
+10. T-4（得点内訳と統計）: 鍛錬で回答したとき、`得点内訳: accuracy/speed/合成` が表示される。あわせて履歴と `req平均得点` / `MDF平均得点` が更新される。根拠は `index.html:3283` `index.html:3495` `index.html:3185` `index.html:3215` `index.html:3324`。
+11. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1548` `index.html:2289` `index.html:4694`。
 
 ## 修正ログ
 
@@ -369,6 +370,26 @@
 - 再発防止:
   - 進行モード変更時は `resetTrainerSessionState` で `clearInterval` とUI初期化が呼ばれていることを必須確認する。
   - 新規トレーナー機能追加時は `load/save/render/統計` の4点（永続化・表示・集計）を同時監査し、片落ちを防ぐ。
+
+### 2026-02-19 20:58:11 KST
+- 対象: `index.html`（答え合わせ時の解法表示・鍛錬得点内訳表示・TIMEOUT時の正答/解法表示）、`CLAUDE.md`（手動確認T項目を更新）
+- 根拠:
+  - 解法生成: `index.html:3304` `buildTrainerSolutionHtml`（req/MDFの式・途中値・代入計算）
+  - 回答時表示: `index.html:3492`（解法組み立て）`index.html:3495`（鍛錬のaccuracy/speed/合成）`index.html:3497`（feedbackへ出力）
+  - TIMEOUT表示: `index.html:3335`（0点理由 + 正答 + 解法 + 内訳）
+  - 数値保持: `index.html:3364` `index.html:3370` `index.html:3388`（req/MDFの途中値を問題オブジェクトへ保持）
+- diff要約:
+  - 答え合わせで req/MDF 両方に「解法（式＋途中値＋数値代入）」を必ず表示。
+  - 鍛錬モードでは得点内訳（accuracy/speed/合成）を表示。
+  - TIMEOUTでも `正答` と `解法` を表示し、0点理由を残す。
+  - 計算式・純関数・EVセルフテスト13件の式は変更なし。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `rg -n "computeTrainerScore|checkTrainerAnswer|handleTrainerTimeout|renderTrainerStats|trainer-feedback|trainer-history" index.html` / `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d` / `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true` / `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK` / `python3` 固定13ケース再計算 / `git diff`
+- テスト結果:
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`
+- 再発防止:
+  - トレーナー結果表示変更時は `checkTrainerAnswer` と `handleTrainerTimeout` の両方で `正答+解法` が出ることを必須確認する。
+  - 速度加点導入時は `accuracy/speed/合成` の各値を同一feedbackで確認し、TIMEOUT時は0点内訳へ固定する。
 
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
