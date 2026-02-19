@@ -10,22 +10,16 @@
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
-1. A-1（必須不足でno-opしない）: EV電卓Aで `相手ベット後ポット` と `コール額` を空欄のまま `コールEV更新` を押す。期待結果は `evcall-error` に `ポット額とコール額を入力` が出て、`evcall-pot-after` へfocus。根拠は `index.html:2009` `index.html:2010` `index.html:2011` `index.html:4386`。
-2. A-2（reqはE不要）: EV電卓Aで `P_after` と `C` を入力、`R` と `E` は空欄で `コールEV更新`。期待結果は `R` が 0 扱いで `evcall-req` が更新され、`evcall-ev` と `evcall-gap` は `--` のまま。根拠は `index.html:2023` `index.html:2040` `index.html:2041` `index.html:2043` `index.html:2044` `index.html:2045`。
-3. B-1（MDFのみ表示）: EV電卓Bで `P` `B` を入力して `ベット更新`。期待結果は `evbet-mdf` のみ更新される。根拠は `index.html:1149` `index.html:2059` `index.html:2060` `index.html:2064` `index.html:2089` `index.html:4399`。
-4. B-2（クイックベットの必須誘導）: EV電卓Bで `P` 空欄のまま `1/2P` などを押す。期待結果は `evbet-error` に `先にPを入力` が出て `evbet-pot` へfocus。根拠は `index.html:2096` `index.html:2097` `index.html:2098` `index.html:4395`。
-5. C-1（outs未入力でno-opしない）: EV電卓Cで `outs` 空欄のまま `Outs更新` を押す。期待結果は `evouts-error` に `outsを入力` が出て `evouts-count` へfocus。根拠は `index.html:2178` `index.html:2179` `index.html:2180` `index.html:4451`。
-6. C-2（正常入力で部分結果更新）: EV電卓Cで `outs=9`、`draws=1`、`unseen=47` を入力して `Outs更新`。期待結果は `evouts-exact` と `evouts-approx` が `%` 表示で更新される。根拠は `index.html:2201` `index.html:2202` `index.html:2203` `index.html:2204`。
-7. T-1（練習/鍛錬の切替）: トレーナーで `進行モード` を `練習` と `鍛錬` で切り替える。期待結果は問題状態がリセットされ、`残り時間` 表示が初期化される。根拠は `index.html:1500` `index.html:3229` `index.html:3261` `index.html:4682` `index.html:4686`。
-8. T-2（鍛錬TIMEOUT）: `進行モード=鍛錬` で出題し、制限秒数を超えるまで待つ。期待結果は `TIMEOUT` 表示と `得点 0.0点` が出て問題終了し、`正答` と `解法`（式+途中値）が表示され履歴へ保存される。根拠は `index.html:1506` `index.html:3331` `index.html:3339` `index.html:3344` `index.html:3449`。
-9. T-3（得点内訳と統計）: 鍛錬で回答したとき、`得点内訳: accuracy/speed/合成` が表示される。あわせて履歴と `req平均得点` / `MDF平均得点` が更新される。根拠は `index.html:3283` `index.html:3495` `index.html:3185` `index.html:3215` `index.html:3324`。
-10. T-4（解法表示）: req/MDF それぞれで回答する。期待結果は `trainer-feedback` に `解法`（req: `req=C/(P_after+C-R)`、MDF: `MDF=P/(P+B)`）と数値代入の途中値が表示される。根拠は `index.html:3304` `index.html:3314` `index.html:3320` `index.html:3506` `index.html:3511`。
-11. T-5（比率候補固定）: req/MDF の出題比率候補が `1/3P, 1/2P, 2/3P, 1.0P` の4種で固定されている。根拠は `index.html:3365` `index.html:3366` `index.html:3367` `index.html:3368` `index.html:3369`。
-12. T-6（整数出題）: 問題文の `P(ベット前)` は6の倍数、`B` は整数で表示される。根拠は `index.html:3372` `index.html:3373` `index.html:3385` `index.html:3403`。
-13. T-7（解法の一貫）: 解法に `P(ベット前)` `B(比率)` `P_after=P+B` が途中値として表示される。根拠は `index.html:3314` `index.html:3320`。
-14. T-8（鍛錬は比率ラベル非表示）: `進行モード=鍛錬` で出題した問題文に `1/3P|1/2P|2/3P|1.0P` が出ない。根拠は `index.html:3363` `index.html:3364` `index.html:3384` `index.html:3386` `index.html:3402` `index.html:3404` `index.html:3432`。
-15. T-9（練習は比率ラベル表示）: `進行モード=練習` で出題した問題文には `1/3P|1/2P|2/3P|1.0P` のいずれかが表示される。根拠は `index.html:3363` `index.html:3364` `index.html:3384` `index.html:3385` `index.html:3402` `index.html:3403` `index.html:3432`。
-16. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1548` `index.html:2289` `index.html:4714`。
+1. B-1（MDF更新）: EV電卓で `P` `B` を入力して `ベット更新` を押す。期待結果は `evbet-mdf` が更新される。根拠は `index.html:1114` `index.html:2002` `index.html:4522`。
+2. B-2（クイックベット誘導）: EV電卓で `P` 空欄のまま `1/2P` などを押す。期待結果は `evbet-error` に `先にPを入力` が出て `evbet-pot` へfocus。根拠は `index.html:2036` `index.html:2041` `index.html:4517`。
+3. T-1（MDF固定）: トレーナー見出しに `即答ドリル（MDF）` が表示され、`req` の選択UIが存在しない。根拠は `index.html:1431` `index.html:1464` `index.html:3245`。
+4. T-2（練習/鍛錬の切替）: `進行モード` を切り替えると問題状態がリセットされる。根拠は `index.html:1434` `index.html:3155` `index.html:4528`。
+5. T-3（用語の意味主語化）: MDF問題文/解法で `ポット` `ベット額` `合計ポット` が表示される。根拠は `index.html:3204` `index.html:3265` `index.html:3266`。
+6. T-4（鍛錬TIMEOUT）: `進行モード=鍛錬` で時間切れ時に `TIMEOUT` と `得点 0.0点`、正答/解法/得点内訳が表示される。根拠は `index.html:3215` `index.html:3223` `index.html:3312`。
+7. T-5（統計）: 統計表示が `MDF平均得点` / `MDF平均誤差` のみで更新される。根拠は `index.html:1489` `index.html:3096` `index.html:3109`。
+8. I-1（空欄でも計算開始）: ICM計算時に未入力の非参加者が自動でフォールド行に追加され、空欄起因の赤エラーが出ない。根拠は `index.html:3640` `index.html:4223` `index.html:4230`。
+9. I-2（オールイン相手はdisabled表示）: `+ アクション追加` のプレイヤー選択でオールイン相手が `（オールイン相手/自動）` の disabled 表示になる。根拠は `index.html:3485` `index.html:3491` `index.html:3492` `index.html:3493`。
+10. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1498` `index.html:2045` `index.html:4533`。
 
 ## 修正ログ
 
@@ -437,10 +431,74 @@
   - 出題文の仕様変更は `buildTrainerQuestion` に閉じ、`buildTrainerSolutionHtml` の表示仕様と混線させない。
   - 進行モード依存の文言変更時は `drawTrainerQuestion` から `sessionMode` が渡っていることを必須確認し、片側モードのみ反映漏れを防ぐ。
 
+### 2026-02-20 04:00:23 KST
+- 対象: `index.html`（EV電卓C撤去、A/B更新ボタン配置変更、A文言簡潔化、プリフロップ見出し変更、ICMアクション制約強化、トレーナーMDF固定）、`CLAUDE.md`（手動確認を現仕様へ更新）
+- 根拠:
+  - EV電卓C撤去: `rg -n "機能C: Outs|Outs更新|evouts-|calcOuts|updateOuts|combination\\(" index.html` が0件
+  - A/Bボタン配置: `index.html:1134`（コールEV更新）`index.html:1160`（ベット更新）`index.html:4561` `index.html:4562`（click接続）
+  - A文言簡潔化: `index.html:1108` `index.html:1110` `index.html:1113` `index.html:1121` `index.html:1122` `index.html:1127` `index.html:1128`
+  - 入力連動停止（ボタン押下のみ）: `rg -n "addEventListener\\('input', updateCallEvDecision\\)|addEventListener\\('input', updateBetEvDecision\\)|addEventListener\\('change', updateBetEvDecision\\)" index.html` が0件
+  - プリフロップ見出し: `index.html:1168`（`対想定レンジ`）
+  - ICM制約とエラー文言: `index.html:3485` `index.html:3497` `index.html:3567` `index.html:4261` `index.html:4314` `index.html:4610`
+  - トレーナーMDF固定: `index.html:1467`（即答ドリル説明）`index.html:1489`（初期統計）`index.html:3036` `index.html:3096` `index.html:3198` `index.html:3245` `index.html:3274`
+  - セルフテスト13件維持: `index.html:2079`（`runEvCalculatorSelfTests`）でOutsケース削除後にA/Bケース追加
+- diff要約:
+  - EV電卓の機能C（Outs）をUI/ボタン/イベント/関数/セルフテストから削除。
+  - `コールEV更新` を機能A直下、`ベット更新` を機能B直下へ移動し、旧横並び更新バーを撤去。
+  - 機能Aの入力/出力文言を「ポット」「ベット額（=コール額）」中心に置換し、未マッチ返却を詳細（任意）へ隔離。
+  - ICMでオールイン相手をアクション行プレイヤー選択から除外し、該当エラー文言を「何をすべきか」が伝わる文面へ更新。
+  - トレーナーのreq導線（UI/ロジック/統計/履歴フィルタ）を撤去し、MDFのみへ固定。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `rg -n "機能C: Outs|Outs更新|evouts-|calcOuts|updateOuts|C-1|C-2" index.html CLAUDE.md` / `rg -n "コールEV更新|ベット更新" index.html` / `rg -n "P_after|未コールで返ってくる|返却" index.html` / `rg -n "プリフロップエクイティ（HU）|対想定レンジ" index.html` / `rg -n "アクション\\(オールイン前\\)|自動オールイン|非対応" index.html` / `rg -n "即答ドリル（req|ドリル種別\\s+req|req平均" index.html` / `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d` / `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK` / `python3` 固定13ケース再計算 / `git diff -- index.html CLAUDE.md`
+- テスト結果:
+  - `index.html` 側でOuts関連参照は0件、重複ID 0件、`MANIFEST_OK`
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`
+  - commit/push は未実施（停止条件どおり）
+- 再発防止:
+  - 機能削除時は UI → 関数 → イベント → セルフテスト → CLAUDE手動確認 の順で `rg` ゼロ確認を固定し、削除漏れを防ぐ。
+  - トレーナーのモード縮退（複数→単一）時は `loadTrainerHistory`・`renderTrainerStats`・`buildTrainerQuestion` の3点を同一修正で合わせ、旧モード文字列を残さない。
+
+### 2026-02-20 05:27:31 KST
+- 対象: `index.html`（EV電卓A UI撤去、MDF見出し統一、ICM空欄時の自動フォールド反映、オールイン相手のdisabled表示、MDF問題文/解法の意味主語化）、`CLAUDE.md`（手動確認をA/C/req撤去後の現仕様へ更新）
+- 根拠:
+  - EV-A UI撤去: `rg -n "機能A:" index.html` が0件、`rg -n "evcalc-calc-call-btn" index.html` が0件
+  - MDF見出し: `index.html:1107`（`MDF（最小防衛頻度）`）
+  - プリフロップ統一: `index.html:1136`（`対想定レンジ`）
+  - トレーナーMDF固定: `rg -n "trainer-mode-select|即答ドリル（req|req（必要勝率）" index.html` が0件
+  - MDF用語: `index.html:3172`（解法 `ポット/ベット額/合計ポット`）`index.html:3233` `index.html:3234`（問題文）
+  - ICM空欄OK: `index.html:3640`（`addIcmFoldOthers`）`index.html:4223`（計算前自動実行）
+  - ICM disabled表示: `index.html:3491`（`（オールイン相手/自動）`）`index.html:3492`（`disabled = true`）
+- diff要約:
+  - EVタブから機能A UI一式を削除し、MDFブロックのみを残した。
+  - MDFブロック見出しを `MDF（最小防衛頻度）` へ統一し、更新ボタンを同ブロック直下に限定。
+  - ICM計算で `addIcmFoldOthers` を内部実行し、空欄時も自動でフォールド行を追加して計算継続。
+  - `+ アクション追加` のプレイヤー選択肢にオールイン相手を disabled 表示で残し、消失に見えないようにした。
+  - トレーナーMDF問題文と解法を `ポット/ベット額/合計ポット` 表現に置換。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `rg -n "機能A:|ベット損益分岐|機能C: Outs|Outs更新|プリフロップエクイティ（HU）|即答ドリル（req|req（必要勝率）" index.html` / `rg -n "アクション\\(オールイン前\\)|残り全員フォールド|ICM計算|自動オールイン" index.html` / `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d` / `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true` / `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK` / `python3` 固定13ケース再計算 / `git diff -- index.html CLAUDE.md`
+- テスト結果:
+  - 文字列ゲート（`機能A:` / `ベット損益分岐` / `機能C: Outs` / `Outs更新` / `即答ドリル（req` / `req（必要勝率）`）は `index.html` で0件
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`
+  - 固定セルフテスト: `セルフテスト(式再計算): 13/13 PASS`
+- 再発防止:
+  - UI撤去タスクは `id`/ボタン/イベント/文言の4観点で `rg` を分離実行し、`index.html` と `CLAUDE.md` の混在ヒットを誤判定しない。
+  - ICMの選択制御変更時は「候補非表示」ではなく「disabled表示」の要件を先に固定し、`appendIcmActionPlayerOptions` と `refreshIcmActionPlayerOptionTexts` を同時更新する。
+
+### 2026-02-20 05:31:52 KST
+- 対象: `index.html`（EVセルフテスト表示名のA系ラベル除去）, `CLAUDE.md`（本エントリ追記）
+- 根拠:
+  - A系表示名の置換箇所: `index.html:2069` `index.html:2070` `index.html:2073` `index.html:2076` `index.html:2077` `index.html:2080`
+  - 置換後表示名: `CALL1 req` `CALL1 EV` `CALL2 EV` `CALL3 req` `CALL3 EV` `CALL4 req`
+- diff要約:
+  - `runEvCalculatorSelfTests` の表示名を `A*` から `CALL*` へ変更し、機能A撤去後のUI表記と整合させた（式・ケース数・判定ロジックは変更なし）。
+- 実行コマンド: `rg -n "runEvCalculatorSelfTests|A1 req|A4 req|B5 MDF|セルフテスト" index.html` / `nl -ba index.html | sed -n '2068,2120p'` / `python3` 固定13ケース再計算
+- テスト結果:
+  - 固定セルフテスト再計算: `セルフテスト(式再計算): 13/13 PASS`
+- 再発防止:
+  - UI撤去対象の名称がSettings出力に残らないよう、`runEvCalculatorSelfTests` の表示名も `rg` で同時監査する。
+
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
 - 正規リポジトリ（Windows）: `C:\repos\popker`
 - 現在の未コミット変更: `index.html`, `CLAUDE.md`
 - 静的監査: `DUP_IDS []`, `MISSING_IDS []`, 禁止語（Bet vs Check / ベットEV（HU） / checkEV / Bet vs）0件
-- 既知の未解決: ブラウザ目視確認（EV電卓BのMDF表示 / トレーナーreq・MDFの2モード / Settingsの `セルフテスト: 13/13 PASS` 表示）が未回収
-- 次アクション: ユーザー目視結果（PASS/FAIL）を転記し、未解決をクローズ後にコミット・push
+- 既知の未解決: ブラウザ目視確認（EV電卓がMDF単体表示 / ICM空欄時の自動フォールド反映 / disabled表示文言 / トレーナーMDF問題文と解法 / Settingsの `セルフテスト: 13/13 PASS`）が未回収
+- 次アクション: ユーザー目視結果（PASS/FAIL）を転記し、必要なら最小差分で修正後に再監査

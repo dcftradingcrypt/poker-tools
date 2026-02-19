@@ -1104,32 +1104,7 @@
       </section>
 
       <section class="surface-card ev-block">
-        <h3>機能A: コール判断（必要勝率とコールEV）</h3>
-        <div class="ev-grid">
-          <label for="evcall-pot-after">相手ベット後のポット額（P_after）
-            <input id="evcall-pot-after" type="number" min="0" step="0.1" placeholder="例: 14.5">
-          </label>
-          <label for="evcall-cost">追加で払うコール額（C）
-            <input id="evcall-cost" type="number" min="0" step="0.1" placeholder="例: 7.5">
-          </label>
-          <label for="evcall-uncalled">未コールで返ってくる額（R）
-            <input id="evcall-uncalled" type="number" min="0" step="0.1" value="0">
-          </label>
-          <label for="evcall-equity">あなたの想定勝率（E, %）
-            <input id="evcall-equity" type="number" min="0" max="100" step="0.1" placeholder="例: 42.3">
-          </label>
-        </div>
-        <div class="ev-out">
-          コールに必要な勝率（req）: <span id="evcall-req" class="ev-value">--</span><br>
-          コールしたときの期待値: <span id="evcall-ev" class="ev-value">--</span><br>
-          あなたの勝率 - 必要勝率: <span id="evcall-gap" class="ev-gap">--</span><br>
-          判定: <span id="evcall-sign" class="status-neutral">未入力</span><br>
-          <span id="evcall-error" class="icm-hint"></span>
-        </div>
-      </section>
-
-      <section class="surface-card ev-block">
-        <h3>機能B: ベット損益分岐（1ストリート / Fold・Call 2択）</h3>
+        <h3>MDF（最小防衛頻度）</h3>
         <p class="icm-hint ev-note">前提: 純ブラフ固定（コールされたら勝率0%）。相手はFold/Callのみ（Raise/将来ストリート無視）。</p>
         <div class="ev-grid">
           <label for="evbet-pot">P (ベット前ポット)
@@ -1149,39 +1124,8 @@
           最小防衛頻度（MDF）: <span id="evbet-mdf" class="ev-value">--</span><br>
           <span id="evbet-error" class="icm-hint"></span>
         </div>
-      </section>
-
-      <section class="surface-card ev-block">
-        <h3>機能C: Outs → ヒット率</h3>
-        <div class="ev-grid">
-          <label for="evouts-count">outs
-            <input id="evouts-count" type="number" min="0" max="46" step="1" placeholder="例: 9">
-          </label>
-          <label for="evouts-draws">draws
-            <select id="evouts-draws">
-              <option value="1">1枚先</option>
-              <option value="2">2枚先</option>
-            </select>
-          </label>
-          <label for="evouts-unseen">unseen
-            <select id="evouts-unseen">
-              <option value="47">flop: 47</option>
-              <option value="46">turn: 46</option>
-            </select>
-          </label>
-        </div>
-        <div class="ev-out">
-          正確値: <span id="evouts-exact" class="ev-value">--</span><br>
-          2/4ルール近似: <span id="evouts-approx" class="ev-value">--</span><br>
-          <span id="evouts-error" class="icm-hint"></span>
-        </div>
-      </section>
-
-      <section class="sticky-action-bar">
-        <div class="ev-sticky-actions">
-          <button id="evcalc-calc-call-btn" type="button">コールEV更新</button>
+        <div class="button-row">
           <button id="evcalc-calc-bet-btn" type="button" class="secondary">ベット更新</button>
-          <button id="evcalc-calc-outs-btn" type="button" class="secondary">Outs更新</button>
         </div>
       </section>
     </div>
@@ -1189,8 +1133,8 @@
     <!-- エクイティ計算タブ -->
     <div id="winrate-tab" class="tab-content">
       <section class="surface-card tight">
-        <h2>プリフロップエクイティ（HU）</h2>
-        <p class="section-label">レンジ vs ハンドの推定エクイティを算出</p>
+        <h2>対想定レンジ</h2>
+        <p class="section-label">レンジ対ハンドの勝率を算出</p>
       </section>
       <section id="equity-hud" aria-live="polite">
         <div class="hud-main">
@@ -1430,7 +1374,7 @@
 
       <div id="icm-actions">
         <div class="icm-section-title">アクション(オールイン前)</div>
-        <p class="icm-hint">下のアクション後にオールイン相手が自動オールイン。</p>
+        <p class="icm-hint">オールイン相手はこの後自動オールインします。オールイン前アクションには追加しないでください（空欄でもOK）。</p>
         <div class="icm-table-container">
           <table id="icm-action-table">
             <thead>
@@ -1488,15 +1432,9 @@
     <div id="trainer-tab" class="tab-content">
       <div id="trainer-panel">
         <h2>トレーナー</h2>
-        <p class="icm-hint">即答ドリル（req / MDF）。出題条件から正答を計算して答える。</p>
+        <p class="icm-hint">即答ドリル（MDF）。出題条件から正答を計算して答える。</p>
         <div id="trainer-prompt">「出題」を押して開始してください。</div>
         <div class="trainer-row">
-          <label for="trainer-mode-select">ドリル種別
-            <select id="trainer-mode-select">
-              <option value="req">req（必要勝率）</option>
-              <option value="mdf">MDF（最小防衛頻度）</option>
-            </select>
-          </label>
           <label for="trainer-session-mode">進行モード
             <select id="trainer-session-mode">
               <option value="practice">練習（時間制限なし）</option>
@@ -1516,7 +1454,7 @@
         </div>
         <div id="trainer-timer" class="icm-hint">残り時間: --</div>
         <div id="trainer-feedback"></div>
-        <div id="trainer-stats">req平均得点: -- (0問) / MDF平均得点: -- (0問)</div>
+        <div id="trainer-stats">MDF平均得点: -- (0問)</div>
         <ol id="trainer-history"></ol>
       </div>
     </div>
@@ -1975,15 +1913,6 @@
 	      return { calledEv, ev, fBe, mdf, fBeIndeterminate: false };
 	    }
 
-	    function calcOutsHitRate(outs, draws, unseen) {
-	      if (draws === 1) {
-	        return outs / unseen;
-	      }
-	      const total = combination(unseen, 2);
-	      const miss = combination(unseen - outs, 2);
-	      return 1 - (miss / total);
-	    }
-
 	    function setDecisionSign(signEl, isPositive, positiveLabel, negativeLabel) {
 	      signEl.classList.remove('status-neutral', 'status-positive', 'status-negative');
 	      if (isPositive) {
@@ -2025,22 +1954,22 @@
         else if (call === null && callInput) callInput.focus();
         return;
       }
-      if (returned === null) returned = 0;
-      if (pAfter < 0 || call < 0 || returned < 0 || returned > pAfter) {
-        errEl.textContent = '入力エラー: ポット額>=0, コール額>=0, 0<=返却額<=ポット額';
-        return;
-      }
+	      if (returned === null) returned = 0;
+	      if (pAfter < 0 || call < 0 || returned < 0 || returned > pAfter) {
+	        errEl.textContent = '入力エラー: ポット額>=0, コール額>=0, 0<=未マッチ返却<=ポット額';
+	        return;
+	      }
 
-      const pEff = pAfter - returned;
-      if (pEff < 0) {
-        errEl.textContent = '入力エラー: 実効ポット（ポット額-返却額）が負です';
-        return;
-      }
-      const pShow = pAfter + call - returned;
-      if (pShow <= 0) {
-        errEl.textContent = '入力エラー: ショーダウン対象ポット（ポット額+コール額-返却額）は正である必要があります';
-        return;
-      }
+	      const pEff = pAfter - returned;
+	      if (pEff < 0) {
+	        errEl.textContent = '入力エラー: ポット額-未マッチ返却 が負です';
+	        return;
+	      }
+	      const pShow = pAfter + call - returned;
+	      if (pShow <= 0) {
+	        errEl.textContent = '入力エラー: 合計ポット（ポット額+コール額-未マッチ返却）は正である必要があります';
+	        return;
+	      }
 
       const req = calcCallEv(pAfter, call, returned, 0).req;
       reqEl.textContent = `${(req * 100).toFixed(2)}%`;
@@ -2115,66 +2044,6 @@
 	      betInput.value = (pot * ratio).toFixed(2);
 	    }
 
-	    function combination(n, r) {
-	      if (!Number.isInteger(n) || !Number.isInteger(r)) return 0;
-	      if (r < 0 || r > n) return 0;
-	      if (r === 0 || r === n) return 1;
-	      let k = Math.min(r, n - r);
-	      let result = 1;
-	      for (let i = 1; i <= k; i++) {
-	        result = (result * (n - k + i)) / i;
-	      }
-	      return result;
-	    }
-
-	    function updateOutsHitRate() {
-      const outsInput = document.getElementById('evouts-count');
-      const outs = readNumeric('evouts-count');
-	      const draws = parseInt(document.getElementById('evouts-draws')?.value || '1', 10);
-	      const unseen = parseInt(document.getElementById('evouts-unseen')?.value || '47', 10);
-	      const exactEl = document.getElementById('evouts-exact');
-	      const approxEl = document.getElementById('evouts-approx');
-	      const errEl = document.getElementById('evouts-error');
-	      if (!exactEl || !approxEl || !errEl) return;
-
-	      exactEl.textContent = '--';
-	      approxEl.textContent = '--';
-	      errEl.textContent = '';
-
-	      if (outs === null) {
-        errEl.textContent = 'outsを入力';
-        if (outsInput) outsInput.focus();
-        return;
-      }
-	      if (!Number.isInteger(outs) || outs < 0 || outs > 46 || outs > unseen) {
-	        errEl.textContent = '入力エラー: outsは整数で 0<=outs<=unseen';
-	        return;
-	      }
-	      if (draws !== 1 && draws !== 2) {
-	        errEl.textContent = '入力エラー: drawsは1または2';
-	        return;
-	      }
-	      if (unseen !== 47 && unseen !== 46) {
-	        errEl.textContent = '入力エラー: unseenは46または47';
-	        return;
-	      }
-
-	      const exact = calcOutsHitRate(outs, draws, unseen);
-	      if (!Number.isFinite(exact)) {
-	        errEl.textContent = '入力エラー: 組み合わせ計算に失敗';
-	        return;
-	      }
-	      const exactPct = Math.max(0, Math.min(100, exact * 100));
-	      const approxPct = Math.max(0, Math.min(100, draws === 1 ? outs * 2 : outs * 4));
-	      exactEl.textContent = `${exactPct.toFixed(2)}%`;
-	      approxEl.textContent = `${approxPct.toFixed(2)}%`;
-	    }
-
-	    function refreshEvCalculator() {
-	      updateCallEvDecision();
-	      updateOutsHitRate();
-	    }
-
 	    function runEvCalculatorSelfTests() {
 	      const outputEl = document.getElementById('ev-selftest-output');
 	      if (!outputEl) return;
@@ -2197,15 +2066,18 @@
 	      };
 
 	      const a1 = calcCallEv(10, 5, 0, 1 / 3);
-	      addCheck('A1 req', a1.req * 100, 100 / 3, pctTol, '%');
-	      addCheck('A1 EV', a1.ev, 0, evTol);
+	      addCheck('CALL1 req', a1.req * 100, 100 / 3, pctTol, '%');
+	      addCheck('CALL1 EV', a1.ev, 0, evTol);
 
 	      const a2 = calcCallEv(10, 5, 0, 0.5);
-	      addCheck('A2 EV', a2.ev, 2.5, evTol);
+	      addCheck('CALL2 EV', a2.ev, 2.5, evTol);
 
 	      const a3 = calcCallEv(10, 3, 2, 3 / 11);
-	      addCheck('A3 req', a3.req * 100, (3 / 11) * 100, pctTol, '%');
-	      addCheck('A3 EV', a3.ev, 0, evTol);
+	      addCheck('CALL3 req', a3.req * 100, (3 / 11) * 100, pctTol, '%');
+	      addCheck('CALL3 EV', a3.ev, 0, evTol);
+
+	      const a4 = calcCallEv(8, 2, 1, 0);
+	      addCheck('CALL4 req', a4.req * 100, (2 / 9) * 100, pctTol, '%');
 
 	      const b1 = calcBetEv(10, 5, 1 / 3);
 	      addCheck('B1 F_be', (b1.fBe ?? NaN) * 100, 100 / 3, pctTol, '%');
@@ -2221,11 +2093,8 @@
 	      const b4 = calcBetEv(0, 5, 0);
 	      addCheck('B4 F_be', (b4.fBe ?? NaN) * 100, 100, pctTol, '%');
 
-	      const c1 = calcOutsHitRate(9, 1, 47) * 100;
-	      addCheck('C1 hit', c1, (9 / 47) * 100, pctTol, '%');
-
-	      const c2 = calcOutsHitRate(9, 2, 47) * 100;
-	      addCheck('C2 hit', c2, (1 - (703 / 1081)) * 100, pctTol, '%');
+	      const b5 = calcBetEv(12, 3, 0);
+	      addCheck('B5 MDF', (b5.mdf ?? NaN) * 100, 80, pctTol, '%');
 
 	      const total = rows.length;
 	      const failCount = total - passCount;
@@ -3138,9 +3007,9 @@
 	      return raw
 	        .map(item => {
 	          const hero = String(item?.hero || '');
-	          const modeFromHero = hero.startsWith('MDF /') ? 'MDF' : (hero.startsWith('req /') ? 'req' : '');
+	          const modeFromHero = hero.startsWith('MDF /') ? 'MDF' : '';
 	          const modeRaw = String(item?.mode || '').trim().toLowerCase();
-	          const mode = modeRaw === 'mdf' ? 'MDF' : (modeRaw === 'req' ? 'req' : modeFromHero);
+	          const mode = modeRaw === 'mdf' ? 'MDF' : modeFromHero;
 	          const guessRaw = item?.guess;
 	          const guess = guessRaw === null || guessRaw === '' ? null : Number(guessRaw);
 	          const actual = Number(item?.actual);
@@ -3155,7 +3024,7 @@
 	          return { hero, mode, guess, actual, error, elapsedSec, score, outcome };
 	        })
 	        .filter(item => {
-	          const supportedMode = item.mode === 'req' || item.mode === 'MDF';
+	          const supportedMode = item.mode === 'MDF';
 	          const baseOk = supportedMode
 	            && item.hero
 	            && Number.isFinite(item.actual)
@@ -3195,24 +3064,17 @@
 	    function renderTrainerStats() {
 	      const stats = document.getElementById('trainer-stats');
 	      if (!stats) return;
-	      const buildModeSummary = (modeLabel) => {
-	        const rows = trainerHistory.filter((row) => row.mode === modeLabel).slice(0, 20);
-	        if (rows.length === 0) {
-	          return { score: '-- (0問)', error: '-- (0問)' };
-	        }
-	        const scoreAvg = rows.reduce((sum, row) => sum + row.score, 0) / rows.length;
-	        const errorRows = rows.filter((row) => Number.isFinite(row.error));
-	        const errorText = errorRows.length
-	          ? `${(errorRows.reduce((sum, row) => sum + row.error, 0) / errorRows.length).toFixed(2)}% (${errorRows.length}問)`
-	          : '-- (0問)';
-	        return {
-	          score: `${scoreAvg.toFixed(2)}点 (${rows.length}問)`,
-	          error: errorText,
-	        };
-	      };
-	      const reqSummary = buildModeSummary('req');
-	      const mdfSummary = buildModeSummary('MDF');
-	      stats.innerHTML = `req平均得点: ${reqSummary.score}<br>MDF平均得点: ${mdfSummary.score}<br><span class="icm-hint">req平均誤差: ${reqSummary.error} / MDF平均誤差: ${mdfSummary.error}</span>`;
+	      const rows = trainerHistory.filter((row) => row.mode === 'MDF').slice(0, 20);
+	      if (rows.length === 0) {
+	        stats.innerHTML = 'MDF平均得点: -- (0問)<br><span class="icm-hint">MDF平均誤差: -- (0問)</span>';
+	        return;
+	      }
+	      const scoreAvg = rows.reduce((sum, row) => sum + row.score, 0) / rows.length;
+	      const errorRows = rows.filter((row) => Number.isFinite(row.error));
+	      const errorText = errorRows.length
+	        ? `${(errorRows.reduce((sum, row) => sum + row.error, 0) / errorRows.length).toFixed(2)}% (${errorRows.length}問)`
+	        : '-- (0問)';
+	      stats.innerHTML = `MDF平均得点: ${scoreAvg.toFixed(2)}点 (${rows.length}問)<br><span class="icm-hint">MDF平均誤差: ${errorText}</span>`;
 	    }
 
 	    function readTrainerSessionMode() {
@@ -3303,21 +3165,11 @@
 
 	    function buildTrainerSolutionHtml(question) {
 	      if (!question) return '解法: 問題情報がありません。';
-	      if (question.mode === 'req') {
-	        const prePot = Number(question.prePot);
-	        const ratioLabel = String(question.ratioLabel || '');
-	        const bet = Number(question.bet);
-	        const pAfter = Number(question.pAfter);
-	        const call = Number(question.call);
-	        const returned = Number(question.returned);
-	        const pShow = Number(question.pShow);
-	        return `解法: req = C / (P_after + C - R)<br>途中値: P(ベット前)=${prePot}, B(比率 ${ratioLabel})=${bet}, P_after=P+B=${prePot}+${bet}=${pAfter}<br>通常コール: C=B=${call}, R=${returned}, P_show=P_after+C-R=${pAfter}+${call}-${returned}=${pShow}<br>計算: req=${call}/${pShow}=${question.answerPct.toFixed(2)}%`;
-	      }
 	      const prePot = Number(question.prePot);
 	      const ratioLabel = String(question.ratioLabel || '');
 	      const bet = Number(question.bet);
 	      const pAfter = Number(question.pAfter);
-	      return `解法: MDF = P / (P + B)<br>途中値: P(ベット前)=${prePot}, B(比率 ${ratioLabel})=${bet}, P_after=P+B=${prePot}+${bet}=${pAfter}<br>計算: MDF=${prePot}/${pAfter}=${question.answerPct.toFixed(2)}%`;
+	      return `解法: MDF = ポット / 合計ポット<br>途中値: ポット=${prePot}, ベット額(比率 ${ratioLabel})=${bet}, 合計ポット=${prePot}+${bet}=${pAfter}<br>計算: MDF=${prePot}/${pAfter}=${question.answerPct.toFixed(2)}%`;
 	    }
 
 	    function pushTrainerResult(row) {
@@ -3332,7 +3184,7 @@
 	      if (!currentTrainerQuestion) return;
 	      const feedback = document.getElementById('trainer-feedback');
 	      const prompt = document.getElementById('trainer-prompt');
-	      const modeLabel = currentTrainerQuestion.mode === 'mdf' ? 'MDF' : 'req';
+	      const modeLabel = 'MDF';
 	      const limitSec = Number.isFinite(currentTrainerQuestion.timeLimitSec) ? currentTrainerQuestion.timeLimitSec : 0;
 	      const solutionHtml = buildTrainerSolutionHtml(currentTrainerQuestion);
 	      if (feedback) {
@@ -3358,8 +3210,7 @@
 	      updateTrainerTimerDisplay('残り時間: 0.0秒');
 	    }
 
-	    function buildTrainerQuestion(mode, sessionMode) {
-	      const normalizedMode = mode === 'mdf' ? mode : 'req';
+	    function buildTrainerQuestion(sessionMode) {
 	      const normalizedSessionMode = sessionMode === 'drill' ? 'drill' : 'practice';
 	      const showRatioLabelInPrompt = normalizedSessionMode !== 'drill';
 	      const ratioOptions = [
@@ -3372,36 +3223,15 @@
 	      const prePot = (randomInt(10) + 2) * 6;
 	      const bet = (prePot * ratio.num) / ratio.den;
 	      const pAfter = prePot + bet;
-	      if (normalizedMode === 'req') {
-	        const call = bet;
-	        const returned = 0;
-	        const reqCalc = calcCallEv(pAfter, call, returned, 0);
-	        const reqPct = reqCalc.req * 100;
-	        return {
-	          mode: normalizedMode,
-	          answerPct: reqPct,
-	          label: `req / P=${prePot}, 比率=${ratio.label}, B=${bet}`,
-	          promptHtml: showRatioLabelInPrompt
-	            ? `コールドリル（標準比率）: P(ベット前)=<strong>${prePot}</strong>、相手ベットは<strong>${ratio.label}</strong>（B=<strong>${bet}</strong>）です。通常コールとして P_after=P+B=<strong>${pAfter}</strong>。<br>コールしてよい最低勝率 req(%) は?`
-	            : `コールドリル: P(ベット前)=<strong>${prePot}</strong>、相手ベット額は B=<strong>${bet}</strong> です。通常コールとして P_after=P+B=<strong>${pAfter}</strong>。<br>コールしてよい最低勝率 req(%) は?`,
-	          prePot,
-	          ratioLabel: ratio.label,
-	          bet,
-	          pAfter,
-	          call,
-	          returned,
-	          pShow: reqCalc.pShow,
-	        };
-	      }
 	      const mdfCalc = calcBetEv(prePot, bet, 0);
 	      const mdfPct = (mdfCalc.mdf ?? NaN) * 100;
 	      return {
-	        mode: normalizedMode,
+	        mode: 'mdf',
 	        answerPct: mdfPct,
-	        label: `MDF / P=${prePot}, 比率=${ratio.label}, B=${bet}`,
+	        label: `MDF / ポット=${prePot}, 比率=${ratio.label}, ベット=${bet}`,
 	        promptHtml: showRatioLabelInPrompt
-	          ? `MDFドリル（標準比率）: P(ベット前)=<strong>${prePot}</strong>、相手ベットは<strong>${ratio.label}</strong>（B=<strong>${bet}</strong>）です。P_after=P+B=<strong>${pAfter}</strong>。<br>あなたが最低限守るべき頻度 MDF(%) は?`
-	          : `MDFドリル: P(ベット前)=<strong>${prePot}</strong>、相手ベット額は B=<strong>${bet}</strong> です。P_after=P+B=<strong>${pAfter}</strong>。<br>あなたが最低限守るべき頻度 MDF(%) は?`,
+	          ? `MDFドリル（標準比率）: ポットは <strong>${prePot}</strong>、相手ベットは <strong>${ratio.label}</strong>（ベット額 <strong>${bet}</strong>）です。合計ポットは <strong>${pAfter}</strong>。<br>あなたが最低限守るべき頻度 MDF(%) は?`
+	          : `MDFドリル: ポットは <strong>${prePot}</strong>、相手ベット額は <strong>${bet}</strong> です。合計ポットは <strong>${pAfter}</strong>。<br>あなたが最低限守るべき頻度 MDF(%) は?`,
 	        prePot,
 	        ratioLabel: ratio.label,
 	        bet,
@@ -3414,8 +3244,6 @@
 	      const prompt = document.getElementById('trainer-prompt');
 	      const feedback = document.getElementById('trainer-feedback');
 	      const guessInput = document.getElementById('trainer-guess-input');
-	      const modeSelect = document.getElementById('trainer-mode-select');
-	      const selectedMode = modeSelect?.value || 'req';
 	      const sessionMode = readTrainerSessionMode();
 	      const timeLimitSec = sessionMode === 'drill' ? readTrainerTimeLimitSec() : null;
 	      if (sessionMode === 'drill' && timeLimitSec === null) {
@@ -3429,7 +3257,7 @@
 	        return;
 	      }
 
-	      const question = buildTrainerQuestion(selectedMode, sessionMode);
+	      const question = buildTrainerQuestion(sessionMode);
 	      currentTrainerQuestion = { ...question, sessionMode, timeLimitSec };
 	      trainerQuestionStartedAtMs = performance.now();
 	      trainerQuestionTimeoutAtMs = null;
@@ -3519,7 +3347,7 @@
 
 	      pushTrainerResult({
 	        hero: currentTrainerQuestion.label,
-	        mode: currentTrainerQuestion.mode === 'mdf' ? 'MDF' : 'req',
+	        mode: 'MDF',
 	        guess,
 	        actual,
 	        error,
@@ -3622,23 +3450,43 @@
 	      });
 	    }
 
+	    function appendIcmActionPlayerOptions(selectEl, n) {
+	      if (!selectEl) return;
+	      const allinIndex = parseInt(document.getElementById('allin-index')?.value || '', 10);
+	      for (let i = 0; i < n; i++) {
+	        const opt = document.createElement('option');
+	        opt.value = String(i);
+	        if (Number.isFinite(allinIndex) && i === allinIndex) {
+	          opt.text = `${formatPlayerLabel(i)}（オールイン相手/自動）`;
+	          opt.disabled = true;
+	        } else {
+	          opt.text = formatPlayerLabel(i);
+	        }
+	        selectEl.appendChild(opt);
+	      }
+	    }
+
 	    function refreshIcmActionPlayerOptionTexts() {
 	      const n = parseInt(document.getElementById('num-players').value);
 	      const tbody = document.getElementById('icm-action-rows');
 	      if (!tbody) return;
+	      const allinIndex = parseInt(document.getElementById('allin-index')?.value || '', 10);
 	      for (const row of tbody.querySelectorAll('tr')) {
 	        const select = row.querySelector('.icm-action-player');
 	        if (!select) continue;
 	        const prev = select.value;
 	        select.innerHTML = '';
-	        for (let i = 0; i < n; i++) {
-	          const opt = document.createElement('option');
-	          opt.value = String(i);
-	          opt.text = formatPlayerLabel(i);
-	          select.appendChild(opt);
-	        }
-	        if (prev !== '' && Number.isFinite(parseInt(prev)) && parseInt(prev) >= 0 && parseInt(prev) < n) {
+	        appendIcmActionPlayerOptions(select, n);
+	        const prevIndex = parseInt(prev, 10);
+	        if (prev !== ''
+	          && Number.isFinite(prevIndex)
+	          && prevIndex >= 0
+	          && prevIndex < n
+	          && (!Number.isFinite(allinIndex) || prevIndex !== allinIndex)) {
 	          select.value = prev;
+	        } else {
+	          const firstEnabled = Array.from(select.options).find(opt => !opt.disabled);
+	          if (firstEnabled) select.value = firstEnabled.value;
 	        }
 	      }
 	    }
@@ -3717,14 +3565,16 @@
 	      tbody.appendChild(tr);
 
 	      const playerSelect = tr.querySelector('.icm-action-player');
-	      for (let i = 0; i < n; i++) {
-	        const opt = document.createElement('option');
-	        opt.value = String(i);
-	        opt.text = formatPlayerLabel(i);
-	        playerSelect.appendChild(opt);
-	      }
-	      if (Number.isFinite(preset.playerIndex) && preset.playerIndex >= 0 && preset.playerIndex < n) {
+	      appendIcmActionPlayerOptions(playerSelect, n);
+	      const allinIndex = parseInt(document.getElementById('allin-index')?.value || '', 10);
+	      if (Number.isFinite(preset.playerIndex)
+	        && preset.playerIndex >= 0
+	        && preset.playerIndex < n
+	        && (!Number.isFinite(allinIndex) || preset.playerIndex !== allinIndex)) {
 	        playerSelect.value = String(preset.playerIndex);
+	      } else {
+	        const firstEnabled = Array.from(playerSelect.options).find(opt => !opt.disabled);
+	        if (firstEnabled) playerSelect.value = firstEnabled.value;
 	      }
 
 	      const typeSelect = tr.querySelector('.icm-action-type');
@@ -4344,11 +4194,13 @@
         return;
       }
 
-      const preUserActions = readIcmPreAllInActions(n);
-      if (preUserActions.error) {
-        setIcmError(preUserActions.error);
-        return;
-      }
+	      addIcmFoldOthers();
+	      clearIcmError();
+	      const preUserActions = readIcmPreAllInActions(n);
+	      if (preUserActions.error) {
+	        setIcmError(preUserActions.error);
+	        return;
+	      }
 
       const forcedActions = [];
       if (bbAnte.value > 0) {
@@ -4376,27 +4228,28 @@
         return;
       }
 
-      for (let i = 0; i < preUserActions.actions.length; i++) {
-        const action = preUserActions.actions[i];
-        const step = i + 1;
-        const p = action.playerIndex;
+	      for (let i = 0; i < preUserActions.actions.length; i++) {
+	        const action = preUserActions.actions[i];
+	        const step = i + 1;
+	        const p = action.playerIndex;
 
-        if (validateState.folded[p]) {
-          setIcmError(`アクション#${step}: ${formatPlayerLabel(p)} はすでにフォールドしています`);
-          return;
-        }
-        if (p === heroIndex && action.type === 'fold') {
-          setIcmError(`アクション#${step}: ヒーローをフォールドさせる入力はできません`);
-          return;
-        }
-        if (p === allinIndex && action.type === 'fold') {
-          setIcmError(`アクション#${step}: オールイン相手をフォールドさせる入力はできません`);
-          return;
-        }
-        if (validateState.remaining[p] <= eps && action.type !== 'fold') {
-          setIcmError(`アクション#${step}: ${formatPlayerLabel(p)} はすでにオールインしています`);
-          return;
-        }
+	        if (p === allinIndex) {
+	          setIcmError('オールイン相手はこの後自動オールインします。オールイン前アクションには追加できません（空欄でもOK）');
+	          return;
+	        }
+
+	        if (validateState.folded[p]) {
+	          setIcmError(`アクション#${step}: ${formatPlayerLabel(p)} はすでにフォールドしています`);
+	          return;
+	        }
+	        if (p === heroIndex && action.type === 'fold') {
+	          setIcmError(`アクション#${step}: ヒーローをフォールドさせる入力はできません`);
+	          return;
+	        }
+	        if (validateState.remaining[p] <= eps && action.type !== 'fold') {
+	          setIcmError(`アクション#${step}: ${formatPlayerLabel(p)} はすでにオールインしています`);
+	          return;
+	        }
 
         if (action.type === 'fold') {
           validateState.folded[p] = true;
@@ -4433,11 +4286,11 @@
           return;
         }
 
-        if (validateState.remaining[p] <= eps) {
-          setIcmError(`アクション#${step}: ${formatPlayerLabel(p)} がオールインになります (オールイン前アクションでは非対応)`);
-          return;
-        }
-      }
+	        if (validateState.remaining[p] <= eps) {
+	          setIcmError(`アクション#${step}: この入力だと ${formatPlayerLabel(p)} がオールインになります。金額(to)を下げるかフォールドを選んでください`);
+	          return;
+	        }
+	      }
 
       if (validateState.folded[allinIndex]) {
         setIcmError('オールイン相手がフォールドしています');
@@ -4677,34 +4530,19 @@
 	      document.getElementById('range-export-btn').addEventListener('click', exportRangeJson);
 	      document.getElementById('range-import-btn').addEventListener('click', importRangeJson);
 
-	      ['evcall-pot-after', 'evcall-cost', 'evcall-uncalled', 'evcall-equity'].forEach(id => {
-	        const el = document.getElementById(id);
-	        if (el) el.addEventListener('input', updateCallEvDecision);
-	      });
-	      ['evouts-count', 'evouts-draws', 'evouts-unseen'].forEach(id => {
-	        const el = document.getElementById(id);
-	        if (el) el.addEventListener('input', updateOutsHitRate);
-	        if (el) el.addEventListener('change', updateOutsHitRate);
-	      });
 	      document.getElementById('evbet-set-third').addEventListener('click', () => setEvBetByPotRatio(1 / 3));
 	      document.getElementById('evbet-set-half').addEventListener('click', () => setEvBetByPotRatio(1 / 2));
 	      document.getElementById('evbet-set-two-third').addEventListener('click', () => setEvBetByPotRatio(2 / 3));
 	      document.getElementById('evbet-set-pot').addEventListener('click', () => setEvBetByPotRatio(1));
-	      document.getElementById('evcalc-calc-call-btn').addEventListener('click', updateCallEvDecision);
 	      document.getElementById('evcalc-calc-bet-btn').addEventListener('click', updateBetEvDecision);
-	      document.getElementById('evcalc-calc-outs-btn').addEventListener('click', updateOutsHitRate);
 
 
 	      document.getElementById('trainer-new-btn').addEventListener('click', drawTrainerQuestion);
 	      document.getElementById('trainer-check-btn').addEventListener('click', checkTrainerAnswer);
-      const trainerModeSelect = document.getElementById('trainer-mode-select');
-      if (trainerModeSelect) {
-	        trainerModeSelect.addEventListener('change', resetTrainerSessionState);
-      }
-      const trainerSessionModeSelect = document.getElementById('trainer-session-mode');
-      if (trainerSessionModeSelect) {
-        trainerSessionModeSelect.addEventListener('change', resetTrainerSessionState);
-      }
+	      const trainerSessionModeSelect = document.getElementById('trainer-session-mode');
+	      if (trainerSessionModeSelect) {
+	        trainerSessionModeSelect.addEventListener('change', resetTrainerSessionState);
+	      }
       const trainerTimeLimitInput = document.getElementById('trainer-time-limit-sec');
       if (trainerTimeLimitInput) {
         trainerTimeLimitInput.addEventListener('change', () => {
@@ -4730,8 +4568,6 @@
 	        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 	      });
 
-	      refreshEvCalculator();
-	      
 	      // ICM関連
 	      generatePlayerInputs();
       document.getElementById('generate-btn').addEventListener('click', generatePlayerInputs);
@@ -4743,12 +4579,13 @@
         updateIcmPlayerHighlights();
         renderIcmPlayerActionSummary();
       });
-      document.getElementById('allin-index').addEventListener('change', () => {
-        rebuildIcmPlayerSelectOptions(document.getElementById('hero-index'), parseInt(document.getElementById('num-players').value));
-        rebuildIcmPlayerSelectOptions(document.getElementById('allin-index'), parseInt(document.getElementById('num-players').value));
-        updateIcmPlayerHighlights();
-        renderIcmPlayerActionSummary();
-      });
+	      document.getElementById('allin-index').addEventListener('change', () => {
+	        rebuildIcmPlayerSelectOptions(document.getElementById('hero-index'), parseInt(document.getElementById('num-players').value));
+	        rebuildIcmPlayerSelectOptions(document.getElementById('allin-index'), parseInt(document.getElementById('num-players').value));
+	        refreshIcmActionPlayerOptionTexts();
+	        updateIcmPlayerHighlights();
+	        renderIcmPlayerActionSummary();
+	      });
 	      document.getElementById('bb-ante').addEventListener('input', renderIcmPlayerActionSummary);
 	      document.getElementById('use-equity-for-assumed-btn').addEventListener('click', () => {
 	        if (!Number.isFinite(lastEquityPctForIcm)) return;
