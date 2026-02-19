@@ -16,9 +16,10 @@
 4. B-2（クイックベットの必須誘導）: EV電卓Bで `P` 空欄のまま `1/2P` などを押す。期待結果は `evbet-error` に `先にPを入力` が出て `evbet-pot` へfocus。根拠は `index.html:2096` `index.html:2097` `index.html:2098` `index.html:4395`。
 5. C-1（outs未入力でno-opしない）: EV電卓Cで `outs` 空欄のまま `Outs更新` を押す。期待結果は `evouts-error` に `outsを入力` が出て `evouts-count` へfocus。根拠は `index.html:2178` `index.html:2179` `index.html:2180` `index.html:4451`。
 6. C-2（正常入力で部分結果更新）: EV電卓Cで `outs=9`、`draws=1`、`unseen=47` を入力して `Outs更新`。期待結果は `evouts-exact` と `evouts-approx` が `%` 表示で更新される。根拠は `index.html:2201` `index.html:2202` `index.html:2203` `index.html:2204`。
-7. T-1（reqドリル）: トレーナーで `ドリル種別=req` を選び `出題` → 回答入力 → `答え合わせ`。期待結果は `trainer-feedback` に `正答: ... / 誤差: ...` が表示され、`req平均誤差` が更新される。根拠は `index.html:1496` `index.html:3184` `index.html:3201` `index.html:3222` `index.html:3169`。
-8. T-2（MDFドリル）: トレーナーで `ドリル種別=mdf` を選んで `出題` → 回答入力 → `答え合わせ`。期待結果は `最小防衛頻度` の正答が一意に表示され、`MDF平均誤差` が更新される。根拠は `index.html:1497` `index.html:3195` `index.html:3201` `index.html:3222` `index.html:3169`。
-9. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1547` `index.html:2274` `index.html:4466`。
+7. T-1（練習/鍛錬の切替）: トレーナーで `進行モード` を `練習` と `鍛錬` で切り替える。期待結果は問題状態がリセットされ、`残り時間` 表示が初期化される。根拠は `index.html:1500` `index.html:3218` `index.html:3261` `index.html:4633` `index.html:4639`。
+8. T-2（鍛錬TIMEOUT）: `進行モード=鍛錬` で出題し、制限秒数を超えるまで待つ。期待結果は `TIMEOUT` 表示と `得点 0.0点` が出て問題終了、履歴へ保存される。根拠は `index.html:1506` `index.html:3291` `index.html:3298` `index.html:3303` `index.html:3382`。
+9. T-3（得点と統計）: req/MDF それぞれで回答する。期待結果は `trainer-feedback` に `回答時間` と `得点` が表示され、履歴と `req平均得点` / `MDF平均得点` が更新される。根拠は `index.html:3189` `index.html:3215` `index.html:3446` `index.html:3450`。
+10. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1548` `index.html:2278` `index.html:4643`。
 
 ## 修正ログ
 
@@ -348,6 +349,26 @@
 - 再発防止:
   - 文言変更時は「UIラベル」「エラー文言」「手動確認チェックリスト」の3点を同一コミットで同期し、文言ドリフトを防ぐ。
   - トレーナー統計変更時は `renderTrainerStats` のモード分割条件（`req` / `MDF`）を `loadTrainerHistory` の許可モードと同時に確認する。
+
+### 2026-02-19 19:24:56 KST
+- 対象: `index.html`（トレーナーへ練習/鍛錬モード・タイマー・時間得点を追加）、`CLAUDE.md`（手動確認にTIMEOUT/得点確認を追加）
+- 根拠:
+  - UI追加: `index.html:1500`（進行モード）`index.html:1506`（制限秒数）`index.html:1517`（残り時間表示）
+  - タイマー制御: `index.html:3229`（`stopTrainerTimer`）`index.html:3261`（モード変更時リセット）`index.html:3382`（鍛錬タイマー開始）`index.html:3291`（TIMEOUT処理）
+  - 得点処理: `index.html:3275`（得点式）`index.html:3446`（回答時に得点/回答時間表示）`index.html:3185`（履歴に得点表示）`index.html:3215`（req/MDF平均得点）
+  - 切替イベント: `index.html:4631` `index.html:4635` `index.html:4639`（切替時に `resetTrainerSessionState`）
+- diff要約:
+  - トレーナーに `練習`（時間無制限）/`鍛錬`（デフォルト8秒）を追加。
+  - 鍛錬では残り時間を表示し、時間切れ時は `TIMEOUT` と 0点で問題終了・履歴保存。
+  - 回答時に `回答時間` と `得点(0-100)` を表示し、履歴保存。
+  - 統計を req/MDF別の `平均得点（直近20）` 表示へ拡張（平均誤差も併記）。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `git remote -v` / `rg -n "trainer-mode-select|drawTrainerQuestion|checkTrainerAnswer|renderTrainerStats|trainerHistory" index.html` / `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d` / `rg -n "Bet vs Check|checkEV|Bet vs|ベットEV（HU）" index.html || true` / `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK` / `python3` 固定13ケース再計算
+- テスト結果:
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`
+- 再発防止:
+  - 進行モード変更時は `resetTrainerSessionState` で `clearInterval` とUI初期化が呼ばれていることを必須確認する。
+  - 新規トレーナー機能追加時は `load/save/render/統計` の4点（永続化・表示・集計）を同時監査し、片落ちを防ぐ。
 
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`

@@ -1497,6 +1497,15 @@
               <option value="mdf">MDF（最小防衛頻度）</option>
             </select>
           </label>
+          <label for="trainer-session-mode">進行モード
+            <select id="trainer-session-mode">
+              <option value="practice">練習（時間制限なし）</option>
+              <option value="drill">鍛錬（時間制限あり）</option>
+            </select>
+          </label>
+          <label for="trainer-time-limit-sec">制限秒数（鍛錬）
+            <input id="trainer-time-limit-sec" type="number" min="1" step="1" value="8">
+          </label>
           <label for="trainer-guess-input">あなたの回答(%)
             <input id="trainer-guess-input" type="number" min="0" max="100" step="0.1" placeholder="例: 33.3">
           </label>
@@ -1505,8 +1514,9 @@
             <button id="trainer-check-btn" type="button" class="secondary">答え合わせ</button>
           </div>
         </div>
+        <div id="trainer-timer" class="icm-hint">残り時間: --</div>
         <div id="trainer-feedback"></div>
-        <div id="trainer-stats">req平均誤差: -- (0問) / MDF平均誤差: -- (0問)</div>
+        <div id="trainer-stats">req平均得点: -- (0問) / MDF平均得点: -- (0問)</div>
         <ol id="trainer-history"></ol>
       </div>
     </div>
@@ -1563,6 +1573,9 @@
 		    let rangeSuppressClickUntil = 0;
 		    let currentTrainerQuestion = null;
 		    let trainerHistory = [];
+		    let trainerTimerIntervalId = null;
+		    let trainerQuestionStartedAtMs = null;
+		    let trainerQuestionTimeoutAtMs = null;
 
 		    const SAVED_RANGES_KEY = 'poker_tool_saved_ranges_v1';
 		    const TRAINER_HISTORY_KEY = 'poker_tool_trainer_history_v1';
@@ -3123,19 +3136,35 @@
 	      const raw = readJsonFromStorage(TRAINER_HISTORY_KEY, []);
 	      if (!Array.isArray(raw)) return [];
 	      return raw
-	        .map(item => ({
-	          hero: String(item?.hero || ''),
-	          guess: Number(item?.guess),
-	          actual: Number(item?.actual),
-	          error: Number(item?.error),
-	        }))
+	        .map(item => {
+	          const hero = String(item?.hero || '');
+	          const modeFromHero = hero.startsWith('MDF /') ? 'MDF' : (hero.startsWith('req /') ? 'req' : '');
+	          const modeRaw = String(item?.mode || '').trim().toLowerCase();
+	          const mode = modeRaw === 'mdf' ? 'MDF' : (modeRaw === 'req' ? 'req' : modeFromHero);
+	          const guessRaw = item?.guess;
+	          const guess = guessRaw === null || guessRaw === '' ? null : Number(guessRaw);
+	          const actual = Number(item?.actual);
+	          const errorRaw = item?.error;
+	          const error = errorRaw === null || errorRaw === '' ? null : Number(errorRaw);
+	          const elapsedRaw = Number(item?.elapsedSec);
+	          const elapsedSec = Number.isFinite(elapsedRaw) && elapsedRaw >= 0 ? elapsedRaw : 0;
+	          const outcome = item?.outcome === 'timeout' ? 'timeout' : 'ok';
+	          const savedScore = Number(item?.score);
+	          const fallbackScore = Number.isFinite(error) ? Math.max(0, Math.min(100, 100 - error)) : (outcome === 'timeout' ? 0 : 0);
+	          const score = Number.isFinite(savedScore) ? Math.max(0, Math.min(100, savedScore)) : fallbackScore;
+	          return { hero, mode, guess, actual, error, elapsedSec, score, outcome };
+	        })
 	        .filter(item => {
-	          const mode = item.hero.split(' / ')[0];
-	          const supportedMode = mode === 'req' || mode === 'MDF';
-	          return supportedMode
-	            && Number.isFinite(item.guess)
+	          const supportedMode = item.mode === 'req' || item.mode === 'MDF';
+	          const baseOk = supportedMode
+	            && item.hero
 	            && Number.isFinite(item.actual)
-	            && Number.isFinite(item.error);
+	            && Number.isFinite(item.score)
+	            && Number.isFinite(item.elapsedSec)
+	            && (item.outcome === 'ok' || item.outcome === 'timeout');
+	          if (!baseOk) return false;
+	          if (item.outcome === 'timeout') return true;
+	          return Number.isFinite(item.guess) && Number.isFinite(item.error);
 	        })
 	        .slice(0, 20);
 	    }
@@ -3148,26 +3177,145 @@
 	      const list = document.getElementById('trainer-history');
 	      if (!list) return;
 	      list.innerHTML = '';
-	      trainerHistory.slice(0, 20).forEach((row, idx) => {
+	      trainerHistory.slice(0, 20).forEach((row) => {
 	        const li = document.createElement('li');
-	        li.textContent = `${row.hero} 回答${row.guess.toFixed(1)}% / 正答${row.actual.toFixed(1)}% / 誤差${row.error.toFixed(1)}%`;
+	        const elapsedText = Number.isFinite(row.elapsedSec) ? `${row.elapsedSec.toFixed(2)}秒` : '--';
+	        const scoreText = Number.isFinite(row.score) ? `${row.score.toFixed(1)}点` : '--';
+	        if (row.outcome === 'timeout') {
+	          li.textContent = `${row.hero} TIMEOUT / 得点${scoreText} / 回答時間${elapsedText}`;
+	        } else {
+	          const guessText = Number.isFinite(row.guess) ? `${row.guess.toFixed(1)}%` : '--';
+	          const errorText = Number.isFinite(row.error) ? `${row.error.toFixed(1)}%` : '--';
+	          li.textContent = `${row.hero} 回答${guessText} / 正答${row.actual.toFixed(1)}% / 誤差${errorText} / 得点${scoreText} / 回答時間${elapsedText}`;
+	        }
 	        list.appendChild(li);
 	      });
 	    }
 
-    function renderTrainerStats() {
-      const stats = document.getElementById('trainer-stats');
-      if (!stats) return;
-      const calcModeAvg = (mode) => {
-        const rows = trainerHistory.filter((row) => row.hero.startsWith(`${mode} /`));
-        if (rows.length === 0) return '-- (0問)';
-        const avg = rows.reduce((sum, row) => sum + row.error, 0) / rows.length;
-        return `${avg.toFixed(2)}% (${rows.length}問)`;
-      };
-      const reqAvg = calcModeAvg('req');
-      const mdfAvg = calcModeAvg('MDF');
-      stats.innerHTML = `req平均誤差: ${reqAvg}<br>MDF平均誤差: ${mdfAvg}`;
-    }
+	    function renderTrainerStats() {
+	      const stats = document.getElementById('trainer-stats');
+	      if (!stats) return;
+	      const buildModeSummary = (modeLabel) => {
+	        const rows = trainerHistory.filter((row) => row.mode === modeLabel).slice(0, 20);
+	        if (rows.length === 0) {
+	          return { score: '-- (0問)', error: '-- (0問)' };
+	        }
+	        const scoreAvg = rows.reduce((sum, row) => sum + row.score, 0) / rows.length;
+	        const errorRows = rows.filter((row) => Number.isFinite(row.error));
+	        const errorText = errorRows.length
+	          ? `${(errorRows.reduce((sum, row) => sum + row.error, 0) / errorRows.length).toFixed(2)}% (${errorRows.length}問)`
+	          : '-- (0問)';
+	        return {
+	          score: `${scoreAvg.toFixed(2)}点 (${rows.length}問)`,
+	          error: errorText,
+	        };
+	      };
+	      const reqSummary = buildModeSummary('req');
+	      const mdfSummary = buildModeSummary('MDF');
+	      stats.innerHTML = `req平均得点: ${reqSummary.score}<br>MDF平均得点: ${mdfSummary.score}<br><span class="icm-hint">req平均誤差: ${reqSummary.error} / MDF平均誤差: ${mdfSummary.error}</span>`;
+	    }
+
+	    function readTrainerSessionMode() {
+	      const mode = document.getElementById('trainer-session-mode')?.value || 'practice';
+	      return mode === 'drill' ? 'drill' : 'practice';
+	    }
+
+	    function readTrainerTimeLimitSec() {
+	      const input = document.getElementById('trainer-time-limit-sec');
+	      const value = parseFloat(input?.value || '');
+	      return Number.isFinite(value) && value > 0 ? value : null;
+	    }
+
+	    function stopTrainerTimer() {
+	      if (trainerTimerIntervalId !== null) {
+	        clearInterval(trainerTimerIntervalId);
+	        trainerTimerIntervalId = null;
+	      }
+	      trainerQuestionTimeoutAtMs = null;
+	    }
+
+	    function updateTrainerTimerDisplay(overrideText = null) {
+	      const timerEl = document.getElementById('trainer-timer');
+	      if (!timerEl) return;
+	      if (typeof overrideText === 'string') {
+	        timerEl.textContent = overrideText;
+	        return;
+	      }
+	      if (!currentTrainerQuestion) {
+	        timerEl.textContent = '残り時間: --';
+	        return;
+	      }
+	      if (currentTrainerQuestion.sessionMode !== 'drill') {
+	        timerEl.textContent = '残り時間: 無制限';
+	        return;
+	      }
+	      if (!Number.isFinite(trainerQuestionTimeoutAtMs)) {
+	        const fallback = Number.isFinite(currentTrainerQuestion.timeLimitSec) ? currentTrainerQuestion.timeLimitSec : 0;
+	        timerEl.textContent = `残り時間: ${fallback.toFixed(1)}秒`;
+	        return;
+	      }
+	      const remainingMs = Math.max(0, trainerQuestionTimeoutAtMs - performance.now());
+	      timerEl.textContent = `残り時間: ${(remainingMs / 1000).toFixed(1)}秒`;
+	    }
+
+	    function resetTrainerSessionState() {
+	      stopTrainerTimer();
+	      currentTrainerQuestion = null;
+	      trainerQuestionStartedAtMs = null;
+	      trainerQuestionTimeoutAtMs = null;
+	      const prompt = document.getElementById('trainer-prompt');
+	      const feedback = document.getElementById('trainer-feedback');
+	      const guessInput = document.getElementById('trainer-guess-input');
+	      if (prompt) prompt.textContent = '「出題」を押して開始してください。';
+	      if (feedback) feedback.textContent = '';
+	      if (guessInput) guessInput.value = '';
+	      updateTrainerTimerDisplay('残り時間: --');
+	    }
+
+	    function computeTrainerScore(error, sessionMode, elapsedSec, timeLimitSec) {
+	      const accuracyScore = Math.max(0, Math.min(100, 100 - error));
+	      if (sessionMode !== 'drill') return accuracyScore;
+	      const safeLimit = Number.isFinite(timeLimitSec) && timeLimitSec > 0 ? timeLimitSec : 8;
+	      const speedScore = Math.max(0, Math.min(100, ((safeLimit - elapsedSec) / safeLimit) * 100));
+	      return Math.max(0, Math.min(100, accuracyScore * 0.7 + speedScore * 0.3));
+	    }
+
+	    function pushTrainerResult(row) {
+	      trainerHistory.unshift(row);
+	      trainerHistory = trainerHistory.slice(0, 20);
+	      saveTrainerHistory();
+	      renderTrainerHistory();
+	      renderTrainerStats();
+	    }
+
+	    function handleTrainerTimeout() {
+	      if (!currentTrainerQuestion) return;
+	      const feedback = document.getElementById('trainer-feedback');
+	      const prompt = document.getElementById('trainer-prompt');
+	      const modeLabel = currentTrainerQuestion.mode === 'mdf' ? 'MDF' : 'req';
+	      const limitSec = Number.isFinite(currentTrainerQuestion.timeLimitSec) ? currentTrainerQuestion.timeLimitSec : 0;
+	      if (feedback) {
+	        feedback.innerHTML = `TIMEOUT: <strong>${limitSec.toFixed(1)}秒</strong> 以内に回答できなかったため得点 <strong>0.0点</strong>`;
+	      }
+	      if (prompt) {
+	        prompt.textContent = '時間切れです。もう一度「出題」を押してください。';
+	      }
+	      pushTrainerResult({
+	        hero: currentTrainerQuestion.label,
+	        mode: modeLabel,
+	        guess: null,
+	        actual: currentTrainerQuestion.answerPct,
+	        error: null,
+	        elapsedSec: limitSec,
+	        score: 0,
+	        outcome: 'timeout',
+	      });
+	      currentTrainerQuestion = null;
+	      trainerQuestionStartedAtMs = null;
+	      trainerQuestionTimeoutAtMs = null;
+	      stopTrainerTimer();
+	      updateTrainerTimerDisplay('残り時間: 0.0秒');
+	    }
 
 	    function buildTrainerQuestion(mode) {
 	      const normalizedMode = mode === 'mdf' ? mode : 'req';
@@ -3181,45 +3329,94 @@
 	          mode: normalizedMode,
 	          answerPct: reqPct,
 	          label: `req / ポット${pAfter}, コール${call}, 返却${returned}`,
-          promptHtml: `コールドリル: 相手のベット後ポットが<strong>${pAfter}</strong>、あなたが追加で払うコール額が<strong>${call}</strong>、未コール返却が<strong>${returned}</strong>の状況です。<br>あなたがコールしてよい最低勝率(%)は?`,
-        };
-      }
-      if (normalizedMode === 'mdf') {
-	        const pot = randomInt(31) + 10;
-	        const bet = randomInt(16) + 2;
-	        const mdfPct = (calcBetEv(pot, bet, 0).mdf ?? NaN) * 100;
-	        return {
-	          mode: normalizedMode,
-	          answerPct: mdfPct,
-	          label: `MDF / P=${pot}, B=${bet}`,
-          promptHtml: `MDFドリル（純ブラフ）: ポットが<strong>${pot}</strong>、相手のベット額が<strong>${bet}</strong>です。<br>あなたが最低限守るべき頻度(%)は?`,
-        };
-      }
+	          promptHtml: `コールドリル: 相手のベット後ポットが<strong>${pAfter}</strong>、あなたが追加で払うコール額が<strong>${call}</strong>、未コール返却が<strong>${returned}</strong>の状況です。<br>あなたがコールしてよい最低勝率(%)は?`,
+	        };
+	      }
+	      const pot = randomInt(31) + 10;
+	      const bet = randomInt(16) + 2;
+	      const mdfPct = (calcBetEv(pot, bet, 0).mdf ?? NaN) * 100;
+	      return {
+	        mode: normalizedMode,
+	        answerPct: mdfPct,
+	        label: `MDF / P=${pot}, B=${bet}`,
+	        promptHtml: `MDFドリル（純ブラフ）: ポットが<strong>${pot}</strong>、相手のベット額が<strong>${bet}</strong>です。<br>あなたが最低限守るべき頻度(%)は?`,
+	      };
 	    }
 
 	    function drawTrainerQuestion() {
+	      stopTrainerTimer();
+	      const prompt = document.getElementById('trainer-prompt');
+	      const feedback = document.getElementById('trainer-feedback');
+	      const guessInput = document.getElementById('trainer-guess-input');
 	      const modeSelect = document.getElementById('trainer-mode-select');
 	      const selectedMode = modeSelect?.value || 'req';
-	      currentTrainerQuestion = buildTrainerQuestion(selectedMode);
+	      const sessionMode = readTrainerSessionMode();
+	      const timeLimitSec = sessionMode === 'drill' ? readTrainerTimeLimitSec() : null;
+	      if (sessionMode === 'drill' && timeLimitSec === null) {
+	        if (feedback) feedback.textContent = '鍛錬モードでは制限秒数を1以上で入力してください。';
+	        const limitInput = document.getElementById('trainer-time-limit-sec');
+	        if (limitInput) limitInput.focus();
+	        currentTrainerQuestion = null;
+	        trainerQuestionStartedAtMs = null;
+	        trainerQuestionTimeoutAtMs = null;
+	        updateTrainerTimerDisplay('残り時間: --');
+	        return;
+	      }
 
-	      const prompt = document.getElementById('trainer-prompt');
+	      const question = buildTrainerQuestion(selectedMode);
+	      currentTrainerQuestion = { ...question, sessionMode, timeLimitSec };
+	      trainerQuestionStartedAtMs = performance.now();
+	      trainerQuestionTimeoutAtMs = null;
+
+	      if (guessInput) guessInput.value = '';
 	      if (prompt) prompt.innerHTML = currentTrainerQuestion.promptHtml;
-	      const feedback = document.getElementById('trainer-feedback');
-	      if (feedback) feedback.textContent = '回答を入力して「答え合わせ」を押してください。';
+	      if (feedback) {
+	        feedback.textContent = sessionMode === 'drill'
+	          ? `鍛錬モード: ${timeLimitSec.toFixed(1)}秒以内に回答してください。`
+	          : '練習モード: 時間制限なし。精度重視で回答してください。';
+	      }
+
+	      if (sessionMode === 'drill') {
+	        trainerQuestionTimeoutAtMs = trainerQuestionStartedAtMs + timeLimitSec * 1000;
+	        updateTrainerTimerDisplay();
+	        trainerTimerIntervalId = setInterval(() => {
+	          if (!currentTrainerQuestion || currentTrainerQuestion.sessionMode !== 'drill') {
+	            stopTrainerTimer();
+	            return;
+	          }
+	          const remainingMs = trainerQuestionTimeoutAtMs - performance.now();
+	          if (remainingMs <= 0) {
+	            handleTrainerTimeout();
+	            return;
+	          }
+	          updateTrainerTimerDisplay();
+	        }, 100);
+	      } else {
+	        updateTrainerTimerDisplay('残り時間: 無制限');
+	      }
 	    }
 
 	    function checkTrainerAnswer() {
 	      const guessInput = document.getElementById('trainer-guess-input');
 	      const feedback = document.getElementById('trainer-feedback');
+	      const prompt = document.getElementById('trainer-prompt');
 	      if (!guessInput || !feedback) return;
 
 	      if (!currentTrainerQuestion) {
 	        feedback.textContent = '先に「出題」を押してください。';
 	        return;
 	      }
+	      if (currentTrainerQuestion.sessionMode === 'drill'
+	        && Number.isFinite(trainerQuestionTimeoutAtMs)
+	        && performance.now() >= trainerQuestionTimeoutAtMs) {
+	        handleTrainerTimeout();
+	        return;
+	      }
+
 	      const guess = parseFloat(guessInput.value);
 	      if (!Number.isFinite(guess) || guess < 0 || guess > 100) {
 	        feedback.textContent = '0-100の範囲で予想値を入力してください。';
+	        guessInput.focus();
 	        return;
 	      }
 
@@ -3228,13 +3425,42 @@
 	        feedback.textContent = '入力エラー: 問題生成に失敗';
 	        return;
 	      }
+
+	      const elapsedSec = trainerQuestionStartedAtMs === null
+	        ? 0
+	        : Math.max(0, (performance.now() - trainerQuestionStartedAtMs) / 1000);
+	      if (currentTrainerQuestion.sessionMode === 'drill'
+	        && Number.isFinite(currentTrainerQuestion.timeLimitSec)
+	        && elapsedSec > currentTrainerQuestion.timeLimitSec) {
+	        handleTrainerTimeout();
+	        return;
+	      }
+
 	      const error = Math.abs(guess - actual);
-	      feedback.innerHTML = `正答: <strong>${actual.toFixed(2)}%</strong> / 誤差: <strong>${error.toFixed(2)}%</strong>`;
-	      trainerHistory.unshift({ hero: currentTrainerQuestion.label, guess, actual, error });
-	      trainerHistory = trainerHistory.slice(0, 20);
-	      saveTrainerHistory();
-	      renderTrainerHistory();
-	      renderTrainerStats();
+	      const score = computeTrainerScore(
+	        error,
+	        currentTrainerQuestion.sessionMode,
+	        elapsedSec,
+	        currentTrainerQuestion.timeLimitSec,
+	      );
+	      feedback.innerHTML = `正答: <strong>${actual.toFixed(2)}%</strong> / 誤差: <strong>${error.toFixed(2)}%</strong> / 回答時間: <strong>${elapsedSec.toFixed(2)}秒</strong> / 得点: <strong>${score.toFixed(1)}点</strong>`;
+	      if (prompt) prompt.textContent = '答え合わせ完了。もう一度「出題」を押してください。';
+
+	      pushTrainerResult({
+	        hero: currentTrainerQuestion.label,
+	        mode: currentTrainerQuestion.mode === 'mdf' ? 'MDF' : 'req',
+	        guess,
+	        actual,
+	        error,
+	        elapsedSec,
+	        score,
+	        outcome: 'ok',
+	      });
+	      currentTrainerQuestion = null;
+	      trainerQuestionStartedAtMs = null;
+	      trainerQuestionTimeoutAtMs = null;
+	      stopTrainerTimer();
+	      updateTrainerTimerDisplay('残り時間: --');
 	    }
 	    
 	    // ICM計算関数
@@ -4402,12 +4628,16 @@
 	      document.getElementById('trainer-check-btn').addEventListener('click', checkTrainerAnswer);
       const trainerModeSelect = document.getElementById('trainer-mode-select');
       if (trainerModeSelect) {
-        trainerModeSelect.addEventListener('change', () => {
-          currentTrainerQuestion = null;
-          const prompt = document.getElementById('trainer-prompt');
-          const feedback = document.getElementById('trainer-feedback');
-          if (prompt) prompt.textContent = '「出題」を押して開始してください。';
-          if (feedback) feedback.textContent = '';
+	        trainerModeSelect.addEventListener('change', resetTrainerSessionState);
+      }
+      const trainerSessionModeSelect = document.getElementById('trainer-session-mode');
+      if (trainerSessionModeSelect) {
+        trainerSessionModeSelect.addEventListener('change', resetTrainerSessionState);
+      }
+      const trainerTimeLimitInput = document.getElementById('trainer-time-limit-sec');
+      if (trainerTimeLimitInput) {
+        trainerTimeLimitInput.addEventListener('change', () => {
+          if (readTrainerSessionMode() === 'drill') resetTrainerSessionState();
         });
       }
 	      document.getElementById('run-ev-selftest-btn').addEventListener('click', runEvCalculatorSelfTests);
