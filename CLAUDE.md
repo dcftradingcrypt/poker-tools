@@ -20,10 +20,12 @@
 8. T-2（鍛錬TIMEOUT）: `進行モード=鍛錬` で出題し、制限秒数を超えるまで待つ。期待結果は `TIMEOUT` 表示と `得点 0.0点` が出て問題終了し、`正答` と `解法`（式+途中値）が表示され履歴へ保存される。根拠は `index.html:1506` `index.html:3331` `index.html:3339` `index.html:3344` `index.html:3449`。
 9. T-3（得点内訳と統計）: 鍛錬で回答したとき、`得点内訳: accuracy/speed/合成` が表示される。あわせて履歴と `req平均得点` / `MDF平均得点` が更新される。根拠は `index.html:3283` `index.html:3495` `index.html:3185` `index.html:3215` `index.html:3324`。
 10. T-4（解法表示）: req/MDF それぞれで回答する。期待結果は `trainer-feedback` に `解法`（req: `req=C/(P_after+C-R)`、MDF: `MDF=P/(P+B)`）と数値代入の途中値が表示される。根拠は `index.html:3304` `index.html:3314` `index.html:3320` `index.html:3506` `index.html:3511`。
-11. T-5（比率出題）: req/MDF の問題文に `1/3P, 1/2P, 2/3P, 1.0P` のいずれかが表示される。根拠は `index.html:3363` `index.html:3382` `index.html:3398`。
-12. T-6（整数出題）: 問題文の `P(ベット前)` は6の倍数、`B` は整数で表示される。根拠は `index.html:3370` `index.html:3371` `index.html:3382` `index.html:3398`。
+11. T-5（比率候補固定）: req/MDF の出題比率候補が `1/3P, 1/2P, 2/3P, 1.0P` の4種で固定されている。根拠は `index.html:3365` `index.html:3366` `index.html:3367` `index.html:3368` `index.html:3369`。
+12. T-6（整数出題）: 問題文の `P(ベット前)` は6の倍数、`B` は整数で表示される。根拠は `index.html:3372` `index.html:3373` `index.html:3385` `index.html:3403`。
 13. T-7（解法の一貫）: 解法に `P(ベット前)` `B(比率)` `P_after=P+B` が途中値として表示される。根拠は `index.html:3314` `index.html:3320`。
-14. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1548` `index.html:2289` `index.html:4694`。
+14. T-8（鍛錬は比率ラベル非表示）: `進行モード=鍛錬` で出題した問題文に `1/3P|1/2P|2/3P|1.0P` が出ない。根拠は `index.html:3363` `index.html:3364` `index.html:3384` `index.html:3386` `index.html:3402` `index.html:3404` `index.html:3432`。
+15. T-9（練習は比率ラベル表示）: `進行モード=練習` で出題した問題文には `1/3P|1/2P|2/3P|1.0P` のいずれかが表示される。根拠は `index.html:3363` `index.html:3364` `index.html:3384` `index.html:3385` `index.html:3402` `index.html:3403` `index.html:3432`。
+16. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1548` `index.html:2289` `index.html:4714`。
 
 ## 修正ログ
 
@@ -413,6 +415,27 @@
 - 再発防止:
   - トレーナー出題変更時は `ratioOptions` の4比率と `prePot` の6倍数化を同時に確認し、整数暗算前提を崩さない。
   - 正答計算変更時は `buildTrainerQuestion` 内で `calcCallEv` / `calcBetEv` を直接呼んでいることを確認し、独自再実装を入れない。
+
+### 2026-02-19 22:41:04 KST
+- 対象: `index.html`（トレーナー出題文の比率ラベル表示を進行モードで出し分け）、`CLAUDE.md`（手動確認にT-8/T-9を追加）
+- 根拠:
+  - 出題分岐: `index.html:3361`（`buildTrainerQuestion(mode, sessionMode)`）`index.html:3363`（`normalizedSessionMode`）`index.html:3364`（`showRatioLabelInPrompt`）
+  - 練習/鍛錬の文言分岐: `index.html:3384` `index.html:3385` `index.html:3386`（req）`index.html:3402` `index.html:3403` `index.html:3404`（MDF）
+  - 進行モード連携: `index.html:3419`（`sessionMode`取得）`index.html:3432`（`buildTrainerQuestion(selectedMode, sessionMode)`）
+  - 解法維持: `index.html:3304` `index.html:3314` `index.html:3320`（比率ラベル・途中値・代入結果を継続表示）
+  - 純関数利用維持: `index.html:3378`（`calcCallEv`）`index.html:3396`（`calcBetEv`）
+- diff要約:
+  - `buildTrainerQuestion` に `sessionMode` 引数を追加し、`showRatioLabelInPrompt` で出題文のみを条件分岐。
+  - 練習モードでは従来どおり比率ラベル（`1/3P` など）を表示。
+  - 鍛錬モードでは比率ラベルを非表示にし、`P` と `B` の数値だけを表示。
+  - 解法表示・正答計算・得点/TIMEOUT系ロジックは変更なし。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `git remote -v` / `rg -n "buildTrainerQuestion\\(|drawTrainerQuestion\\(|trainerSessionMode|promptHtml|ratioLabel" index.html` / `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d` / `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true` / `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK` / `python3` 固定13ケース再計算
+- テスト結果:
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`
+- 再発防止:
+  - 出題文の仕様変更は `buildTrainerQuestion` に閉じ、`buildTrainerSolutionHtml` の表示仕様と混線させない。
+  - 進行モード依存の文言変更時は `drawTrainerQuestion` から `sessionMode` が渡っていることを必須確認し、片側モードのみ反映漏れを防ぐ。
 
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`

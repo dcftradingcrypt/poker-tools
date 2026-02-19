@@ -3358,8 +3358,10 @@
 	      updateTrainerTimerDisplay('残り時間: 0.0秒');
 	    }
 
-	    function buildTrainerQuestion(mode) {
+	    function buildTrainerQuestion(mode, sessionMode) {
 	      const normalizedMode = mode === 'mdf' ? mode : 'req';
+	      const normalizedSessionMode = sessionMode === 'drill' ? 'drill' : 'practice';
+	      const showRatioLabelInPrompt = normalizedSessionMode !== 'drill';
 	      const ratioOptions = [
 	        { label: '1/3P', num: 1, den: 3 },
 	        { label: '1/2P', num: 1, den: 2 },
@@ -3379,7 +3381,9 @@
 	          mode: normalizedMode,
 	          answerPct: reqPct,
 	          label: `req / P=${prePot}, 比率=${ratio.label}, B=${bet}`,
-	          promptHtml: `コールドリル（標準比率）: P(ベット前)=<strong>${prePot}</strong>、相手ベットは<strong>${ratio.label}</strong>（B=<strong>${bet}</strong>）です。通常コールとして P_after=P+B=<strong>${pAfter}</strong>。<br>コールしてよい最低勝率 req(%) は?`,
+	          promptHtml: showRatioLabelInPrompt
+	            ? `コールドリル（標準比率）: P(ベット前)=<strong>${prePot}</strong>、相手ベットは<strong>${ratio.label}</strong>（B=<strong>${bet}</strong>）です。通常コールとして P_after=P+B=<strong>${pAfter}</strong>。<br>コールしてよい最低勝率 req(%) は?`
+	            : `コールドリル: P(ベット前)=<strong>${prePot}</strong>、相手ベット額は B=<strong>${bet}</strong> です。通常コールとして P_after=P+B=<strong>${pAfter}</strong>。<br>コールしてよい最低勝率 req(%) は?`,
 	          prePot,
 	          ratioLabel: ratio.label,
 	          bet,
@@ -3395,7 +3399,9 @@
 	        mode: normalizedMode,
 	        answerPct: mdfPct,
 	        label: `MDF / P=${prePot}, 比率=${ratio.label}, B=${bet}`,
-	        promptHtml: `MDFドリル（標準比率）: P(ベット前)=<strong>${prePot}</strong>、相手ベットは<strong>${ratio.label}</strong>（B=<strong>${bet}</strong>）です。P_after=P+B=<strong>${pAfter}</strong>。<br>あなたが最低限守るべき頻度 MDF(%) は?`,
+	        promptHtml: showRatioLabelInPrompt
+	          ? `MDFドリル（標準比率）: P(ベット前)=<strong>${prePot}</strong>、相手ベットは<strong>${ratio.label}</strong>（B=<strong>${bet}</strong>）です。P_after=P+B=<strong>${pAfter}</strong>。<br>あなたが最低限守るべき頻度 MDF(%) は?`
+	          : `MDFドリル: P(ベット前)=<strong>${prePot}</strong>、相手ベット額は B=<strong>${bet}</strong> です。P_after=P+B=<strong>${pAfter}</strong>。<br>あなたが最低限守るべき頻度 MDF(%) は?`,
 	        prePot,
 	        ratioLabel: ratio.label,
 	        bet,
@@ -3423,7 +3429,7 @@
 	        return;
 	      }
 
-	      const question = buildTrainerQuestion(selectedMode);
+	      const question = buildTrainerQuestion(selectedMode, sessionMode);
 	      currentTrainerQuestion = { ...question, sessionMode, timeLimitSec };
 	      trainerQuestionStartedAtMs = performance.now();
 	      trainerQuestionTimeoutAtMs = null;
