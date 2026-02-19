@@ -16,11 +16,14 @@
 4. B-2（クイックベットの必須誘導）: EV電卓Bで `P` 空欄のまま `1/2P` などを押す。期待結果は `evbet-error` に `先にPを入力` が出て `evbet-pot` へfocus。根拠は `index.html:2096` `index.html:2097` `index.html:2098` `index.html:4395`。
 5. C-1（outs未入力でno-opしない）: EV電卓Cで `outs` 空欄のまま `Outs更新` を押す。期待結果は `evouts-error` に `outsを入力` が出て `evouts-count` へfocus。根拠は `index.html:2178` `index.html:2179` `index.html:2180` `index.html:4451`。
 6. C-2（正常入力で部分結果更新）: EV電卓Cで `outs=9`、`draws=1`、`unseen=47` を入力して `Outs更新`。期待結果は `evouts-exact` と `evouts-approx` が `%` 表示で更新される。根拠は `index.html:2201` `index.html:2202` `index.html:2203` `index.html:2204`。
-7. T-1（練習/鍛錬の切替）: トレーナーで `進行モード` を `練習` と `鍛錬` で切り替える。期待結果は問題状態がリセットされ、`残り時間` 表示が初期化される。根拠は `index.html:1500` `index.html:3218` `index.html:3261` `index.html:4633` `index.html:4639`。
-8. T-2（鍛錬TIMEOUT）: `進行モード=鍛錬` で出題し、制限秒数を超えるまで待つ。期待結果は `TIMEOUT` 表示と `得点 0.0点` が出て問題終了し、`正答` と `解法`（式+途中値）が表示され履歴へ保存される。根拠は `index.html:1506` `index.html:3327` `index.html:3335` `index.html:3340` `index.html:3425`。
-9. T-3（解法表示）: req/MDF それぞれで回答する。期待結果は `trainer-feedback` に `解法`（req: `req=C/(P_after+C-R)`、MDF: `MDF=P/(P+B)`）と数値代入の途中値が表示される。根拠は `index.html:3304` `index.html:3311` `index.html:3316` `index.html:3492` `index.html:3497`。
-10. T-4（得点内訳と統計）: 鍛錬で回答したとき、`得点内訳: accuracy/speed/合成` が表示される。あわせて履歴と `req平均得点` / `MDF平均得点` が更新される。根拠は `index.html:3283` `index.html:3495` `index.html:3185` `index.html:3215` `index.html:3324`。
-11. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1548` `index.html:2289` `index.html:4694`。
+7. T-1（練習/鍛錬の切替）: トレーナーで `進行モード` を `練習` と `鍛錬` で切り替える。期待結果は問題状態がリセットされ、`残り時間` 表示が初期化される。根拠は `index.html:1500` `index.html:3229` `index.html:3261` `index.html:4682` `index.html:4686`。
+8. T-2（鍛錬TIMEOUT）: `進行モード=鍛錬` で出題し、制限秒数を超えるまで待つ。期待結果は `TIMEOUT` 表示と `得点 0.0点` が出て問題終了し、`正答` と `解法`（式+途中値）が表示され履歴へ保存される。根拠は `index.html:1506` `index.html:3331` `index.html:3339` `index.html:3344` `index.html:3449`。
+9. T-3（得点内訳と統計）: 鍛錬で回答したとき、`得点内訳: accuracy/speed/合成` が表示される。あわせて履歴と `req平均得点` / `MDF平均得点` が更新される。根拠は `index.html:3283` `index.html:3495` `index.html:3185` `index.html:3215` `index.html:3324`。
+10. T-4（解法表示）: req/MDF それぞれで回答する。期待結果は `trainer-feedback` に `解法`（req: `req=C/(P_after+C-R)`、MDF: `MDF=P/(P+B)`）と数値代入の途中値が表示される。根拠は `index.html:3304` `index.html:3314` `index.html:3320` `index.html:3506` `index.html:3511`。
+11. T-5（比率出題）: req/MDF の問題文に `1/3P, 1/2P, 2/3P, 1.0P` のいずれかが表示される。根拠は `index.html:3363` `index.html:3382` `index.html:3398`。
+12. T-6（整数出題）: 問題文の `P(ベット前)` は6の倍数、`B` は整数で表示される。根拠は `index.html:3370` `index.html:3371` `index.html:3382` `index.html:3398`。
+13. T-7（解法の一貫）: 解法に `P(ベット前)` `B(比率)` `P_after=P+B` が途中値として表示される。根拠は `index.html:3314` `index.html:3320`。
+14. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1548` `index.html:2289` `index.html:4694`。
 
 ## 修正ログ
 
@@ -390,6 +393,26 @@
 - 再発防止:
   - トレーナー結果表示変更時は `checkTrainerAnswer` と `handleTrainerTimeout` の両方で `正答+解法` が出ることを必須確認する。
   - 速度加点導入時は `accuracy/speed/合成` の各値を同一feedbackで確認し、TIMEOUT時は0点内訳へ固定する。
+
+### 2026-02-19 21:56:12 KST
+- 対象: `index.html`（トレーナー出題を標準ベット比率ベースへ変更、解法の途中値を比率前提に統一）、`CLAUDE.md`（手動確認T-5/T-6/T-7を現仕様へ更新）
+- 根拠:
+  - 比率出題の固定: `index.html:3363` `index.html:3364` `index.html:3365` `index.html:3366` `index.html:3367`
+  - 整数出題の固定: `index.html:3370`（`P` を6の倍数）`index.html:3371`（`B` を比率から整数化）
+  - 正答取得の純関数利用: `index.html:3376`（`calcCallEv`）`index.html:3392`（`calcBetEv`）
+  - 解法の途中値表示: `index.html:3314` `index.html:3320`（`P(ベット前)` / `B(比率)` / `P_after=P+B`）
+- diff要約:
+  - `buildTrainerQuestion` を `1/3P, 1/2P, 2/3P, 1.0P` からランダム出題する構成へ変更。
+  - `P(ベット前)` を6の倍数で生成し、`B` を整数で出題するよう統一。
+  - req/MDFの正答は `calcCallEv` / `calcBetEv` から取得し、式重複の計算実装を追加しない形で維持。
+  - `buildTrainerSolutionHtml` を比率出題に合わせ、途中値（`P`/`B`/`P_after`）を必ず表示。
+- 実行コマンド: `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `git remote -v` / `rg -n "buildTrainerQuestion|randomInt\\(|buildTrainerSolutionHtml\\(|calcCallEv\\(|calcBetEv\\(" index.html` / `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d` / `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true` / `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK` / `python3` 固定13ケース再計算
+- テスト結果:
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`
+- 再発防止:
+  - トレーナー出題変更時は `ratioOptions` の4比率と `prePot` の6倍数化を同時に確認し、整数暗算前提を崩さない。
+  - 正答計算変更時は `buildTrainerQuestion` 内で `calcCallEv` / `calcBetEv` を直接呼んでいることを確認し、独自再実装を入れない。
 
 ## 引継ぎサマリ（最新）
 - 正規リポジトリ: `/mnt/c/repos/popker`
