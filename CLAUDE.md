@@ -20,8 +20,237 @@
 8. I-1（空欄でも計算開始）: ICM計算時に未入力の非参加者が自動でフォールド行に追加され、空欄起因の赤エラーが出ない。根拠は `index.html:3640` `index.html:4223` `index.html:4230`。
 9. I-2（オールイン相手はdisabled表示）: `+ アクション追加` のプレイヤー選択でオールイン相手が `（オールイン相手/自動）` の disabled 表示になる。根拠は `index.html:3485` `index.html:3491` `index.html:3492` `index.html:3493`。
 10. セルフテスト（13件）: 設定タブで `EV電卓セルフテスト` を押す。期待結果は `セルフテスト: 13/13 PASS`。根拠は `index.html:1498` `index.html:2045` `index.html:4533`。
+11. I-3（表示専用の自動反映）: ICMタブの `想定勝率(%)` は入力欄ではなく表示のみで、プリフロップの `エクイティ計算` 完了時に更新される。根拠は `index.html:1367` `index.html:1369` `index.html:2437` `index.html:2481`。
+12. I-4（未設定時の明示エラー）: プリフロップ未計算のまま `ICM計算` を押すと `先にプリフロップでエクイティ計算...` が `icm-error` に表示される。根拠は `index.html:4199` `index.html:4202` `index.html:4203`。
+13. I-5（ヒーローハンド表示）: ICMタブに `ヒーロー` 表示があり、プリフロップ計算済みハンド（例: `AsKs`）が反映される。根拠は `index.html:1368` `index.html:2439` `index.html:2455` `index.html:2481`。
+14. I-6（ICM卓ビュー）: ICMタブに楕円卓が表示され、席ごとに `P番号/ポジション/スタック/手札/アクション` が表示される。ヒーロー席は強調され、`BTN/SB/BB` はバッジ色で識別できる。根拠は `index.html:1492` `index.html:1494` `index.html:3591` `index.html:3608` `index.html:3617` `index.html:3627`。
+15. I-7（ICMドリル答え非表示）: `出題` 直後は ICM結果ブロック（必要勝率/想定EV差）が非表示で、問題文にも必要勝率が出ない。根拠は `index.html:1044` `index.html:3954` `index.html:4075` `index.html:4077`。
+16. I-8（ICMドリル回答時の根拠表示）: `コール/フォールド` 回答後にだけ `必要勝率 / foldEV / callEV / EV差` が表示される。未出題回答では `先に「出題」を押してください。` が表示される。根拠は `index.html:4080` `index.html:4082` `index.html:4093`。
+17. I-9（SBオールイン vs BB固定）: ICMドリル生成時は `SB` をオールイン相手、`BB` をヒーローに固定して判定する。根拠は `index.html:4005` `index.html:4006` `index.html:4008` `index.html:4009`。
+18. I-10（オールイン前候補制限）: `+ アクション追加` のプレイヤー候補はオールイン相手より前に行動する座席のみを表示し、行動順（UTG→…）で並ぶ。根拠は `index.html:3727` `index.html:3732` `index.html:3736` `index.html:3738` `index.html:1515`。
 
 ## 修正ログ
+
+### 2026-02-22 20:45:30 KST
+- 対象: `index.html`（I-10根拠の再監査）、`CLAUDE.md`（Max作業ログと再発防止追記）
+- 根拠:
+  - 行動順定義: `index.html:3566`
+  - 行動順rank取得: `index.html:3599`
+  - 後続席除外判定: `index.html:3606` `index.html:3732`
+  - 候補行動順ソート: `index.html:3742`
+  - オールイン相手disabled表示: `index.html:3749` `index.html:3750`
+  - 追加不能時の明示エラー: `index.html:3845` `index.html:3851`
+- diff要約:
+  - `index.html`: 追加修正なし（I-10実装が差分上で維持されていることを再確認）。
+  - `CLAUDE.md`: 今回のMax作業の実行コマンドと実出力、監査観点の再発防止を追記。
+- 実行コマンドと実出力:
+  - `pwd`
+    - `/mnt/c/repos/popker`
+  - `git rev-parse --show-toplevel`
+    - `/mnt/c/repos/popker`
+  - `git status -sb`
+    - `## main...origin/main`
+    - ` M CLAUDE.md`
+    - ` M index.html`
+  - `git diff --name-only`
+    - `CLAUDE.md`
+    - `index.html`
+  - `git diff --stat -- index.html CLAUDE.md`
+    - `CLAUDE.md  | 167 +++++++++++++++-`
+    - `index.html | 666 ++++++++++++++++++++++++++++++++++++++++++++++++++++---------`
+    - `2 files changed, 739 insertions(+), 94 deletions(-)`
+  - `rg -n "ICM_PRE_ALLIN_ACTION_ORDER|getIcmPreAllInActionRank|canIcmPlayerActBeforeAllIn|appendIcmActionPlayerOptions|addIcmActionRow" index.html`
+    - `3566:	    const ICM_PRE_ALLIN_ACTION_ORDER = {`
+    - `3599:	    function getIcmPreAllInActionRank(playerIndex) {`
+    - `3606:	    function canIcmPlayerActBeforeAllIn(playerIndex, allinIndex) {`
+    - `3727:    function appendIcmActionPlayerOptions(selectEl, n) {`
+    - `3732:        if (Number.isFinite(allinIndex) && i !== allinIndex && !canIcmPlayerActBeforeAllIn(i, allinIndex)) {`
+    - `3742:      options.sort((a, b) => a.rank - b.rank);`
+    - `3838:			    function addIcmActionRow(preset = {}) {`
+  - `nl -ba index.html | sed -n '3550,3770p'`
+    - `ICM_PRE_ALLIN_ACTION_ORDER` / `getIcmPreAllInActionRank` / `canIcmPlayerActBeforeAllIn` / `appendIcmActionPlayerOptions` の実装を確認。
+  - `nl -ba index.html | sed -n '3835,3860p'`
+    - `addIcmActionRow` で無候補時に `setIcmError` を出して停止することを確認。
+  - `rg -o 'id="[^\"]+"' index.html | sort | uniq -d`
+    - 出力なし
+  - `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true`
+    - 出力なし
+  - `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
+    - `MANIFEST_OK`
+  - `rg -n "icm-trainer-start-btn|buildIcmTrainerQuestion|submitIcmTrainerAnswer" index.html CLAUDE.md || true`
+    - `CLAUDE.md:145:  - \`rg -n "icm-trainer-start-btn|buildIcmTrainerQuestion|submitIcmTrainerAnswer" index.html\``
+    - `CLAUDE.md:156:  - 旧試作名 (\`icm-trainer*\`) の再混入を防ぐため、毎回 \`rg -n "icm-trainer-start-btn|buildIcmTrainerQuestion|submitIcmTrainerAnswer" index.html\` をゲート化する。`
+  - `rg -n "icm-trainer-start-btn|buildIcmTrainerQuestion|submitIcmTrainerAnswer" index.html || true`
+    - 出力なし
+  - `rg --files | rg '(^|/)(package\.json|playwright\.config\.|cypress\.config\.|vite\.config\.|webpack\.config\.|Makefile|pytest\.ini|tox\.ini)$' || true`
+    - 出力なし
+  - `git diff --stat -- index.html CLAUDE.md`（ログ追記後の再確認）
+    - `CLAUDE.md  | 233 ++++++++++++++++++++-`
+    - `index.html | 666 ++++++++++++++++++++++++++++++++++++++++++++++++++++---------`
+    - `2 files changed, 805 insertions(+), 94 deletions(-)`
+- テスト結果:
+  - I-10要件（行動順ソート + 後続席除外 + allin disabled表示）はコード上で成立。
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`。
+  - 旧試作キーワードは `index.html` 0件（`CLAUDE.md` は過去ログ由来の記録のみ）。
+  - lint/build/E2E 相当の設定ファイルは検出されず（追加自動検証なし）。
+- 再発防止:
+  - I-10監査は `appendIcmActionPlayerOptions` の `continue` 条件（後続除外）と `options.sort`（行動順）の2点を必ず同時確認する。
+  - `ICM_POSITION_OPTIONS` に `none` が含まれる事実（`index.html:3554`）と、rank不明時に `canIcmPlayerActBeforeAllIn` が `true` を返す事実（`index.html:3611` `index.html:3612`）を監査観点として固定し、候補制限異常時は最初にここを確認する。
+
+### 2026-02-21 18:51:47 KST
+- 対象: `index.html`（I-10の根拠再確認）、`CLAUDE.md`（実行コマンドと実出力の一致ログ）
+- 根拠:
+  - 行動順定義: `index.html:3566`
+  - 行動順rank取得: `index.html:3599`
+  - 後続席除外判定: `index.html:3606` `index.html:3732`
+  - 候補行動順ソート: `index.html:3742`
+- diff要約:
+  - 実装差分は追加せず、I-10が「後続席除外 + 行動順ソート」で成立していることを再検証。
+  - `CLAUDE.md` に実行コマンドと実出力をそのまま記録し、ログ矛盾を解消。
+- 実行コマンドと実出力:
+  - `pwd`
+    - `/mnt/c/repos/popker`
+  - `git rev-parse --show-toplevel`
+    - `/mnt/c/repos/popker`
+  - `git status -sb`
+    - `## main...origin/main`
+    - ` M CLAUDE.md`
+    - ` M index.html`
+  - `rg -n "appendIcmActionPlayerOptions|canIcmPlayerActBeforeAllIn|getIcmPreAllInActionRank|ICM_PRE_ALLIN_ACTION_ORDER" index.html`
+    - `3566: const ICM_PRE_ALLIN_ACTION_ORDER = {`
+    - `3599: function getIcmPreAllInActionRank(playerIndex) {`
+    - `3606: function canIcmPlayerActBeforeAllIn(playerIndex, allinIndex) {`
+    - `3727: function appendIcmActionPlayerOptions(selectEl, n) {`
+    - `3732: if (Number.isFinite(allinIndex) && i !== allinIndex && !canIcmPlayerActBeforeAllIn(i, allinIndex)) {`
+    - `3742: options.sort((a, b) => a.rank - b.rank);`
+  - `nl -ba index.html | sed -n '3560,3765p'`
+    - `ICM_PRE_ALLIN_ACTION_ORDER` / `getIcmPreAllInActionRank` / `canIcmPlayerActBeforeAllIn` / `appendIcmActionPlayerOptions` の実装を確認。
+  - `rg -o 'id="[^"]+"' index.html | sort | uniq -d`
+    - 出力なし
+  - `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true`
+    - 出力なし
+  - `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
+    - `MANIFEST_OK`
+  - `python3 - <<'PY' ...`（提示スニペット原文）
+    - `セルフテスト(式再計算): 13/13 PASS`
+  - `git diff --stat -- index.html CLAUDE.md`
+    - `CLAUDE.md  | 121 ++++++++++-`
+    - `index.html | 666 ++++++++++++++++++++++++++++++++++++++++++++++++++++---------`
+    - `2 files changed, 693 insertions(+), 94 deletions(-)`
+- テスト結果:
+  - I-10の要件（候補の後続席除外 + 行動順ソート）はコード上で成立。
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`、固定13ケース（提示スニペット原文）`13/13 PASS`。
+- 再発防止:
+  - I-10確認時は `appendIcmActionPlayerOptions` の `continue` 条件（後続除外）と `options.sort`（行動順）を同時に監査し、どちらか一方だけの確認で完了扱いにしない。
+
+### 2026-02-21 09:35:43 KST
+- 対象: `index.html`（ICMドリルの答え漏れ防止/SBvsBB固定/候補制限/日本語化）、`CLAUDE.md`（手動確認項目更新）
+- 根拠:
+  - 出題時の答え非表示: `index.html:1044` `index.html:3954` `index.html:4075` `index.html:4077`
+  - 回答後の根拠表示: `index.html:4093`（必要勝率/foldEV/callEV/EV差）
+  - SBオールイン vs BB固定: `index.html:4005` `index.html:4006` `index.html:4008` `index.html:4009`
+  - オールイン前候補制限: `index.html:3732` `index.html:3733` `index.html:3738` `index.html:1515`
+  - 日本語化: `index.html:1506` `index.html:1507` `index.html:3649` `index.html:3667`
+- diff要約:
+  - ICMドリル出題時は `icm-results` を非表示化し、回答後に再表示するように変更。
+  - 出題文から必要勝率を除去し、回答後のfeedbackでのみ必要勝率とEV根拠を表示。
+  - ICMドリル生成を `SBオールイン / BB判断` に固定。
+  - オールイン前アクション候補を「オールイン相手より前に行動する座席」のみに制限し、後続席は候補表示しないように変更。
+  - ICMドリル/卓ビュー文言の `Call/Fold/Hand/Hero/All-in` を日本語へ置換。
+- 実行コマンド:
+  - `pwd` / `git rev-parse --show-toplevel` / `git status -sb`
+  - `rg -n "startIcmDrillQuestion|buildIcmDrillQuestion|submitIcmDrillAnswer|appendIcmActionPlayerOptions|canIcmPlayerActBeforeAllIn" index.html`
+  - `rg -n "必要勝率" index.html`
+  - `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d`
+  - `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true`
+  - `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
+  - `python3` 固定13ケース再計算
+- テスト結果:
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`。
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`。
+  - `必要勝率` は回答表示/ICM結果側にのみ残り、出題プロンプト文字列には未使用。
+- 再発防止:
+  - ICMドリル改修時は `startIcmDrillQuestion` の出題文と `submitIcmDrillAnswer` の結果文を対で監査し、答え漏れを防ぐ。
+  - アクション候補変更時は `appendIcmActionPlayerOptions` の除外条件と説明文を同時更新し、UIと挙動の不一致を防ぐ。
+
+### 2026-02-21 18:36:05 KST
+- 対象: `index.html`（`appendIcmActionPlayerOptions` 候補ソート順序の固定）
+- 根拠:
+  - 行動順ソート関数: `index.html:3566` `index.html:3601` `index.html:3606`
+  - 候補生成関数: `index.html:3727`
+  - no-op時の説明文: `index.html:1515`
+- diff要約:
+  - `appendIcmActionPlayerOptions` を候補リストとして一度構築し、`ICM_PRE_ALLIN_ACTION_ORDER` の rank 昇順で並べてから `<option>` を追加するよう変更。
+- 実行コマンド:
+  - `pwd`
+  - `git rev-parse --show-toplevel`
+  - `git status -sb`
+  - `rg -n "appendIcmActionPlayerOptions|canIcmPlayerActBeforeAllIn|ICM_PRE_ALLIN_ACTION_ORDER|getIcmPreAllInActionRank" index.html`
+  - `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d`
+  - `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true`
+  - `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
+- テスト結果:
+  - 重複ID: 0件、禁止語: 0件、`MANIFEST_OK`
+- 再発防止:
+  - ICMの「オールイン前」候補は常に `canIcmPlayerActBeforeAllIn` と `appendIcmActionPlayerOptions` の共通ロジックで導出し、order と除外条件を別々に実装しない。
+
+### 2026-02-21 07:41:51 KST
+- 対象: `index.html`（ICM卓ビューUIとICMドリル方式1の復活）、`CLAUDE.md`（手動確認項目追加）
+- 根拠:
+  - ICM卓UI: `index.html:1492` `index.html:1494` `index.html:3591` `index.html:3608` `index.html:3617` `index.html:3627`
+  - ICMドリル: `index.html:1497` `index.html:1501` `index.html:3918` `index.html:3959` `index.html:3978` `index.html:4012` `index.html:4022` `index.html:4967`
+  - 方式1固定（想定勝率の入力不可・プリフロップ反映）: `index.html:1486` `index.html:1488` `index.html:2572` `index.html:2582` `index.html:2616`
+- diff要約:
+  - ICMタブに楕円卓ビュー（席・ポジション・スタック・ヒーローハンド・アクション表示、Hero/All-in強調）を追加。
+  - ICMドリルパネル（`出題`/`Call`/`Fold`）を追加し、出題時にICM入力自動投入→`calculateICM()`→EV差符号で正答判定する導線を実装。
+  - 回答後に `foldEV / callEV / EV差` を必ず表示し、未出題回答時は明示エラー（no-op禁止）にした。
+  - 旧 `icm-trainer*` 系のUI/関数名は復活させず、`icm-drill-*` に統一。
+- 実行コマンド:
+  - `pwd` / `git rev-parse --show-toplevel` / `git status -sb` / `git remote -v`
+  - `rg -n "ICMドリル|icm-trainer|icm-drill|icm-table-visual|renderIcmTableVisual|buildIcmDrillQuestion|submitIcmDrillAnswer" index.html`
+  - `rg -n "icm-trainer-start-btn|buildIcmTrainerQuestion|submitIcmTrainerAnswer" index.html`
+  - `rg -o 'id="[^"]+"' index.html | sort | uniq -d`
+  - `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true`
+  - `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
+  - `python3` 固定13ケース再計算
+- テスト結果:
+  - 旧 `icm-trainer*` 残骸 0件（コマンドは終了コード1・ヒットなし）。
+  - 重複ID 0件、禁止語 0件、`MANIFEST_OK`。
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`。
+- 再発防止:
+  - ICMドリル改修時は「正答判定が `calculateICM` のEV差に依存していること」を `buildIcmDrillQuestion` / `submitIcmDrillAnswer` の行番号で必ず確認する。
+  - 旧試作名 (`icm-trainer*`) の再混入を防ぐため、毎回 `rg -n "icm-trainer-start-btn|buildIcmTrainerQuestion|submitIcmTrainerAnswer" index.html` をゲート化する。
+
+### 2026-02-21 03:00:49 KST
+- 対象: `index.html`（想定勝率の表示専用化、逆流経路削除、ヒーローハンド表示、旧試作ICM UI/関数削除）、`CLAUDE.md`（手動確認更新）
+- 根拠:
+  - `rg -n "id=\"assumed-winrate\"[^\\n]*type=\"number\"|handleAssumedWinrateInput|assumed-winrate.*addEventListener\\('input'" index.html`
+  - `rg -n "旧試作ICM関連キーワード" index.html CLAUDE.md`（0件）
+  - `nl -ba index.html | sed -n '1360,1378p'`
+  - `nl -ba index.html | sed -n '2412,2492p'`
+  - `nl -ba index.html | sed -n '4192,4210p'`
+- diff要約:
+  - `assumed-winrate` を `type=\"hidden\"` へ変更し、表示専用の `assumed-winrate-display` と `icm-assumed-hero-hand` を追加。
+  - `setAssumedWinrateFromPreflop` を追加し、プリフロップ計算完了 (`setCalculatedEquity`) からのみ想定勝率/ヒーローハンドを更新。
+  - 手入力経路（`handleAssumedWinrateInput`、手入力判定フラグ、inputイベント、ボタン導線）を削除。
+  - ICM計算時に想定勝率未設定なら `先にプリフロップでエクイティ計算...` を明示エラー表示。
+  - 旧試作ICM（UI/状態/関数/イベント）を全削除し、想定勝率への副作用経路を除去。
+- 実行コマンド:
+  - `pwd` / `git rev-parse --show-toplevel` / `git status -sb`
+  - `rg -n "旧試作ICM関連キーワード" index.html CLAUDE.md`
+  - `rg -n "id=\"assumed-winrate\"[^\\n]*type=\"number\"|handleAssumedWinrateInput|assumed-winrate.*addEventListener\\('input'" index.html`
+  - `rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d`
+  - `rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true`
+  - `python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
+  - `python3` 固定13ケース再計算
+- テスト結果:
+  - 旧試作ICM残骸 0件。
+  - 想定勝率の入力経路 0件（表示専用化を確認）。
+  - 重複ID 0件、禁止語0件、`manifest.json` 構文OK。
+  - 固定ケース再計算: `セルフテスト(式再計算): 13/13 PASS`。
+- 再発防止:
+  - ICMの想定勝率は `setCalculatedEquity -> setAssumedWinrateFromPreflop` の単方向更新のみ許可し、他導線を追加しない。
+  - 廃止機能の削除時は `UI -> 状態 -> 関数 -> イベント -> CLAUDE` の順で `rg` ゼロ確認を必須化する。
 
 ### 2026-02-13 19:57:19 KST
 - 対象: `index.html`
@@ -500,5 +729,5 @@
 - 正規リポジトリ（Windows）: `C:\repos\popker`
 - 現在の未コミット変更: `index.html`, `CLAUDE.md`
 - 静的監査: `DUP_IDS []`, `MISSING_IDS []`, 禁止語（Bet vs Check / ベットEV（HU） / checkEV / Bet vs）0件
-- 既知の未解決: ブラウザ目視確認（EV電卓がMDF単体表示 / ICM空欄時の自動フォールド反映 / disabled表示文言 / トレーナーMDF問題文と解法 / Settingsの `セルフテスト: 13/13 PASS`）が未回収
-- 次アクション: ユーザー目視結果（PASS/FAIL）を転記し、必要なら最小差分で修正後に再監査
+- 既知の未解決: ブラウザ目視確認（I-7: 出題時に答え非表示 / I-8: 回答後の根拠表示 / I-9: SBvsBB固定 / I-10: オールイン前候補制限）が未回収
+- 次アクション: ユーザーに I-7〜I-10 を目視確認してもらい、PASS/FAIL を転記。FAIL時は表示文言と対象席ラベルを根拠に最小差分で再修正する

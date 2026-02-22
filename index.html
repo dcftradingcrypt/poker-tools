@@ -922,6 +922,129 @@
       background: rgba(133, 102, 34, 0.5);
     }
 
+    #icm-table-panel,
+    #icm-drill-panel {
+      margin-top: var(--space-3);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 222, 137, 0.22);
+      background: rgba(8, 18, 14, 0.7);
+      padding: var(--space-3);
+    }
+
+    #icm-table-visual {
+      position: relative;
+      min-height: 280px;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 215, 120, 0.42);
+      background:
+        radial-gradient(circle at center, rgba(31, 94, 63, 0.6) 0%, rgba(15, 47, 31, 0.9) 66%, rgba(10, 28, 20, 0.95) 100%);
+      overflow: hidden;
+    }
+
+    #icm-table-visual::before {
+      content: '';
+      position: absolute;
+      inset: 12%;
+      border: 1px dashed rgba(255, 231, 169, 0.3);
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .icm-seat {
+      position: absolute;
+      width: 132px;
+      min-height: 84px;
+      transform: translate(-50%, -50%);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 222, 137, 0.3);
+      background: rgba(9, 18, 14, 0.88);
+      padding: 7px 8px;
+      font-size: 12px;
+      color: #f1f8f2;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .icm-seat.hero {
+      border-color: rgba(125, 228, 160, 0.8);
+      box-shadow: 0 10px 24px rgba(72, 182, 117, 0.35);
+      background: rgba(16, 44, 30, 0.9);
+    }
+
+    .icm-seat.villain {
+      border-color: rgba(255, 196, 107, 0.78);
+      background: rgba(62, 45, 20, 0.85);
+    }
+
+    .icm-seat-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .icm-seat-role {
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .icm-seat-stack {
+      margin-top: 4px;
+      font-weight: 700;
+    }
+
+    .icm-seat-hand {
+      margin-top: 4px;
+      font-size: 11px;
+      color: #cce8d8;
+      min-height: 14px;
+    }
+
+    .icm-seat-action {
+      margin-top: 4px;
+      font-size: 11px;
+      color: #c4d4c8;
+      min-height: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .icm-pos-badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 900;
+      border: 1px solid rgba(255, 230, 168, 0.34);
+      color: #fbeab9;
+      background: rgba(90, 68, 28, 0.42);
+    }
+
+    .icm-pos-btn {
+      color: #162b20;
+      background: rgba(255, 210, 101, 0.92);
+      border-color: rgba(255, 218, 126, 0.95);
+    }
+
+    .icm-pos-sb {
+      color: #122d36;
+      background: rgba(137, 224, 255, 0.9);
+      border-color: rgba(166, 236, 255, 0.95);
+    }
+
+    .icm-pos-bb {
+      color: #1a1d36;
+      background: rgba(163, 183, 255, 0.9);
+      border-color: rgba(191, 205, 255, 0.95);
+    }
+
+    #icm-results.icm-drill-hidden {
+      display: none;
+    }
+
     #trainer-panel {
       display: grid;
       gap: var(--space-2);
@@ -1105,7 +1228,7 @@
 
       <section class="surface-card ev-block">
         <h3>MDF（最小防衛頻度）</h3>
-        <p class="icm-hint ev-note">前提: 純ブラフ固定（コールされたら勝率0%）。相手はFold/Callのみ（Raise/将来ストリート無視）。</p>
+        <p class="icm-hint ev-note">前提: 純ブラフ固定（コールされたら勝率0%）。相手はフォールド/コールのみ（レイズ/将来ストリート無視）。</p>
         <div class="ev-grid">
           <label for="evbet-pot">P (ベット前ポット)
             <input id="evbet-pot" type="number" min="0" step="0.1" placeholder="例: 10">
@@ -1139,7 +1262,7 @@
       <section id="equity-hud" aria-live="polite">
         <div class="hud-main">
           <div>
-            <p class="hud-title">Hero</p>
+            <p class="hud-title">ヒーロー</p>
             <div id="hud-hero-cards">
               <span id="hud-hero-1" class="hud-card">--</span>
               <span id="hud-hero-2" class="hud-card">--</span>
@@ -1364,17 +1487,32 @@
         <label>オールイン相手
           <select id="allin-index"></select>
         </label>
-        <label>想定勝率(%)
-          <input type="number" id="assumed-winrate" step="0.1" min="0" max="100" placeholder="任意">
-        </label>
+        <div class="icm-hint">想定勝率(%): <span id="assumed-winrate-display">--</span></div>
+        <div class="icm-hint">ヒーロー: <span id="icm-assumed-hero-hand">--</span></div>
+        <input type="hidden" id="assumed-winrate" value="">
+      </div>
+      <div id="assumed-sync-message" class="icm-hint status-neutral">想定勝率はプリフロップのエクイティ計算で更新されます。</div>
+
+      <div id="icm-table-panel">
+        <div class="icm-section-title">卓ビュー（ICM）</div>
+        <div id="icm-table-visual" aria-live="polite"></div>
+      </div>
+
+      <div id="icm-drill-panel">
+        <div class="icm-section-title">ICMドリル（方式1: プリフロップ想定勝率を使用）</div>
+        <div id="icm-drill-prompt" class="icm-hint">プリフロップでエクイティ計算後に「出題」を押してください。</div>
         <div class="actions">
-          <button id="use-equity-for-assumed-btn" type="button" class="small secondary" disabled>エクイティ→想定勝率</button>
+          <button id="icm-drill-start-btn" type="button">出題</button>
+          <button id="icm-drill-call-btn" type="button" class="secondary">コール</button>
+          <button id="icm-drill-fold-btn" type="button" class="secondary">フォールド</button>
         </div>
+        <div id="icm-drill-feedback" class="icm-hint"></div>
       </div>
 
       <div id="icm-actions">
         <div class="icm-section-title">アクション(オールイン前)</div>
         <p class="icm-hint">オールイン相手はこの後自動オールインします。オールイン前アクションには追加しないでください（空欄でもOK）。</p>
+        <p class="icm-hint">この欄は「オールイン前」のみです。オールイン後（BBなど）の行動は入力しないでください。</p>
         <div class="icm-table-container">
           <table id="icm-action-table">
             <thead>
@@ -1427,6 +1565,7 @@
           </div>
         </details>
       </div>
+
     </div>
 
     <div id="trainer-tab" class="tab-content">
@@ -1514,6 +1653,7 @@
 		    let trainerTimerIntervalId = null;
 		    let trainerQuestionStartedAtMs = null;
 		    let trainerQuestionTimeoutAtMs = null;
+		    let currentIcmDrillQuestion = null;
 
 		    const SAVED_RANGES_KEY = 'poker_tool_saved_ranges_v1';
 		    const TRAINER_HISTORY_KEY = 'poker_tool_trainer_history_v1';
@@ -2410,31 +2550,76 @@
 		      estimatedTrialsSpan.textContent = trials.toLocaleString();
 		    }
 
-		    function clearEquityForIcmDisplay() {
-		      lastEquityPctForIcm = null;
-		      const span = document.getElementById('equity-for-icm');
-		      if (span) span.textContent = '-';
-		      const btn = document.getElementById('use-equity-for-assumed-btn');
-		      if (btn) btn.disabled = true;
-		      clearComputedEquityDisplays();
-		    }
+				    function clearEquityForIcmDisplay() {
+				      lastEquityPctForIcm = null;
+				      const span = document.getElementById('equity-for-icm');
+				      if (span) span.textContent = '-';
+				      setAssumedWinrateFromPreflop(null, null);
+				      clearComputedEquityDisplays();
+				    }
 
-		    function setEquityForIcmDisplay(equityPct) {
-		      if (!Number.isFinite(equityPct)) return;
-		      lastEquityPctForIcm = equityPct;
-		      const span = document.getElementById('equity-for-icm');
-		      if (!span) return;
-		      span.textContent = equityPct.toFixed(2) + '%';
-		      const btn = document.getElementById('use-equity-for-assumed-btn');
-		      if (btn) btn.disabled = false;
-		    }
+				    function setEquityForIcmDisplay(equityPct) {
+				      if (!Number.isFinite(equityPct)) return;
+				      lastEquityPctForIcm = equityPct;
+				      const span = document.getElementById('equity-for-icm');
+				      if (!span) return;
+				      span.textContent = equityPct.toFixed(2) + '%';
+				    }
 
-	    function setCalculatedEquity(equityPct, errorPct) {
-      lastCalculatedEquity = equityPct;
-      lastEquityErrorPct = errorPct;
-      setHudEquityValue(equityPct, errorPct);
-      setEquityForIcmDisplay(equityPct);
-    }
+				    function setAssumedSyncMessage(message, toneClass = '') {
+				      const msgEl = document.getElementById('assumed-sync-message');
+				      if (!msgEl) return;
+				      msgEl.textContent = message;
+				      msgEl.classList.remove('status-positive', 'status-negative', 'status-neutral');
+				      if (toneClass) msgEl.classList.add(toneClass);
+				    }
+
+				    function readAssumedWinratePct() {
+				      const hiddenInput = document.getElementById('assumed-winrate');
+				      if (!hiddenInput) return null;
+				      const str = hiddenInput.value.trim();
+				      if (str === '') return null;
+				      const pct = parseFloat(str);
+				      if (!Number.isFinite(pct) || pct < 0 || pct > 100) return null;
+				      return pct;
+				    }
+
+				    function setAssumedWinrateFromPreflop(equityPct, heroCards = null) {
+				      const hiddenInput = document.getElementById('assumed-winrate');
+				      const display = document.getElementById('assumed-winrate-display');
+				      const heroHandEl = document.getElementById('icm-assumed-hero-hand');
+				      if (!hiddenInput || !display || !heroHandEl) return false;
+
+				      if (!Number.isFinite(equityPct)) {
+				        hiddenInput.value = '';
+				        display.textContent = '--';
+				        heroHandEl.textContent = '--';
+				        setAssumedSyncMessage('想定勝率はプリフロップのエクイティ計算で更新されます。', 'status-neutral');
+				        updateAssumedEvDisplay();
+				        renderIcmTableVisual();
+				        resetIcmDrillQuestion();
+				        return true;
+				      }
+
+				      const boundedPct = Math.max(0, Math.min(100, equityPct));
+				      hiddenInput.value = boundedPct.toFixed(2);
+				      display.textContent = `${boundedPct.toFixed(2)}%`;
+				      const heroText = Array.isArray(heroCards) && heroCards.length === 2 ? `${heroCards[0]}${heroCards[1]}` : '--';
+				      heroHandEl.textContent = heroText;
+				      setAssumedSyncMessage(`プリフロップ計算結果を反映: 想定勝率 ${boundedPct.toFixed(2)}%`, 'status-positive');
+				      updateAssumedEvDisplay();
+				      renderIcmTableVisual();
+				      resetIcmDrillQuestion('想定勝率を更新しました。「出題」でICMドリルを開始してください。');
+				      return true;
+				    }
+
+		    function setCalculatedEquity(equityPct, errorPct) {
+	      lastCalculatedEquity = equityPct;
+	      lastEquityErrorPct = errorPct;
+	      setHudEquityValue(equityPct, errorPct);
+	      setEquityForIcmDisplay(equityPct);
+	      setAssumedWinrateFromPreflop(equityPct, selectedCards);
+	    }
 
     function applyRangeCategories(categories) {
 	      const set = new Set(categories);
@@ -3361,7 +3546,7 @@
 	      stopTrainerTimer();
 	      updateTrainerTimerDisplay('残り時間: --');
 	    }
-	    
+
 	    // ICM計算関数
 	    let lastIcmResult = null;
 
@@ -3377,6 +3562,18 @@
 	      { value: 'sb', label: 'SB' },
 	      { value: 'bb', label: 'BB' },
 	    ];
+
+	    const ICM_PRE_ALLIN_ACTION_ORDER = {
+	      utg: 0,
+	      utg1: 1,
+	      utg2: 2,
+	      lj: 3,
+	      hj: 4,
+	      co: 5,
+	      btn: 6,
+	      sb: 7,
+	      bb: 8,
+	    };
 
 	    function getIcmPositionLabel(value) {
 	      const found = ICM_POSITION_OPTIONS.find(o => o.value === value);
@@ -3397,6 +3594,82 @@
 	      const posValue = getIcmPlayerPositionValue(playerIndex);
 	      const posLabel = getIcmPositionLabel(posValue);
 	      return posValue !== 'none' && posLabel ? `${seat}(${posLabel})` : seat;
+	    }
+
+	    function getIcmPreAllInActionRank(playerIndex) {
+	      const posValue = getIcmPlayerPositionValue(playerIndex);
+	      return Object.prototype.hasOwnProperty.call(ICM_PRE_ALLIN_ACTION_ORDER, posValue)
+	        ? ICM_PRE_ALLIN_ACTION_ORDER[posValue]
+	        : null;
+	    }
+
+	    function canIcmPlayerActBeforeAllIn(playerIndex, allinIndex) {
+	      if (!Number.isFinite(allinIndex) || allinIndex < 0) return true;
+	      if (playerIndex === allinIndex) return false;
+	      const playerRank = getIcmPreAllInActionRank(playerIndex);
+	      const allinRank = getIcmPreAllInActionRank(allinIndex);
+	      if (!Number.isFinite(playerRank) || !Number.isFinite(allinRank)) return true;
+	      return playerRank < allinRank;
+	    }
+
+	    function escapeHtml(value) {
+	      return String(value ?? '')
+	        .replace(/&/g, '&amp;')
+	        .replace(/</g, '&lt;')
+	        .replace(/>/g, '&gt;')
+	        .replace(/"/g, '&quot;')
+	        .replace(/'/g, '&#39;');
+	    }
+
+	    function renderIcmTableVisual() {
+	      const visualEl = document.getElementById('icm-table-visual');
+	      if (!visualEl) return;
+	      const n = parseInt(document.getElementById('num-players')?.value, 10);
+	      if (!Number.isFinite(n) || n <= 0) {
+	        visualEl.innerHTML = '';
+	        return;
+	      }
+	      const heroIndex = parseInt(document.getElementById('hero-index')?.value, 10);
+	      const allinIndex = parseInt(document.getElementById('allin-index')?.value, 10);
+	      const heroHandText = document.getElementById('icm-assumed-hero-hand')?.textContent?.trim() || '--';
+
+	      let html = '';
+	      for (let i = 0; i < n; i++) {
+	        const angle = (-Math.PI / 2) + (2 * Math.PI * i / n);
+	        const left = 50 + 42 * Math.cos(angle);
+	        const top = 50 + 34 * Math.sin(angle);
+	        const posValue = getIcmPlayerPositionValue(i);
+	        const posLabel = getIcmPositionLabel(posValue);
+	        const stackRaw = document.getElementById(`stack${i}`)?.value?.trim() ?? '';
+	        const stackNum = stackRaw === '' ? NaN : parseFloat(stackRaw);
+	        const stackText = Number.isFinite(stackNum) ? `${stackNum.toFixed(1)}BB` : '-- BB';
+	        const actionText = document.getElementById(`icm-player-action${i}`)?.textContent?.trim() || '-';
+	        const heroClass = i === heroIndex ? ' hero' : '';
+	        const villainClass = i === allinIndex ? ' villain' : '';
+	        const roleText = i === heroIndex ? 'あなた' : (i === allinIndex ? 'オールイン' : '');
+	        const posBadgeClass = posValue === 'btn'
+	          ? 'icm-pos-badge icm-pos-btn'
+	          : posValue === 'sb'
+	            ? 'icm-pos-badge icm-pos-sb'
+	            : posValue === 'bb'
+	              ? 'icm-pos-badge icm-pos-bb'
+	              : 'icm-pos-badge';
+	        const handText = i === heroIndex ? heroHandText : '--';
+
+	        html += `
+	          <div class="icm-seat${heroClass}${villainClass}" style="left:${left.toFixed(2)}%; top:${top.toFixed(2)}%;">
+	            <div class="icm-seat-head">
+	              <span>${escapeHtml(formatPlayerSeatLabel(i))}</span>
+	              <span class="${posBadgeClass}">${escapeHtml(posLabel || '-')}</span>
+	            </div>
+	            <div class="icm-seat-role">${escapeHtml(roleText)}</div>
+	            <div class="icm-seat-stack">${escapeHtml(stackText)}</div>
+	            <div class="icm-seat-hand">手札: ${escapeHtml(handText)}</div>
+	            <div class="icm-seat-action">${escapeHtml(actionText)}</div>
+	          </div>
+	        `;
+	      }
+	      visualEl.innerHTML = html;
 	    }
 
 	    function getIcmPositionSelectHtml(id) {
@@ -3430,6 +3703,7 @@
 	        if (i === heroIndex) row.classList.add('icm-player-hero');
 	        if (i === allinIndex) row.classList.add('icm-player-villain');
 	      }
+	      renderIcmTableVisual();
 	    }
 
 	    function clearIcmActionRows() {
@@ -3450,18 +3724,42 @@
 	      });
 	    }
 
-	    function appendIcmActionPlayerOptions(selectEl, n) {
-	      if (!selectEl) return;
-	      const allinIndex = parseInt(document.getElementById('allin-index')?.value || '', 10);
-	      for (let i = 0; i < n; i++) {
+    function appendIcmActionPlayerOptions(selectEl, n) {
+      if (!selectEl) return;
+      const allinIndex = parseInt(document.getElementById('allin-index')?.value || '', 10);
+      const options = [];
+      for (let i = 0; i < n; i++) {
+        if (Number.isFinite(allinIndex) && i !== allinIndex && !canIcmPlayerActBeforeAllIn(i, allinIndex)) {
+          continue;
+        }
+        const rank = getIcmPreAllInActionRank(i);
+        options.push({
+          index: i,
+          rank: Number.isFinite(rank) ? rank : Number.POSITIVE_INFINITY,
+          isAllin: Number.isFinite(allinIndex) && i === allinIndex,
+        });
+      }
+      options.sort((a, b) => a.rank - b.rank);
+      let hasEnabledOption = false;
+      for (const option of options) {
+        const i = option.index;
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        if (option.isAllin) {
+          opt.text = `${formatPlayerLabel(i)}（オールイン相手/自動）`;
+          opt.disabled = true;
+        } else {
+          opt.text = formatPlayerLabel(i);
+          hasEnabledOption = true;
+        }
+        selectEl.appendChild(opt);
+      }
+	      if (!hasEnabledOption) {
 	        const opt = document.createElement('option');
-	        opt.value = String(i);
-	        if (Number.isFinite(allinIndex) && i === allinIndex) {
-	          opt.text = `${formatPlayerLabel(i)}（オールイン相手/自動）`;
-	          opt.disabled = true;
-	        } else {
-	          opt.text = formatPlayerLabel(i);
-	        }
+	        opt.value = '';
+	        opt.text = '（追加可能なプレイヤーなし）';
+	        opt.disabled = true;
+	        opt.selected = true;
 	        selectEl.appendChild(opt);
 	      }
 	    }
@@ -3537,10 +3835,22 @@
 		      }
 		    }
 
-		    function addIcmActionRow(preset = {}) {
-		      const n = parseInt(document.getElementById('num-players').value);
-		      const tbody = document.getElementById('icm-action-rows');
-		      if (!tbody) return;
+			    function addIcmActionRow(preset = {}) {
+			      const n = parseInt(document.getElementById('num-players').value);
+			      const tbody = document.getElementById('icm-action-rows');
+			      if (!tbody) return;
+		      const allinIndex = parseInt(document.getElementById('allin-index')?.value || '', 10);
+		      let hasSelectablePlayer = false;
+		      for (let i = 0; i < n; i++) {
+		        if (canIcmPlayerActBeforeAllIn(i, allinIndex)) {
+		          hasSelectablePlayer = true;
+		          break;
+		        }
+		      }
+		      if (!hasSelectablePlayer) {
+		        setIcmError('オールイン前に行動できるプレイヤーがいません。アクション追加は不要です');
+		        return;
+		      }
 
 	      const tr = document.createElement('tr');
 	      tr.innerHTML = `
@@ -3566,7 +3876,6 @@
 
 	      const playerSelect = tr.querySelector('.icm-action-player');
 	      appendIcmActionPlayerOptions(playerSelect, n);
-	      const allinIndex = parseInt(document.getElementById('allin-index')?.value || '', 10);
 	      if (Number.isFinite(preset.playerIndex)
 	        && preset.playerIndex >= 0
 	        && preset.playerIndex < n
@@ -3611,9 +3920,9 @@
 		      return { folded, error: null };
 		    }
 
-		    function addIcmFoldOthers() {
-		      clearIcmError();
-		      const n = parseInt(document.getElementById('num-players').value);
+	    function addIcmFoldOthers() {
+	      clearIcmError();
+	      const n = parseInt(document.getElementById('num-players').value);
 		      const heroIndex = parseInt(document.getElementById('hero-index').value);
 		      const allinIndex = parseInt(document.getElementById('allin-index').value);
 		      if (!Number.isFinite(heroIndex) || heroIndex < 0 || heroIndex >= n) {
@@ -3636,11 +3945,171 @@
 		        if (foldState.folded[i]) continue;
 		        addIcmActionRow({ playerIndex: i, type: 'fold' });
 		        foldState.folded[i] = true;
-		      }
-		    }
+	      }
+	    }
 
-		    function generatePlayerInputs() {
-		      const n = parseInt(document.getElementById('num-players').value);
+	    function setIcmDrillFeedback(message, toneClass = 'status-neutral') {
+	      const feedbackEl = document.getElementById('icm-drill-feedback');
+	      if (!feedbackEl) return;
+	      feedbackEl.textContent = message;
+	      feedbackEl.classList.remove('status-positive', 'status-negative', 'status-neutral');
+	      if (toneClass) feedbackEl.classList.add(toneClass);
+	    }
+
+	    function setIcmDrillPrompt(message) {
+	      const promptEl = document.getElementById('icm-drill-prompt');
+	      if (!promptEl) return;
+	      promptEl.textContent = message;
+	    }
+
+	    function setIcmDrillResultPanelHidden(hidden) {
+	      const resultPanel = document.getElementById('icm-results');
+	      if (!resultPanel) return;
+	      resultPanel.classList.toggle('icm-drill-hidden', hidden);
+	    }
+
+	    function resetIcmDrillQuestion(message = 'プリフロップでエクイティ計算後に「出題」を押してください。') {
+	      currentIcmDrillQuestion = null;
+	      setIcmDrillPrompt(message);
+	      setIcmDrillFeedback('待機中', 'status-neutral');
+	      setIcmDrillResultPanelHidden(false);
+	    }
+
+	    function getIcmDrillPositionOrder(n) {
+	      const base = ['btn', 'sb', 'bb', 'utg', 'hj', 'co', 'lj', 'utg1', 'utg2'];
+	      return base.slice(0, Math.max(0, n));
+	    }
+
+	    function getIcmDrillPrizeTemplate(n) {
+	      if (n === 3) return [50, 30, 20];
+	      if (n === 4) return [45, 30, 15, 10];
+	      if (n === 5) return [40, 28, 18, 9, 5];
+	      if (n === 6) return [36, 26, 18, 11, 6, 3];
+	      const out = [];
+	      for (let i = 0; i < n; i++) out.push(Math.max(0, 40 - i * 6));
+	      return out;
+	    }
+
+	    function buildIcmDrillQuestion() {
+	      const assumedPct = readAssumedWinratePct();
+	      if (!Number.isFinite(assumedPct)) return null;
+	      const numPlayersEl = document.getElementById('num-players');
+	      const heroSelect = document.getElementById('hero-index');
+	      const allinSelect = document.getElementById('allin-index');
+	      if (!numPlayersEl || !heroSelect || !allinSelect) return null;
+
+	      for (let attempt = 0; attempt < 12; attempt++) {
+	        const n = 3 + randomInt(4); // 3-6
+	        numPlayersEl.value = String(n);
+	        generatePlayerInputs();
+
+	        const posOrder = getIcmDrillPositionOrder(n);
+	        const rotateBy = randomInt(n);
+	        const posValues = [];
+	        for (let i = 0; i < n; i++) {
+	          const posEl = document.getElementById(`pos${i}`);
+	          if (!posEl) continue;
+	          const posValue = posOrder[(i + rotateBy) % n] || 'none';
+	          posEl.value = posValue;
+	          posValues[i] = posValue;
+	        }
+	        const allinIndex = posValues.indexOf('sb');
+	        const heroIndex = posValues.indexOf('bb');
+	        if (allinIndex < 0 || heroIndex < 0 || allinIndex === heroIndex) continue;
+	        heroSelect.value = String(heroIndex);
+	        allinSelect.value = String(allinIndex);
+
+	        const prizes = getIcmDrillPrizeTemplate(n);
+	        for (let i = 0; i < n; i++) {
+	          const stackEl = document.getElementById(`stack${i}`);
+	          const prizeEl = document.getElementById(`prize${i}`);
+	          if (stackEl) stackEl.value = String(10 + randomInt(26)); // 10-35BB
+	          if (prizeEl) prizeEl.value = Number.isFinite(prizes[i]) ? prizes[i].toFixed(1) : '0.0';
+	        }
+
+	        refreshIcmActionPlayerOptionTexts();
+	        updateIcmPlayerHighlights();
+	        clearIcmActionRows();
+	        addIcmFoldOthers();
+	        clearIcmError();
+	        resetIcmOutputs();
+	        calculateICM();
+	        if (!lastIcmResult) continue;
+
+	        const errEl = document.getElementById('icm-error');
+	        if (errEl && errEl.classList.contains('active')) continue;
+	        const callEv = parseFloat(document.getElementById('assumed-call-ev')?.textContent ?? '');
+	        const evDiff = parseFloat(document.getElementById('assumed-ev-diff')?.textContent ?? '');
+	        const foldEv = lastIcmResult.foldEV;
+	        const requiredWinrateText = document.getElementById('required-winrate')?.textContent || '--';
+	        if (!Number.isFinite(callEv) || !Number.isFinite(evDiff) || !Number.isFinite(foldEv)) continue;
+
+	        return {
+	          heroIndex,
+	          allinIndex,
+	          assumedPct,
+	          requiredWinrateText,
+	          callEv,
+	          foldEv,
+	          evDiff,
+	          correctCall: evDiff >= 0,
+	        };
+	      }
+	      return null;
+	    }
+
+	    function startIcmDrillQuestion() {
+	      clearIcmError();
+	      const assumedPct = readAssumedWinratePct();
+	      if (!Number.isFinite(assumedPct)) {
+	        setIcmDrillResultPanelHidden(false);
+	        setIcmError('先にプリフロップでエクイティ計算を実行し、想定勝率を設定してください');
+	        setIcmDrillPrompt('プリフロップ計算が未完了です。先にエクイティ計算を実行してください。');
+	        setIcmDrillFeedback('出題できません: 想定勝率が未設定です。', 'status-negative');
+	        currentIcmDrillQuestion = null;
+	        return;
+	      }
+
+	      const question = buildIcmDrillQuestion();
+	      if (!question) {
+	        setIcmDrillResultPanelHidden(false);
+	        setIcmError('ICMドリルの問題生成に失敗しました。入力状態を見直して再実行してください');
+	        setIcmDrillPrompt('問題生成に失敗しました。');
+	        setIcmDrillFeedback('出題失敗: ICM計算の成立条件を満たせませんでした。', 'status-negative');
+	        currentIcmDrillQuestion = null;
+	        return;
+	      }
+
+	      currentIcmDrillQuestion = question;
+	      const heroLabel = formatPlayerLabel(question.heroIndex);
+	      const allinLabel = formatPlayerLabel(question.allinIndex);
+	      setIcmDrillPrompt(`${heroLabel} 対 ${allinLabel} / 想定勝率 ${question.assumedPct.toFixed(2)}%`);
+	      setIcmDrillFeedback('回答を選んでください。', 'status-neutral');
+	      setIcmDrillResultPanelHidden(true);
+	    }
+
+	    function submitIcmDrillAnswer(selectedCall) {
+	      if (!currentIcmDrillQuestion) {
+	        setIcmDrillResultPanelHidden(false);
+	        setIcmDrillFeedback('先に「出題」を押してください。', 'status-negative');
+	        return;
+	      }
+	      setIcmDrillResultPanelHidden(false);
+	      const q = currentIcmDrillQuestion;
+	      const selectedLabel = selectedCall ? 'コール' : 'フォールド';
+	      const correctLabel = q.correctCall ? 'コール' : 'フォールド';
+	      const ok = selectedCall === q.correctCall;
+	      const diffSign = q.evDiff >= 0 ? '+' : '';
+	      setIcmDrillFeedback(
+	        `${ok ? '正解' : '不正解'} / あなた: ${selectedLabel} / 正答: ${correctLabel} / 必要勝率=${q.requiredWinrateText} / foldEV=${q.foldEv.toFixed(2)} / callEV=${q.callEv.toFixed(2)} / EV差=${diffSign}${q.evDiff.toFixed(2)}`,
+	        ok ? 'status-positive' : 'status-negative',
+	      );
+	      setIcmDrillPrompt('回答完了。次の問題は「出題」を押してください。');
+	      currentIcmDrillQuestion = null;
+	    }
+
+	    function generatePlayerInputs() {
+	      const n = parseInt(document.getElementById('num-players').value);
 		      const playerInputsDiv = document.getElementById('player-inputs');
 		      const heroIndexSelect = document.getElementById('hero-index');
 	      const allinIndexSelect = document.getElementById('allin-index');
@@ -3700,6 +4169,7 @@
 	      resetIcmOutputs();
 	      refreshIcmActionPlayerOptionTexts();
 	      renderIcmPlayerActionSummary();
+	      resetIcmDrillQuestion();
 	    }
 	    
 		    function resetIcmOutputs() {
@@ -4095,12 +4565,13 @@
         histories[allinIndex].push('オールイン(自動)');
       }
 
-      for (let i = 0; i < n; i++) {
-        const cell = document.getElementById(`icm-player-action${i}`);
-        if (!cell) continue;
-        cell.textContent = histories[i].length === 0 ? '-' : histories[i].join(' → ');
-      }
-    }
+	      for (let i = 0; i < n; i++) {
+	        const cell = document.getElementById(`icm-player-action${i}`);
+	        if (!cell) continue;
+	        cell.textContent = histories[i].length === 0 ? '-' : histories[i].join(' → ');
+	      }
+	      renderIcmTableVisual();
+	    }
 
 	    function calculateICM() {
 	      const n = parseInt(document.getElementById('num-players').value);
@@ -4166,14 +4637,16 @@
         return;
       }
 
-      const assumedWinrateStr = document.getElementById('assumed-winrate').value.trim();
-      if (assumedWinrateStr !== '') {
-        const assumed = parseFloat(assumedWinrateStr);
-        if (!Number.isFinite(assumed) || assumed < 0 || assumed > 100) {
-          setIcmError(`想定勝率が不正です: ${assumedWinrateStr}`);
-          return;
-        }
-      }
+	      const assumedRaw = document.getElementById('assumed-winrate')?.value?.trim() ?? '';
+	      const assumed = readAssumedWinratePct();
+	      if (!Number.isFinite(assumed)) {
+	        if (assumedRaw === '') {
+	          setIcmError('先にプリフロップでエクイティ計算を実行し、想定勝率を設定してください');
+	        } else {
+	          setIcmError(`想定勝率が不正です: ${assumedRaw}`);
+	        }
+	        return;
+	      }
 
       const sb = findUniquePositionIndex(positions, 'sb', 'SB');
       if (sb.error) {
@@ -4537,19 +5010,19 @@
 	      document.getElementById('evcalc-calc-bet-btn').addEventListener('click', updateBetEvDecision);
 
 
-	      document.getElementById('trainer-new-btn').addEventListener('click', drawTrainerQuestion);
-	      document.getElementById('trainer-check-btn').addEventListener('click', checkTrainerAnswer);
-	      const trainerSessionModeSelect = document.getElementById('trainer-session-mode');
-	      if (trainerSessionModeSelect) {
-	        trainerSessionModeSelect.addEventListener('change', resetTrainerSessionState);
-	      }
-      const trainerTimeLimitInput = document.getElementById('trainer-time-limit-sec');
-      if (trainerTimeLimitInput) {
-        trainerTimeLimitInput.addEventListener('change', () => {
-          if (readTrainerSessionMode() === 'drill') resetTrainerSessionState();
-        });
-      }
-	      document.getElementById('run-ev-selftest-btn').addEventListener('click', runEvCalculatorSelfTests);
+		      document.getElementById('trainer-new-btn').addEventListener('click', drawTrainerQuestion);
+		      document.getElementById('trainer-check-btn').addEventListener('click', checkTrainerAnswer);
+		      const trainerSessionModeSelect = document.getElementById('trainer-session-mode');
+		      if (trainerSessionModeSelect) {
+		        trainerSessionModeSelect.addEventListener('change', resetTrainerSessionState);
+		      }
+		      const trainerTimeLimitInput = document.getElementById('trainer-time-limit-sec');
+		      if (trainerTimeLimitInput) {
+		        trainerTimeLimitInput.addEventListener('change', () => {
+		          if (readTrainerSessionMode() === 'drill') resetTrainerSessionState();
+		        });
+		      }
+		      document.getElementById('run-ev-selftest-btn').addEventListener('click', runEvCalculatorSelfTests);
 
 	      document.getElementById('save-settings-btn').addEventListener('click', () => {
 	        saveAppSettings();
@@ -4570,14 +5043,18 @@
 
 	      // ICM関連
 	      generatePlayerInputs();
+	      renderIcmTableVisual();
       document.getElementById('generate-btn').addEventListener('click', generatePlayerInputs);
       document.getElementById('calc-icm-btn').addEventListener('click', calculateICM);
-      document.getElementById('assumed-winrate').addEventListener('input', updateAssumedEvDisplay);
+	      document.getElementById('icm-drill-start-btn').addEventListener('click', startIcmDrillQuestion);
+	      document.getElementById('icm-drill-call-btn').addEventListener('click', () => submitIcmDrillAnswer(true));
+	      document.getElementById('icm-drill-fold-btn').addEventListener('click', () => submitIcmDrillAnswer(false));
       document.getElementById('hero-index').addEventListener('change', () => {
         rebuildIcmPlayerSelectOptions(document.getElementById('hero-index'), parseInt(document.getElementById('num-players').value));
         rebuildIcmPlayerSelectOptions(document.getElementById('allin-index'), parseInt(document.getElementById('num-players').value));
         updateIcmPlayerHighlights();
         renderIcmPlayerActionSummary();
+	        resetIcmDrillQuestion('座席条件を変更しました。必要なら再出題してください。');
       });
 	      document.getElementById('allin-index').addEventListener('change', () => {
 	        rebuildIcmPlayerSelectOptions(document.getElementById('hero-index'), parseInt(document.getElementById('num-players').value));
@@ -4585,15 +5062,9 @@
 	        refreshIcmActionPlayerOptionTexts();
 	        updateIcmPlayerHighlights();
 	        renderIcmPlayerActionSummary();
+	        resetIcmDrillQuestion('座席条件を変更しました。必要なら再出題してください。');
 	      });
 	      document.getElementById('bb-ante').addEventListener('input', renderIcmPlayerActionSummary);
-	      document.getElementById('use-equity-for-assumed-btn').addEventListener('click', () => {
-	        if (!Number.isFinite(lastEquityPctForIcm)) return;
-	        const input = document.getElementById('assumed-winrate');
-	        if (!input) return;
-	        input.value = lastEquityPctForIcm.toFixed(2);
-	        updateAssumedEvDisplay();
-	      });
 
 	      document.getElementById('add-icm-action-btn').addEventListener('click', () => addIcmActionRow());
 	      document.getElementById('fold-others-icm-action-btn').addEventListener('click', addIcmFoldOthers);
@@ -4628,16 +5099,27 @@
 	        }
 	      });
 
-      const playerInputsDiv = document.getElementById('player-inputs');
+	      const playerInputsDiv = document.getElementById('player-inputs');
 	      playerInputsDiv.addEventListener('change', (e) => {
 	        if (!e.target || !e.target.id) return;
+	        if (e.target.id.startsWith('stack') || e.target.id.startsWith('prize')) {
+	          renderIcmTableVisual();
+	          resetIcmDrillQuestion('テーブル入力を変更しました。必要なら再出題してください。');
+	          return;
+	        }
 	        if (!e.target.id.startsWith('pos')) return;
         const playerCount = parseInt(document.getElementById('num-players').value);
         rebuildIcmPlayerSelectOptions(document.getElementById('hero-index'), playerCount);
         rebuildIcmPlayerSelectOptions(document.getElementById('allin-index'), playerCount);
-        refreshIcmActionPlayerOptionTexts();
+	        refreshIcmActionPlayerOptionTexts();
 	        updateIcmPlayerHighlights();
 	        renderIcmPlayerActionSummary();
+	        resetIcmDrillQuestion('ポジションを変更しました。必要なら再出題してください。');
+	      });
+	      playerInputsDiv.addEventListener('input', (e) => {
+	        if (!e.target || !e.target.id) return;
+	        if (!e.target.id.startsWith('stack') && !e.target.id.startsWith('prize')) return;
+	        renderIcmTableVisual();
 	      });
 	    });
   </script>
