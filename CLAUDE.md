@@ -728,7 +728,7 @@
 - 正規リポジトリ: `/mnt/c/repos/popker`
 - 正規リポジトリ（Windows）: `C:\repos\popker`
 - 現在の未コミット変更: なし（ワークツリーはクリーン）
-- 最新コミット: `268dee9` `docs: update handoff summary commit pointer`
+- 最新コミット: `524f091` `docs: align handoff summary commit pointer to HEAD`
 - 静的監査: `DUP_IDS []`, `MISSING_IDS []`, 禁止語（Bet vs Check / ベットEV（HU） / checkEV / Bet vs）0件
 - 既知の未解決: ブラウザ目視確認（I-7: 出題時に答え非表示 / I-8: 回答後の根拠表示 / I-9: SBvsBB固定 / I-10: オールイン前候補制限）が未回収
 - 次アクション: push未実行。ユーザーに I-7〜I-10 を目視確認してもらい、PASS/FAIL を転記。FAIL時は表示文言と対象席ラベルを根拠に最小差分で再修正する
