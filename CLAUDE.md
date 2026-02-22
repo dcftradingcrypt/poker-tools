@@ -7,6 +7,7 @@
 4. 「式を触らない」指定タスクでは、計算式・関数構造・イベント接続を変更しない。
 5. 修正後は必ず検証コマンドを実行し、結果を確認する。
 6. ユーザーへ python3/rg/sed/curl 等のコマンド実行を依頼しない。依頼できるのは `git push` と結果確認（目視）だけ。検証・修正・コミット・ログ採取はCODEXが実行し、ログを添えて報告する。
+7. 同じ概念（例: ICMの行動順）は導線ごとに別ロジックを作らず、共通関数（`getIcmPreAllInActionRank` / `canIcmPlayerActBeforeAllIn`）を必ず再利用する。候補表示だけ整列しても、`残り全員フォールド` など別導線が座席順のままだと再発する。
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
@@ -29,8 +30,47 @@
 17. I-9（複数ポジション出題）: ICMドリル生成時の `allinIndex` と `heroIndex` は、行動順 `getIcmPreAllInActionRank` で `allin < hero` を満たす組からランダム選定し、`SB` / `BB` 固定はしない。根拠は `index.html:3993` `index.html:4007` `index.html:4010` `index.html:4019` `index.html:4024` `index.html:4026` `index.html:4030` `index.html:4032` `index.html:4033` `index.html:4036` `index.html:4041`。
 18. I-10（オールイン前候補制限）: `+ アクション追加` のプレイヤー候補はオールイン相手より前に行動する座席のみを表示し、行動順（UTG→…）で並ぶ。根拠は `index.html:3727` `index.html:3732` `index.html:3736` `index.html:3738` `index.html:1515`。
 19. I-11（自動フォールド追加順）: `残り全員フォールド` で追加される行は、`i !== hero/allin` かつ `canIcmPlayerActBeforeAllIn(i, allinIndex)` の対象のみを `getIcmPreAllInActionRank(i)` の昇順で追加し、`UTG→…→BTN` 方向で並ぶ。根拠は `index.html:3923` `index.html:3943` `index.html:3947` `index.html:3948` `index.html:3949` `index.html:3954` `index.html:3955`。
+20. I-12（残り全員フォールドのno-op明示）: `残り全員フォールド` で追加対象が0人のときは、何も起きない状態にせず `icm-error` に明示メッセージを表示する。根拠は `index.html:3959` `index.html:3960`。
 
 ## 修正ログ
+
+### 2026-02-22 22:56:00 JST
+- 対象: `index.html`（`addIcmFoldOthers` no-op明示追加）, `CLAUDE.md`（再発防止ルール・実行ログ追記）
+- 根拠:
+  - 行動順定義: `index.html:3566`
+  - オールイン前判定: `index.html:3606`
+  - 候補表示の行動順ソート: `index.html:3727` `index.html:3732` `index.html:3742`
+  - 自動フォールド追加順（rankソート）: `index.html:3923` `index.html:3947` `index.html:3954`
+  - no-op明示追加: `index.html:3959` `index.html:3960`
+  - ドリル抽選（SB/BB固定解除）: `index.html:4011` `index.html:4034` `index.html:4043`
+  - 2人ショーダウン前提の明示エラー（第三者オールイン）: `index.html:4828` `index.html:4829`
+- diff要約:
+  - `index.html`: `addIcmFoldOthers` に「追加対象0件」の明示エラー分岐を追加（silent no-op防止）。
+  - `CLAUDE.md`: 実装ルール7、チェックリストI-12、今回の実行ログを追記。
+- 実行コマンドと実行結果:
+  - `powershell.exe -NoProfile -Command "Set-Location C:\repos\popker; git rev-parse --show-toplevel; git status -sb; git log -1 --oneline; git show -1 --stat"`
+    - `git` が `PowerShell` で解決できず失敗（`CommandNotFoundException`）。
+  - `cd /mnt/c/repos/popker && git rev-parse --show-toplevel && git status -sb && git log -1 --oneline && git show -1 --stat`
+    - `/mnt/c/repos/popker`
+    - `## main...origin/main [ahead 7]`
+    - `759b405 fix icm action order and multi-position drill generation`
+  - `cd /mnt/c/repos/popker && git grep -n "function addIcmFoldOthers" -- index.html && git grep -n "function appendIcmActionPlayerOptions" -- index.html && git grep -n "ICM_PRE_ALLIN_ACTION_ORDER" -- index.html && git grep -n "function getIcmPreAllInActionRank" -- index.html && git grep -n "function canIcmPlayerActBeforeAllIn" -- index.html && git grep -n "function buildIcmDrillQuestion" -- index.html && git grep -n "function calculateICM" -- index.html && git grep -n "indexOf('sb')" -- index.html && git grep -n "indexOf('bb')" -- index.html`
+    - `addIcmFoldOthers`: `index.html:3923`
+    - `appendIcmActionPlayerOptions`: `index.html:3727`
+    - `buildIcmDrillQuestion`: `index.html:4011`
+    - `calculateICM`: `index.html:4610`
+    - `indexOf('sb')` / `indexOf('bb')`: `index.html:4575` `index.html:4576`（`renderIcmPlayerActionSummary` 内）
+  - `cd /mnt/c/repos/popker && nl -ba index.html | sed -n '3718,3765p;3920,3972p;4011,4060p;4818,4840p'`
+    - 行動順ソート・no-op明示・multi-position抽選・第三者オールイン明示エラーを確認。
+  - `powershell.exe -NoProfile -Command "Set-Location C:\repos\popker; (Select-String -Path .\index.html -Pattern 'id=\"[^\"]+\"' -AllMatches).Matches.Value | Sort-Object | Group-Object | Where-Object { $_.Count -gt 1 } | Select-Object -ExpandProperty Name"`
+    - WSL側エラーで失敗（`UtilBindVsockAnyPort: socket failed 1`）。
+  - `cd /mnt/c/repos/popker && echo "[DUP_ID]" && (rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d) && echo "[FORBIDDEN]" && (rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true) && echo "[MANIFEST]" && (python -c "import json; json.load(open('manifest.json','r',encoding='utf-8')); print('MANIFEST_OK')" 2>/tmp/manifest_err.log || (cat /tmp/manifest_err.log && python3 -c "import json; json.load(open('manifest.json','r',encoding='utf-8')); print('MANIFEST_OK')"))`
+    - `[DUP_ID]` 出力なし（重複IDなし）
+    - `[FORBIDDEN]` 出力なし（禁止語ヒットなし）
+    - `[MANIFEST]` `python: command not found` 後、`python3` で `MANIFEST_OK`
+- 再発防止:
+  - `appendIcmActionPlayerOptions` が行動順で整列していても、`addIcmFoldOthers` が座席順追加だと順序不整合が再発する。必ず両導線で `rank` ソートを監査する。
+  - `残り全員フォールド` ボタンは no-op を許容しない。追加対象が0件なら `icm-error` で明示し、ユーザーが「押したが変化なし」と誤解しない導線を維持する。
 
 ### 2026-02-22 22:23:34 JST
 - 対象: `index.html`（addIcmFoldOthers / buildIcmDrillQuestion / calculateICM / ICM表記）, `CLAUDE.md`（チェックリスト・再発防止更新）

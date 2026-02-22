@@ -3956,6 +3956,10 @@
         const rankB = Number.isFinite(b.rank) ? b.rank : Number.POSITIVE_INFINITY;
         return rankA - rankB;
       });
+      if (foldTargets.length === 0) {
+        setIcmError('追加するプレイヤーがいません（オールイン前に行動できる席がありません）');
+        return;
+      }
       for (const target of foldTargets) {
         addIcmActionRow({ playerIndex: target.playerIndex, type: 'fold' });
         foldState.folded[target.playerIndex] = true;
