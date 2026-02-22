@@ -1512,7 +1512,7 @@
       <div id="icm-actions">
         <div class="icm-section-title">アクション(オールイン前)</div>
         <p class="icm-hint">オールイン相手はこの後自動オールインします。オールイン前アクションには追加しないでください（空欄でもOK）。</p>
-        <p class="icm-hint">この欄は「オールイン前」のみです。オールイン後（BBなど）の行動は入力しないでください。</p>
+        <p class="icm-hint">この欄は「オールイン前」のみです。オールイン後に行動する他プレイヤーは、このツールでは自動フォールド扱い（2人ショーダウン前提）されます。</p>
         <div class="icm-table-container">
           <table id="icm-action-table">
             <thead>
@@ -3934,18 +3934,32 @@
 		        return;
 		      }
 
-		      const foldState = getIcmFoldedPlayersFromActionRows(n);
-		      if (foldState.error) {
-		        setIcmError(foldState.error);
-		        return;
-		      }
+      const foldState = getIcmFoldedPlayersFromActionRows(n);
+      if (foldState.error) {
+        setIcmError(foldState.error);
+        return;
+      }
 
-		      for (let i = 0; i < n; i++) {
-		        if (i === heroIndex || i === allinIndex) continue;
-		        if (foldState.folded[i]) continue;
-		        addIcmActionRow({ playerIndex: i, type: 'fold' });
-		        foldState.folded[i] = true;
-	      }
+      const foldTargets = [];
+      for (let i = 0; i < n; i++) {
+        if (i === heroIndex || i === allinIndex) continue;
+        if (foldState.folded[i]) continue;
+        if (!canIcmPlayerActBeforeAllIn(i, allinIndex)) continue;
+        foldTargets.push({
+          playerIndex: i,
+          rank: getIcmPreAllInActionRank(i),
+        });
+      }
+
+      foldTargets.sort((a, b) => {
+        const rankA = Number.isFinite(a.rank) ? a.rank : Number.POSITIVE_INFINITY;
+        const rankB = Number.isFinite(b.rank) ? b.rank : Number.POSITIVE_INFINITY;
+        return rankA - rankB;
+      });
+      for (const target of foldTargets) {
+        addIcmActionRow({ playerIndex: target.playerIndex, type: 'fold' });
+        foldState.folded[target.playerIndex] = true;
+      }
 	    }
 
 	    function setIcmDrillFeedback(message, toneClass = 'status-neutral') {
@@ -4013,9 +4027,25 @@
 	          posEl.value = posValue;
 	          posValues[i] = posValue;
 	        }
-	        const allinIndex = posValues.indexOf('sb');
-	        const heroIndex = posValues.indexOf('bb');
-	        if (allinIndex < 0 || heroIndex < 0 || allinIndex === heroIndex) continue;
+	        const candidatePairs = [];
+	        for (let allin = 0; allin < n; allin++) {
+	          const allinRank = getIcmPreAllInActionRank(allin);
+	          if (!Number.isFinite(allinRank)) continue;
+
+	          for (let hero = 0; hero < n; hero++) {
+	            if (hero === allin) continue;
+	            const heroRank = getIcmPreAllInActionRank(hero);
+	            if (!Number.isFinite(heroRank)) continue;
+	            if (allinRank < heroRank) {
+	              candidatePairs.push({ allinIndex: allin, heroIndex: hero });
+	            }
+	          }
+	        }
+	        if (candidatePairs.length === 0) continue;
+
+	        const pick = candidatePairs[randomInt(candidatePairs.length)];
+	        const allinIndex = pick.allinIndex;
+	        const heroIndex = pick.heroIndex;
 	        heroSelect.value = String(heroIndex);
 	        allinSelect.value = String(allinIndex);
 
@@ -4774,28 +4804,36 @@
         return;
       }
 
-	      const allinTo = validateState.betContributed[allinIndex] + validateState.remaining[allinIndex];
-	      const actionsBeforeAllIn = forcedActions.concat(preUserActions.actions);
+      const allinTo = validateState.betContributed[allinIndex] + validateState.remaining[allinIndex];
+      const actionsToAllIn = forcedActions.concat(preUserActions.actions, [{
+        type: 'allIn',
+        playerIndex: allinIndex,
+        toAmount: allinTo
+      }]);
+      const preToAllIn = applyIcmActions(stacks, actionsToAllIn);
+      if (preToAllIn.error) {
+        setIcmError(preToAllIn.error);
+        return;
+      }
 
-	      const actions = actionsBeforeAllIn.concat([{ type: 'allIn', playerIndex: allinIndex, toAmount: allinTo }]);
-	      const pre = applyIcmActions(stacks, actions);
-	      if (pre.error) {
-	        setIcmError(pre.error);
-	        return;
-	      }
+      const postAllInFolds = [];
+      for (let i = 0; i < n; i++) {
+        if (i === heroIndex || i === allinIndex) continue;
+        if (stacks[i] <= eps) continue;
+        if (preToAllIn.folded[i]) continue;
+        if (preToAllIn.remaining[i] <= eps) {
+          setIcmError(`${formatPlayerLabel(i)} がオールイン後にアクション可能な状態です。ブラインド/アンティ等で第3者がオールインしている構成は、このツールの2人ショーダウン前提外です。`);
+          return;
+        }
+        postAllInFolds.push({ type: 'fold', playerIndex: i });
+      }
 
-	      for (let i = 0; i < n; i++) {
-	        if (i === heroIndex || i === allinIndex) continue;
-	        if (stacks[i] <= eps) continue;
-	        if (!pre.folded[i]) {
-	          setIcmError(`${formatPlayerLabel(i)} がフォールドしていません (このツールは「ヒーロー vs オールイン相手」の2人ショーダウンのみ対応です。アクション列にフォールドを追加してください)`);
-	          return;
-	        }
-	        if (pre.remaining[i] <= eps) {
-	          setIcmError(`${formatPlayerLabel(i)} がオールイン状態です (このツールは2人ショーダウンのみ対応です)。プレイヤー構成/スタック/アクションを見直してください`);
-	          return;
-	        }
-	      }
+      const actions = actionsToAllIn.concat(postAllInFolds);
+      const pre = applyIcmActions(stacks, actions);
+      if (pre.error) {
+        setIcmError(pre.error);
+        return;
+      }
 
 	      const heroMaxBet = pre.betContributions[heroIndex] + pre.remaining[heroIndex];
 	      const villainMaxBet = pre.betContributions[allinIndex];

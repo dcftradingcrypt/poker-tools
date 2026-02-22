@@ -26,10 +26,65 @@
 14. I-6（ICM卓ビュー）: ICMタブに楕円卓が表示され、席ごとに `P番号/ポジション/スタック/手札/アクション` が表示される。ヒーロー席は強調され、`BTN/SB/BB` はバッジ色で識別できる。根拠は `index.html:1492` `index.html:1494` `index.html:3591` `index.html:3608` `index.html:3617` `index.html:3627`。
 15. I-7（ICMドリル答え非表示）: `出題` 直後は ICM結果ブロック（必要勝率/想定EV差）が非表示で、問題文にも必要勝率が出ない。根拠は `index.html:1044` `index.html:3954` `index.html:4075` `index.html:4077`。
 16. I-8（ICMドリル回答時の根拠表示）: `コール/フォールド` 回答後にだけ `必要勝率 / foldEV / callEV / EV差` が表示される。未出題回答では `先に「出題」を押してください。` が表示される。根拠は `index.html:4080` `index.html:4082` `index.html:4093`。
-17. I-9（SBオールイン vs BB固定）: ICMドリル生成時は `SB` をオールイン相手、`BB` をヒーローに固定して判定する。根拠は `index.html:4005` `index.html:4006` `index.html:4008` `index.html:4009`。
+17. I-9（複数ポジション出題）: ICMドリル生成時の `allinIndex` と `heroIndex` は、行動順 `getIcmPreAllInActionRank` で `allin < hero` を満たす組からランダム選定し、`SB` / `BB` 固定はしない。根拠は `index.html:3993` `index.html:4007` `index.html:4010` `index.html:4019` `index.html:4024` `index.html:4026` `index.html:4030` `index.html:4032` `index.html:4033` `index.html:4036` `index.html:4041`。
 18. I-10（オールイン前候補制限）: `+ アクション追加` のプレイヤー候補はオールイン相手より前に行動する座席のみを表示し、行動順（UTG→…）で並ぶ。根拠は `index.html:3727` `index.html:3732` `index.html:3736` `index.html:3738` `index.html:1515`。
+19. I-11（自動フォールド追加順）: `残り全員フォールド` で追加される行は、`i !== hero/allin` かつ `canIcmPlayerActBeforeAllIn(i, allinIndex)` の対象のみを `getIcmPreAllInActionRank(i)` の昇順で追加し、`UTG→…→BTN` 方向で並ぶ。根拠は `index.html:3923` `index.html:3943` `index.html:3947` `index.html:3948` `index.html:3949` `index.html:3954` `index.html:3955`。
 
 ## 修正ログ
+
+### 2026-02-22 22:23:34 JST
+- 対象: `index.html`（addIcmFoldOthers / buildIcmDrillQuestion / calculateICM / ICM表記）, `CLAUDE.md`（チェックリスト・再発防止更新）
+- 根拠:
+  - 行動順定義: `index.html:3566`
+  - 行動順rank取得: `index.html:3599`
+  - オールイン前判定: `index.html:3606`
+  - addIcmFoldOthers: `index.html:3923` `index.html:3943` `index.html:3945` `index.html:3947` `index.html:3948` `index.html:3954` `index.html:3955`
+  - ドリル抽選: `index.html:3993` `index.html:4007` `index.html:4007` `index.html:4019` `index.html:4030` `index.html:4034` `index.html:4046`
+  - calculateICM: `index.html:4774` `index.html:4807` `index.html:4813` `index.html:4819` `index.html:4824` `index.html:4831`
+- diff要約:
+  - `index.html`: `addIcmFoldOthers` の残り全員フォールド追加順を行動順rankソートへ変更、`calculateICM` をオールイン後プレイヤー自動フォールド化へ変更、`buildIcmDrillQuestion` を SB/BB固定から複数ポジション抽選へ変更、`アクション(オールイン前)`文言更新。
+  - `CLAUDE.md`: I-9を複数ポジションへ更新、I-11追加、修正ログ追記。
+- 実行コマンドと実行結果:
+  - `cd /mnt/c/repos/popker && git rev-parse --show-toplevel`
+    - `/mnt/c/repos/popker`
+  - `cd /mnt/c/repos/popker && git status -sb`
+    - `## main...origin/main [ahead 6]`
+    - ` M CLAUDE.md`
+    - ` M index.html`
+  - `cd /mnt/c/repos/popker && git log -1 --oneline`
+    - `7bb7698 docs: finalize handoff summary HEAD alignment`
+  - `cd /mnt/c/repos/popker && rg -n "function addIcmFoldOthers|function buildIcmDrillQuestion|function calculateICM|function getIcmDrillPositionOrder|ICM_PRE_ALLIN_ACTION_ORDER" index.html`
+    - `3566:	    const ICM_PRE_ALLIN_ACTION_ORDER = {`
+    - `3601:	      return Object.prototype.hasOwnProperty.call(ICM_PRE_ALLIN_ACTION_ORDER, posValue)`
+    - `3602:	        ? ICM_PRE_ALLIN_ACTION_ORDER[posValue]`
+    - `3923:	    function addIcmFoldOthers()`
+    - `3992:	    function getIcmDrillPositionOrder(n)`
+    - `4007:	    function buildIcmDrillQuestion()`
+    - `4606:	    function calculateICM()`
+  - `cd /mnt/c/repos/popker && nl -ba index.html | sed -n '3920,3965p'`
+    - `addIcmFoldOthers`: フォールド追加対象の抽出・`canIcmPlayerActBeforeAllIn` 判定・`rank` 昇順ソート・`fold`追加の順序で更新済み
+  - `cd /mnt/c/repos/popker && nl -ba index.html | sed -n '3978,4060p'`
+    - `buildIcmDrillQuestion`: `candidatePairs` で `allin < hero` のランク条件からランダム抽選
+  - `cd /mnt/c/repos/popker && rg -n "フォールドしていません \\(このツールは" index.html`
+    - `（0 件）`
+  - `cd /mnt/c/repos/popker && rg -o "id=\"[^\"]+\"" index.html | sort | uniq -d`
+    - `（0 件）`
+  - `cd /mnt/c/repos/popker && rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true`
+    - `（0 件）`
+  - `cd /mnt/c/repos/popker && python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
+    - `MANIFEST_OK`
+  - `cd /mnt/c/repos/popker && git diff --stat -- index.html CLAUDE.md`
+    - ` CLAUDE.md  |  57 +++++++++++++++++++++++++++++++-`
+    - ` index.html | 108 +++++++++++++++++++++++++++++++++++++++++--------------------`
+    - ` 2 files changed, 129 insertions(+), 36 deletions(-)`
+- 追加検証結果:
+  - `calculateICM` で「オールイン後に未フォールドの3rdパーティ」は自動フォールド対象化され、`preToAllIn.remaining[i] <= eps` だけをエラー化。
+  - 「フォールドしていません ...」の明示エラーは撤去。
+  - `2人ショーダウン前提` の文言は `アクション(オールイン前)` で明文化。
+- 再発防止:
+  - `残り全員フォールド` は `hero/allin` 除外・`canIcmPlayerActBeforeAllIn` で事前対象絞り込み・`getIcmPreAllInActionRank` ソートが同時に効いているかを毎回確認する。
+  - ICMドリルの出題抽選は必ず `allin < hero` の行動順ランク条件チェックを通しているかを記録し、SB/BB固定にならないことを同時監査する。
+  - `calculateICM` の `preToAllIn` と `pre` の差分作用を把握し、第三者が既にオールイン前状態 (`preToAllIn.remaining[i] <= eps`) の場合のみエラーにし、他は自動フォールド扱いとする前提を崩さない。
 
 ### 2026-02-22 20:45:30 KST
 - 対象: `index.html`（I-10根拠の再監査）、`CLAUDE.md`（Max作業ログと再発防止追記）
