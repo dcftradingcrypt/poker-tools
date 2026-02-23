@@ -10,6 +10,7 @@
 7. 同じ概念（例: ICMの行動順）は導線ごとに別ロジックを作らず、共通関数（`getIcmPreAllInActionRank` / `canIcmPlayerActBeforeAllIn`）を必ず再利用する。候補表示だけ整列しても、`残り全員フォールド` など別導線が座席順のままだと再発する。
 8. ICMの新スポット追加時は、問題文（prompt）・アクション行（DOM）・計算結果（`call-amount`）の3点を必ず同時に監査する。どれか1つだけ満たしても完了扱いにしない。
 9. モバイル表示不具合の再発防止として、`switchTab('icm-tab')` 直後の `renderIcmTableVisual()` 呼び出し有無と、`#icm-table-visual[data-seat-count]` がプレイヤー数と一致するかを毎回確認する。
+10. 混合出題は「存在する」だけでなく偏り監査を行う。`lastIcmDrillSpotType` により `raiseShove`/`directShove` の優先順を交互にし、片側のみ連続固定化する経路を残さない。
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
@@ -36,8 +37,38 @@
 21. I-13（レイズ→オールイン混合出題）: ICMドリルは `raiseShove` と `directShove` を混合し、`raiseShove` のときは `raiseTo` を `2.0` / `2.5` からのみ選び、問題文に `レイズto` を明記する。根拠は `index.html:4128` `index.html:4152` `index.html:4218` `index.html:4219`。
 22. I-14（追加コール額の成立条件）: ICMドリル問題は `call-amount > 0` を満たすケースのみ採用し、0以下は再抽選する。根拠は `index.html:4172` `index.html:4174` `index.html:5014`。
 23. I-15（iPhone卓ビュー表示ゲート）: `switchTab('icm-tab')` で `renderIcmTableVisual()` を再実行し、`[ICM_TAB_OPEN] seats=<n>` と `#icm-table-visual[data-seat-count]` が確認できる。小画面では `@media (max-width: 430px)` で席カードを縮小する。根拠は `index.html:1015` `index.html:2365` `index.html:2374` `index.html:2377` `index.html:3712` `index.html:3713`。
+24. I-16（混合出題の交互優先）: 直前スポットと反対のスポットを優先して抽選し、成立しないときのみフォールバックする。根拠は `index.html:1688` `index.html:4133` `index.html:4135` `index.html:4221`。
+25. I-17（iPhone代替DOM証拠）: `renderIcmTableVisual` 実行時に `data-seat-count` `data-table-rect` `data-table-display` を更新し、`[ICM_TABLE]` ログに `size/display` を含める。根拠は `index.html:3716` `index.html:3717` `index.html:3718` `index.html:3719`。
+26. I-18（初期タブ固定表示）: `?tab=icm-tab` を受け取ったときに初期表示をICMタブへ切り替える。根拠は `index.html:5192` `index.html:5193`。
 
 ## 修正ログ
+
+### 2026-02-23 19:55:00 JST
+- 対象: `index.html`（ICM混合出題の交互優先、iPhone代替DOM証拠拡張、初期タブ切替）, `CLAUDE.md`（再発防止・チェック項目・実行ログ追記）
+- 根拠:
+  - 交互優先状態: `index.html:1688`
+  - 混合出題の優先順: `index.html:4133` `index.html:4134` `index.html:4135`
+  - 出題確定時の状態更新: `index.html:4221`
+  - iPhone代替DOM証拠: `index.html:3716` `index.html:3717` `index.html:3718` `index.html:3719`
+  - 初期ICMタブ切替: `index.html:5192` `index.html:5193`
+  - マルチウェイ前提維持（第三者オールイン明示エラー）: `index.html:4930`
+- diff要約:
+  - `index.html`: spot混合の優先順を交互化（`lastIcmDrillSpotType` 追加）、卓ビューログに `size/display` を追加、`?tab=` で初期タブ切替対応。
+  - `CLAUDE.md`: 実装ルール10、I-16〜I-18、本ログを追加。
+- 実行コマンドと実行結果:
+  - `powershell.exe -NoProfile -Command "Set-Location C:\repos\popker; Get-ChildItem ...; git ..."`
+    - 失敗: `UtilBindVsockAnyPort:307: socket failed 1`。
+  - `cd /mnt/c/repos/popker && rg -n "function switchTab|function renderIcmTableVisual|function buildIcmDrillQuestion|..." index.html`
+  - `cd /mnt/c/repos/popker && nl -ba index.html | sed -n '...'`（該当行採取）
+  - `cd /mnt/c/repos/popker && ls -l "/mnt/c/Program Files/Microsoft/Edge/Application/msedge.exe" 2>/dev/null || echo EDGE_NOT_FOUND`
+    - `EDGE_NOT_FOUND`
+  - `cd /mnt/c/repos/popker && echo "[DUP_ID]" && (rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d) && echo "[FORBIDDEN]" && (rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true) && echo "[MANIFEST]" && python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
+    - `[DUP_ID]` 出力なし
+    - `[FORBIDDEN]` 出力なし
+    - `MANIFEST_OK`
+- 再発防止:
+  - 混合spotは乱数任せにせず、前回spotの反対を優先することで「直オールインしか出ない」偏り再発を抑える。
+  - iPhone検証ではスクショ不可時でも `data-seat-count/rect/display` と `ICM_TABLE` ログを必ず残し、DOMが生成済みか・不可視かを切り分ける。
 
 ### 2026-02-23 02:56:00 JST
 - 対象: `index.html`（iPhone卓ビュー再描画/レスポンシブ化、ICMドリル raise→shove 混合生成）, `CLAUDE.md`（チェックリスト・再発防止・実行ログ追記）

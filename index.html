@@ -1685,6 +1685,7 @@
 		    let trainerQuestionStartedAtMs = null;
 		    let trainerQuestionTimeoutAtMs = null;
 		    let currentIcmDrillQuestion = null;
+      let lastIcmDrillSpotType = null;
 
 		    const SAVED_RANGES_KEY = 'poker_tool_saved_ranges_v1';
 		    const TRAINER_HISTORY_KEY = 'poker_tool_trainer_history_v1';
@@ -3710,8 +3711,12 @@
 	      }
 	      visualEl.innerHTML = html;
       const seatCount = visualEl.querySelectorAll('.icm-seat').length;
+      const rect = visualEl.getBoundingClientRect();
+      const display = window.getComputedStyle(visualEl).display;
       visualEl.dataset.seatCount = String(seatCount);
-      console.info(`[ICM_TABLE] seats=${seatCount} players=${n}`);
+      visualEl.dataset.tableRect = `${Math.round(rect.width)}x${Math.round(rect.height)}`;
+      visualEl.dataset.tableDisplay = display;
+      console.info(`[ICM_TABLE] seats=${seatCount} players=${n} size=${Math.round(rect.width)}x${Math.round(rect.height)} display=${display}`);
 	    }
 
 	    function getIcmPositionSelectHtml(id) {
@@ -4125,9 +4130,9 @@
 	          posEl.value = posValue;
 	          posValues[i] = posValue;
 	        }
-        const spotTypes = Math.random() < 0.5
-          ? ['raiseShove', 'directShove']
-          : ['directShove', 'raiseShove'];
+        const preferredSpot = lastIcmDrillSpotType === 'raiseShove' ? 'directShove' : 'raiseShove';
+        const fallbackSpot = preferredSpot === 'raiseShove' ? 'directShove' : 'raiseShove';
+        const spotTypes = [preferredSpot, fallbackSpot];
         const prizes = getIcmDrillPrizeTemplate(n);
         for (let i = 0; i < n; i++) {
           const stackEl = document.getElementById(`stack${i}`);
@@ -4213,6 +4218,7 @@
 	      }
 
 	      currentIcmDrillQuestion = question;
+      lastIcmDrillSpotType = question.spotType || null;
 	      const heroLabel = formatPlayerLabel(question.heroIndex);
 	      const allinLabel = formatPlayerLabel(question.allinIndex);
       const spotText = question.spotType === 'raiseShove' && Number.isFinite(question.raiseTo)
@@ -5183,6 +5189,8 @@
 	      document.querySelectorAll('#bottom-nav .nav-btn').forEach(btn => {
 	        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 	      });
+      const initialTab = new URLSearchParams(window.location.search).get('tab');
+      if (initialTab && document.getElementById(initialTab)) switchTab(initialTab);
 
 	      // ICM関連
 	      generatePlayerInputs();
