@@ -62,6 +62,12 @@
   - `cd /mnt/c/repos/popker && nl -ba index.html | sed -n '...'`（該当行採取）
   - `cd /mnt/c/repos/popker && ls -l "/mnt/c/Program Files/Microsoft/Edge/Application/msedge.exe" 2>/dev/null || echo EDGE_NOT_FOUND`
     - `EDGE_NOT_FOUND`
+  - `cd /mnt/c/repos/popker && "/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless=new --disable-gpu --window-size=390,844 --screenshot="C:\\repos\\popker\\artifacts\\icm_390x844.png" "file:///C:/repos/popker/index.html?tab=icm-tab"`
+    - 失敗: `UtilBindVsockAnyPort:307: socket failed 1`
+  - `cd /mnt/c/repos/popker && "/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless=new --disable-gpu --window-size=375,667 --screenshot="C:\\repos\\popker\\artifacts\\icm_375x667.png" "file:///C:/repos/popker/index.html?tab=icm-tab"`
+    - 失敗: `UtilBindVsockAnyPort:307: socket failed 1`
+  - `cd /mnt/c/repos/popker && ls -l artifacts`
+    - `total 0`
   - `cd /mnt/c/repos/popker && echo "[DUP_ID]" && (rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d) && echo "[FORBIDDEN]" && (rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true) && echo "[MANIFEST]" && python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
     - `[DUP_ID]` 出力なし
     - `[FORBIDDEN]` 出力なし
