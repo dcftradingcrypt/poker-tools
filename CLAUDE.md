@@ -8,6 +8,8 @@
 5. 修正後は必ず検証コマンドを実行し、結果を確認する。
 6. ユーザーへ python3/rg/sed/curl 等のコマンド実行を依頼しない。依頼できるのは `git push` と結果確認（目視）だけ。検証・修正・コミット・ログ採取はCODEXが実行し、ログを添えて報告する。
 7. 同じ概念（例: ICMの行動順）は導線ごとに別ロジックを作らず、共通関数（`getIcmPreAllInActionRank` / `canIcmPlayerActBeforeAllIn`）を必ず再利用する。候補表示だけ整列しても、`残り全員フォールド` など別導線が座席順のままだと再発する。
+8. ICMの新スポット追加時は、問題文（prompt）・アクション行（DOM）・計算結果（`call-amount`）の3点を必ず同時に監査する。どれか1つだけ満たしても完了扱いにしない。
+9. モバイル表示不具合の再発防止として、`switchTab('icm-tab')` 直後の `renderIcmTableVisual()` 呼び出し有無と、`#icm-table-visual[data-seat-count]` がプレイヤー数と一致するかを毎回確認する。
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
@@ -31,8 +33,56 @@
 18. I-10（オールイン前候補制限）: `+ アクション追加` のプレイヤー候補はオールイン相手より前に行動する座席のみを表示し、行動順（UTG→…）で並ぶ。根拠は `index.html:3727` `index.html:3732` `index.html:3736` `index.html:3738` `index.html:1515`。
 19. I-11（自動フォールド追加順）: `残り全員フォールド` で追加される行は、`i !== hero/allin` かつ `canIcmPlayerActBeforeAllIn(i, allinIndex)` の対象のみを `getIcmPreAllInActionRank(i)` の昇順で追加し、`UTG→…→BTN` 方向で並ぶ。根拠は `index.html:3923` `index.html:3943` `index.html:3947` `index.html:3948` `index.html:3949` `index.html:3954` `index.html:3955`。
 20. I-12（残り全員フォールドのno-op明示）: `残り全員フォールド` で追加対象が0人のときは、何も起きない状態にせず `icm-error` に明示メッセージを表示する。根拠は `index.html:3959` `index.html:3960`。
+21. I-13（レイズ→オールイン混合出題）: ICMドリルは `raiseShove` と `directShove` を混合し、`raiseShove` のときは `raiseTo` を `2.0` / `2.5` からのみ選び、問題文に `レイズto` を明記する。根拠は `index.html:4128` `index.html:4152` `index.html:4218` `index.html:4219`。
+22. I-14（追加コール額の成立条件）: ICMドリル問題は `call-amount > 0` を満たすケースのみ採用し、0以下は再抽選する。根拠は `index.html:4172` `index.html:4174` `index.html:5014`。
+23. I-15（iPhone卓ビュー表示ゲート）: `switchTab('icm-tab')` で `renderIcmTableVisual()` を再実行し、`[ICM_TAB_OPEN] seats=<n>` と `#icm-table-visual[data-seat-count]` が確認できる。小画面では `@media (max-width: 430px)` で席カードを縮小する。根拠は `index.html:1015` `index.html:2365` `index.html:2374` `index.html:2377` `index.html:3712` `index.html:3713`。
 
 ## 修正ログ
+
+### 2026-02-23 02:56:00 JST
+- 対象: `index.html`（iPhone卓ビュー再描画/レスポンシブ化、ICMドリル raise→shove 混合生成）, `CLAUDE.md`（チェックリスト・再発防止・実行ログ追記）
+- 根本原因:
+  - iPhone卓ビュー: `switchTab` がタブ切替時に `renderIcmTableVisual` を呼ばない実装で、ICMタブ表示直後の再描画トリガーが無かった。根拠: 変更前 `index.html:2334` 付近（再描画呼び出しなし）。
+  - ドリル直オールイン固定: `buildIcmDrillQuestion` は `allinRank < heroRank` の組のみ抽選し、`clearIcmActionRows(); addIcmFoldOthers();` だけで、`raiseTo` 挿入経路が存在しなかった。根拠: 変更前 `index.html:4034` `index.html:4043` `index.html:4066` `index.html:4067`。
+- 変更内容:
+  - `switchTab('icm-tab')` 直後に `requestAnimationFrame` で `renderIcmTableVisual()` を必ず実行し、`[ICM_TAB_OPEN] seats=<n>` をログ出力。
+  - `renderIcmTableVisual` で `data-seat-count` を設定し、`[ICM_TABLE] seats=<n> players=<n>` をログ出力。
+  - `@media (max-width: 430px)` を追加し、`.icm-seat` 幅・フォント・バッジを縮小。
+  - `buildIcmDrillQuestion` を `raiseShove` / `directShove` の混合生成に変更。
+  - `raiseShove` では `raiseTo` を `2.0` / `2.5` からのみ選び、ヒーローの `raiseTo` 行をオールイン前アクションに注入。
+  - 問題採用条件に `call-amount > 0` を追加。
+  - 問題文にスポット種別を表示（`【レイズto x.xx】...` / `【直オールイン】...`）。
+- 根拠行:
+  - 小画面CSS: `index.html:1015`
+  - ICMタブ再描画: `index.html:2365` `index.html:2372` `index.html:2374`
+  - seat数ログ: `index.html:3712` `index.html:3713` `index.html:3714`
+  - raise/direct 候補抽選: `index.html:4053` `index.html:4062` `index.html:4064`
+  - pre-allin注入（raiseTo 2.0/2.5固定）: `index.html:4072` `index.html:4079` `index.html:4096` `index.html:4128` `index.html:4152`
+  - call-amount > 0 条件: `index.html:4172` `index.html:4174`
+  - 問題文のスポット明記: `index.html:4218` `index.html:4219` `index.html:4221`
+  - 2人ショーダウン前提維持（第三者オールイン明示エラー）: `index.html:4929` `index.html:4930`
+- 実行コマンドと結果:
+  - `powershell.exe -NoProfile -Command "Set-Location C:\repos\popker; git rev-parse --show-toplevel"`
+    - 失敗: `git` が `CommandNotFoundException`。
+  - `powershell.exe -NoProfile -Command "$candidates = @('C:\Program Files\Git\cmd\git.exe', ... )"`
+    - 失敗: `UtilBindVsockAnyPort:307: socket failed 1`（PowerShell不安定）。
+  - 以降は切替（bash）:
+  - `cd /mnt/c/repos/popker && rg -n "function switchTab|function renderIcmTableVisual|function buildIcmDrillQuestion|function startIcmDrillQuestion|function submitIcmDrillAnswer|function calculateICM|function readIcmPreAllInActions|function addIcmActionRow|ICM_PRE_ALLIN_ACTION_ORDER|getIcmPreAllInActionRank|canIcmPlayerActBeforeAllIn|raiseTo|callTo|2人ショーダウン" index.html`
+  - `cd /mnt/c/repos/popker && nl -ba index.html | sed -n '2280,2395p;3555,3675p;3990,4165p;4510,4865p'`
+  - `cd /mnt/c/repos/popker && rg -n "\\.icm-seat|#icm-table-visual|@media \\(max-width: 430px\\)" index.html`
+  - `cd /mnt/c/repos/popker && nl -ba index.html | sed -n '940,1165p;2550,2640p;5050,5190p'`
+  - `cd /mnt/c/repos/popker && node -e "try{require('playwright');console.log('PLAYWRIGHT_OK')}catch(e){console.log('PLAYWRIGHT_MISSING')}"`
+    - `/bin/bash: node: command not found`
+  - `cd /mnt/c/repos/popker && python3 - <<'PY' ...`
+    - `PLAYWRIGHT_PY_MISSING`
+  - `cd /mnt/c/repos/popker && echo "[DUP_ID]" && (rg -o 'id=\"[^\"]+\"' index.html | sort | uniq -d) && echo "[FORBIDDEN]" && (rg -n "Bet vs Check|checkEV|ベットEV（HU）|Bet vs" index.html || true) && echo "[MANIFEST]" && python3 -m json.tool manifest.json >/dev/null && echo MANIFEST_OK`
+    - `[DUP_ID]` 出力なし
+    - `[FORBIDDEN]` 出力なし
+    - `MANIFEST_OK`
+- 再発防止:
+  - ICMドリル改修時は `buildIcmDrillQuestion` で `spotType` と `raiseTo` の両方を返し、`startIcmDrillQuestion` の prompt に同じ値を表示して、生成内容と表示内容の不一致を防ぐ。
+  - `raiseShove` 生成では `applyIcmDrillPreAllInActions` 経由でのみ pre-allin 行を作り、`raiseTo` が `2.0/2.5` 以外になる経路を作らない。
+  - iPhone表示監査は、`switchTab('icm-tab')` 実行時ログ (`[ICM_TAB_OPEN]`) と `#icm-table-visual[data-seat-count]` の一致確認を必須化する。
 
 ### 2026-02-22 22:56:00 JST
 - 対象: `index.html`（`addIcmFoldOthers` no-op明示追加）, `CLAUDE.md`（再発防止ルール・実行ログ追記）

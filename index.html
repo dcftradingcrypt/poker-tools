@@ -1012,6 +1012,37 @@
       text-overflow: ellipsis;
     }
 
+    @media (max-width: 430px) {
+      #icm-table-visual {
+        min-height: 280px;
+      }
+
+      .icm-seat {
+        width: clamp(88px, 24vw, 108px);
+        min-height: 70px;
+        padding: 5px 6px;
+        font-size: 10px;
+      }
+
+      .icm-seat-role,
+      .icm-seat-stack,
+      .icm-seat-hand,
+      .icm-seat-action {
+        font-size: 10px;
+      }
+
+      .icm-seat-action {
+        white-space: normal;
+        line-height: 1.15;
+        max-height: 2.3em;
+      }
+
+      .icm-pos-badge {
+        padding: 1px 5px;
+        font-size: 9px;
+      }
+    }
+
     .icm-pos-badge {
       display: inline-block;
       border-radius: 999px;
@@ -2338,6 +2369,14 @@
 	      if (tab) tab.classList.add('active');
 	      const navBtn = document.querySelector(`#bottom-nav .nav-btn[data-tab="${tabId}"]`);
 	      if (navBtn) navBtn.classList.add('active');
+      if (tabId === 'icm-tab') {
+        requestAnimationFrame(() => {
+          renderIcmTableVisual();
+          const visualEl = document.getElementById('icm-table-visual');
+          const seatCount = visualEl ? visualEl.querySelectorAll('.icm-seat').length : 0;
+          console.info(`[ICM_TAB_OPEN] seats=${seatCount}`);
+        });
+      }
 	    }
 
 	    function getTopPercentCategories(percent) {
@@ -3670,6 +3709,9 @@
 	        `;
 	      }
 	      visualEl.innerHTML = html;
+      const seatCount = visualEl.querySelectorAll('.icm-seat').length;
+      visualEl.dataset.seatCount = String(seatCount);
+      console.info(`[ICM_TABLE] seats=${seatCount} players=${n}`);
 	    }
 
 	    function getIcmPositionSelectHtml(id) {
@@ -4008,6 +4050,58 @@
 	      return out;
 	    }
 
+    function getIcmDrillSpotCandidatePairs(n, spotType) {
+      const pairs = [];
+      for (let allin = 0; allin < n; allin++) {
+        const allinRank = getIcmPreAllInActionRank(allin);
+        if (!Number.isFinite(allinRank)) continue;
+        for (let hero = 0; hero < n; hero++) {
+          if (hero === allin) continue;
+          const heroRank = getIcmPreAllInActionRank(hero);
+          if (!Number.isFinite(heroRank)) continue;
+          if (spotType === 'raiseShove') {
+            if (heroRank < allinRank) pairs.push({ allinIndex: allin, heroIndex: hero });
+          } else if (allinRank < heroRank) {
+            pairs.push({ allinIndex: allin, heroIndex: hero });
+          }
+        }
+      }
+      return pairs;
+    }
+
+    function applyIcmDrillPreAllInActions(n, heroIndex, allinIndex, spotType, raiseTo) {
+      clearIcmActionRows();
+      if (spotType === 'directShove') {
+        addIcmFoldOthers();
+        clearIcmError();
+        return true;
+      }
+      if (!Number.isFinite(raiseTo) || (raiseTo !== 2.0 && raiseTo !== 2.5)) return false;
+
+      const actionOrder = [];
+      for (let i = 0; i < n; i++) {
+        if (i === allinIndex) continue;
+        if (!canIcmPlayerActBeforeAllIn(i, allinIndex)) continue;
+        const rank = getIcmPreAllInActionRank(i);
+        actionOrder.push({
+          playerIndex: i,
+          rank: Number.isFinite(rank) ? rank : Number.POSITIVE_INFINITY,
+        });
+      }
+      actionOrder.sort((a, b) => a.rank - b.rank);
+      if (!actionOrder.some(entry => entry.playerIndex === heroIndex)) return false;
+
+      for (const entry of actionOrder) {
+        if (entry.playerIndex === heroIndex) {
+          addIcmActionRow({ playerIndex: heroIndex, type: 'raiseTo', toAmount: raiseTo.toFixed(2) });
+        } else {
+          addIcmActionRow({ playerIndex: entry.playerIndex, type: 'fold' });
+        }
+      }
+      clearIcmError();
+      return true;
+    }
+
 	    function buildIcmDrillQuestion() {
 	      const assumedPct = readAssumedWinratePct();
 	      if (!Number.isFinite(assumedPct)) return null;
@@ -4031,63 +4125,67 @@
 	          posEl.value = posValue;
 	          posValues[i] = posValue;
 	        }
-	        const candidatePairs = [];
-	        for (let allin = 0; allin < n; allin++) {
-	          const allinRank = getIcmPreAllInActionRank(allin);
-	          if (!Number.isFinite(allinRank)) continue;
+        const spotTypes = Math.random() < 0.5
+          ? ['raiseShove', 'directShove']
+          : ['directShove', 'raiseShove'];
+        const prizes = getIcmDrillPrizeTemplate(n);
+        for (let i = 0; i < n; i++) {
+          const stackEl = document.getElementById(`stack${i}`);
+          const prizeEl = document.getElementById(`prize${i}`);
+          if (stackEl) stackEl.value = String(10 + randomInt(26)); // 10-35BB
+          if (prizeEl) prizeEl.value = Number.isFinite(prizes[i]) ? prizes[i].toFixed(1) : '0.0';
+        }
 
-	          for (let hero = 0; hero < n; hero++) {
-	            if (hero === allin) continue;
-	            const heroRank = getIcmPreAllInActionRank(hero);
-	            if (!Number.isFinite(heroRank)) continue;
-	            if (allinRank < heroRank) {
-	              candidatePairs.push({ allinIndex: allin, heroIndex: hero });
-	            }
-	          }
-	        }
-	        if (candidatePairs.length === 0) continue;
+        for (const spotType of spotTypes) {
+          const candidatePairs = getIcmDrillSpotCandidatePairs(n, spotType);
+          if (candidatePairs.length === 0) continue;
 
-	        const pick = candidatePairs[randomInt(candidatePairs.length)];
-	        const allinIndex = pick.allinIndex;
-	        const heroIndex = pick.heroIndex;
-	        heroSelect.value = String(heroIndex);
-	        allinSelect.value = String(allinIndex);
+          const pick = candidatePairs[randomInt(candidatePairs.length)];
+          const allinIndex = pick.allinIndex;
+          const heroIndex = pick.heroIndex;
+          heroSelect.value = String(heroIndex);
+          allinSelect.value = String(allinIndex);
 
-	        const prizes = getIcmDrillPrizeTemplate(n);
-	        for (let i = 0; i < n; i++) {
-	          const stackEl = document.getElementById(`stack${i}`);
-	          const prizeEl = document.getElementById(`prize${i}`);
-	          if (stackEl) stackEl.value = String(10 + randomInt(26)); // 10-35BB
-	          if (prizeEl) prizeEl.value = Number.isFinite(prizes[i]) ? prizes[i].toFixed(1) : '0.0';
-	        }
+          refreshIcmActionPlayerOptionTexts();
+          updateIcmPlayerHighlights();
 
-	        refreshIcmActionPlayerOptionTexts();
-	        updateIcmPlayerHighlights();
-	        clearIcmActionRows();
-	        addIcmFoldOthers();
-	        clearIcmError();
-	        resetIcmOutputs();
-	        calculateICM();
-	        if (!lastIcmResult) continue;
+          const raiseTo = spotType === 'raiseShove'
+            ? [2.0, 2.5][randomInt(2)]
+            : null;
+          const applied = applyIcmDrillPreAllInActions(n, heroIndex, allinIndex, spotType, raiseTo);
+          if (!applied) {
+            clearIcmError();
+            continue;
+          }
 
-	        const errEl = document.getElementById('icm-error');
-	        if (errEl && errEl.classList.contains('active')) continue;
-	        const callEv = parseFloat(document.getElementById('assumed-call-ev')?.textContent ?? '');
-	        const evDiff = parseFloat(document.getElementById('assumed-ev-diff')?.textContent ?? '');
-	        const foldEv = lastIcmResult.foldEV;
-	        const requiredWinrateText = document.getElementById('required-winrate')?.textContent || '--';
-	        if (!Number.isFinite(callEv) || !Number.isFinite(evDiff) || !Number.isFinite(foldEv)) continue;
+          clearIcmError();
+          resetIcmOutputs();
+          calculateICM();
+          if (!lastIcmResult) continue;
 
-	        return {
-	          heroIndex,
-	          allinIndex,
-	          assumedPct,
-	          requiredWinrateText,
-	          callEv,
-	          foldEv,
-	          evDiff,
-	          correctCall: evDiff >= 0,
-	        };
+          const errEl = document.getElementById('icm-error');
+          if (errEl && errEl.classList.contains('active')) continue;
+          const callEv = parseFloat(document.getElementById('assumed-call-ev')?.textContent ?? '');
+          const evDiff = parseFloat(document.getElementById('assumed-ev-diff')?.textContent ?? '');
+          const foldEv = lastIcmResult.foldEV;
+          const requiredWinrateText = document.getElementById('required-winrate')?.textContent || '--';
+          const callAmount = parseFloat(document.getElementById('call-amount')?.textContent ?? '');
+          if (!Number.isFinite(callEv) || !Number.isFinite(evDiff) || !Number.isFinite(foldEv)) continue;
+          if (!Number.isFinite(callAmount) || callAmount <= 0) continue;
+
+          return {
+            heroIndex,
+            allinIndex,
+            assumedPct,
+            requiredWinrateText,
+            callEv,
+            foldEv,
+            evDiff,
+            correctCall: evDiff >= 0,
+            spotType,
+            raiseTo,
+          };
+        }
 	      }
 	      return null;
 	    }
@@ -4117,7 +4215,10 @@
 	      currentIcmDrillQuestion = question;
 	      const heroLabel = formatPlayerLabel(question.heroIndex);
 	      const allinLabel = formatPlayerLabel(question.allinIndex);
-	      setIcmDrillPrompt(`${heroLabel} 対 ${allinLabel} / 想定勝率 ${question.assumedPct.toFixed(2)}%`);
+      const spotText = question.spotType === 'raiseShove' && Number.isFinite(question.raiseTo)
+        ? `【レイズto ${question.raiseTo.toFixed(2)}】 ${heroLabel}が${question.raiseTo.toFixed(2)}BBにレイズ後、${allinLabel}がオールイン。`
+        : `【直オールイン】 ${allinLabel}がオールイン。`;
+	      setIcmDrillPrompt(`${spotText} あなたはコール/フォールド？ / 想定勝率 ${question.assumedPct.toFixed(2)}%`);
 	      setIcmDrillFeedback('回答を選んでください。', 'status-neutral');
 	      setIcmDrillResultPanelHidden(true);
 	    }
