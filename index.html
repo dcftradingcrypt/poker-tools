@@ -1506,6 +1506,7 @@
         </label>
         <div class="actions">
           <button id="generate-btn" type="button">生成</button>
+          <button id="jump-icm-table-btn" type="button" class="secondary">卓ビューへ移動</button>
         </div>
       </div>
       <p class="icm-hint">スタック/金額はBB換算。SB=0.5 / BB=1.0固定。2人ショーダウン前提。</p>
@@ -2785,6 +2786,22 @@
 	      if (prev && ranges.some(r => r.name === prev)) {
 	        select.value = prev;
 	      }
+	    }
+
+	    function jumpToIcmTablePanel(reason = 'manual') {
+	      const panel = document.getElementById('icm-table-panel');
+	      if (!panel) {
+	        setIcmError('卓ビュー要素が見つかりません。ページ再読み込み後に再実行してください');
+	        return;
+	      }
+	      switchTab('icm-tab');
+	      requestAnimationFrame(() => {
+	        panel.scrollIntoView({ behavior: 'auto', block: 'start' });
+	        const visualEl = document.getElementById('icm-table-visual');
+	        const seatCount = visualEl ? visualEl.querySelectorAll('.icm-seat').length : 0;
+	        const top = Math.round(panel.getBoundingClientRect().top);
+	        console.info(`[ICM_PANEL_JUMP] reason=${reason} top=${top} seats=${seatCount}`);
+	      });
 	    }
 
 	    function saveCurrentRange() {
@@ -5191,11 +5208,15 @@
 	      });
       const initialTab = new URLSearchParams(window.location.search).get('tab');
       if (initialTab && document.getElementById(initialTab)) switchTab(initialTab);
+      if (window.location.hash === '#icm-table-panel') {
+        requestAnimationFrame(() => jumpToIcmTablePanel('initial-hash'));
+      }
 
 	      // ICM関連
 	      generatePlayerInputs();
 	      renderIcmTableVisual();
       document.getElementById('generate-btn').addEventListener('click', generatePlayerInputs);
+      document.getElementById('jump-icm-table-btn').addEventListener('click', () => jumpToIcmTablePanel('button'));
       document.getElementById('calc-icm-btn').addEventListener('click', calculateICM);
 	      document.getElementById('icm-drill-start-btn').addEventListener('click', startIcmDrillQuestion);
 	      document.getElementById('icm-drill-call-btn').addEventListener('click', () => submitIcmDrillAnswer(true));

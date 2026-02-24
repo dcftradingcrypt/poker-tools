@@ -11,6 +11,8 @@
 8. ICMの新スポット追加時は、問題文（prompt）・アクション行（DOM）・計算結果（`call-amount`）の3点を必ず同時に監査する。どれか1つだけ満たしても完了扱いにしない。
 9. モバイル表示不具合の再発防止として、`switchTab('icm-tab')` 直後の `renderIcmTableVisual()` 呼び出し有無と、`#icm-table-visual[data-seat-count]` がプレイヤー数と一致するかを毎回確認する。
 10. 混合出題は「存在する」だけでなく偏り監査を行う。`lastIcmDrillSpotType` により `raiseShove`/`directShove` の優先順を交互にし、片側のみ連続固定化する経路を残さない。
+11. Pages反映確認では必ず `git status -sb` の `ahead` を先に確認し、`https://<owner>.github.io/<repo>/?t=<unix>` の cache-bust URL を取得して `raiseShove` / `【レイズto` / `[ICM_TAB_OPEN]` / `jump-icm-table-btn` の4文字列ゲートを通してから完了扱いにする。
+12. 390x844 の ICM 初期表示で卓ビューが画角外になる場合に備え、`jump-icm-table-btn` と `jumpToIcmTablePanel` の導線を維持する。hash遷移（`#icm-table-panel`）時は `requestAnimationFrame` 経由でジャンプし、`[ICM_PANEL_JUMP]` ログの `top/seats` を採取して判定する。
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
@@ -40,8 +42,57 @@
 24. I-16（混合出題の交互優先）: 直前スポットと反対のスポットを優先して抽選し、成立しないときのみフォールバックする。根拠は `index.html:1688` `index.html:4133` `index.html:4135` `index.html:4221`。
 25. I-17（iPhone代替DOM証拠）: `renderIcmTableVisual` 実行時に `data-seat-count` `data-table-rect` `data-table-display` を更新し、`[ICM_TABLE]` ログに `size/display` を含める。根拠は `index.html:3716` `index.html:3717` `index.html:3718` `index.html:3719`。
 26. I-18（初期タブ固定表示）: `?tab=icm-tab` を受け取ったときに初期表示をICMタブへ切り替える。根拠は `index.html:5192` `index.html:5193`。
+27. O-1（push前提ゲート）: Pages検証前に `git status -sb` を実行し、`ahead` が出ている場合は先に `git push origin main` を完了してからPages HTMLを採取する。根拠は `CLAUDE.md:648` `CLAUDE.md:655` と 2026-02-24 の実行ログ。
+28. O-2（Pages cache-bust文字列ゲート）: Pagesは通常URLだけでなく cache-bust URL（`?t=<unix>`）を取得し、保存HTMLで `raiseShove` `【レイズto` `[ICM_TAB_OPEN]` `jump-icm-table-btn` の一致を `Select-String/rg` で確認する。根拠は `artifacts/pages_after_push.html`（0件） `artifacts/pages_after_push_cachebust.html`（7件） `artifacts/pages_cachebust_latest.html`。
+29. I-19（iPhone卓ビュー導線）: ICM設定パネルに `卓ビューへ移動` ボタン（`#jump-icm-table-btn`）があり、`jumpToIcmTablePanel` が `switchTab('icm-tab')` 後に `#icm-table-panel` へ `scrollIntoView` して `[ICM_PANEL_JUMP]` を出力する。根拠は `index.html:1509` `index.html:2791` `index.html:2803` `index.html:5212` `index.html:5219`。
 
 ## 修正ログ
+
+### 2026-02-24 07:11:00 KST
+- 対象: `index.html`（iPhone卓ビュー導線追加）, `CLAUDE.md`（導線ゲート・実行ログ追記）, `artifacts/*`（検証証拠採取）
+- 根拠:
+  - 390x844 rectプローブ（`artifacts/final-rect-normal-dom.html:5406-5417`）で `innerHeight=752` に対し `panelTop=915`、`visualTop=965`。卓ビューは未描画ではなく初期画角外。
+  - hash付き rectプローブ（`artifacts/final-rect-hash-dom.html:5406-5417`）で `scrollY=915` かつ `panelTop=0`、`seatCount=2`、`display=block`。DOM上は卓ビューが表示対象。
+  - hash付き通常ページの headless スクショは再現的に黒画面（`artifacts/final-icm-390x844-hash.png` 2740 bytes、`artifacts/final-icm-390x844-hash-try2.png` 2740 bytes）だが、同DOM（`artifacts/final-icm-390x844-hash-dom.html:1551-1552`）に `data-seat-count=\"2\"` と `.icm-seat` が存在。
+  - raise→shove 出題証拠: `artifacts/final-raise-probe-dom.html:2` と `artifacts/final-raise-probe-dom.html:1629` に `【レイズto 2.50】...` を確認。
+  - EVセルフテスト証拠: `artifacts/final-selftest-probe-dom.html:1701` に `セルフテスト: 13/13 PASS`。
+- diff要約:
+  - `index.html`: `#jump-icm-table-btn` を追加し、`jumpToIcmTablePanel()`（`switchTab` + `scrollIntoView` + `[ICM_PANEL_JUMP]`）を実装。`#icm-table-panel` の初期hash時にも同関数を呼ぶ。
+  - `CLAUDE.md`: 実装ルール12とチェック項目I-19を追加。
+- 実行コマンドと実行結果:
+  - `cmd.exe /c "C:\Progra~2\Microsoft\Edge\Application\msedge.exe --headless ... --screenshot=C:\repos\popker\artifacts\final-icm-390x844.png file:///C:/repos/popker/index.html?tab=icm-tab"` -> `86370 bytes`
+  - `cmd.exe /c "C:\Progra~2\Microsoft\Edge\Application\msedge.exe --headless ... --dump-dom file:///C:/repos/popker/index.html?tab=icm-tab > ...final-icm-390x844-dom.html"` -> `data-seat-count` / `icm-seat` を確認
+  - `cmd.exe /c "C:\Progra~2\Microsoft\Edge\Application\msedge.exe --headless ... --screenshot=...final-icm-390x844-hash.png file:///C:/repos/popker/index.html?tab=icm-tab#icm-table-panel"` -> `2740 bytes`
+  - `cmd.exe /c "C:\Progra~2\Microsoft\Edge\Application\msedge.exe --headless ... --run-all-compositor-stages-before-draw ... --screenshot=...final-icm-390x844-hash-try2.png ...#icm-table-panel"` -> `2740 bytes`（再現）
+  - `cmd.exe /c "C:\Progra~2\Microsoft\Edge\Application\msedge.exe --headless ... final-raise-probe-390x844.png / final-raise-probe-dom.html"` -> `【レイズto 2.50】` を採取
+  - `cmd.exe /c "C:\Progra~2\Microsoft\Edge\Application\msedge.exe --headless ... final-selftest-probe-390x844.png / final-selftest-probe-dom.html"` -> `セルフテスト: 13/13 PASS`
+  - `rg` / `python3` で静的ゲート -> `DUP_ID_COUNT=0` `BANNED_WORD_MATCHES=0` `MANIFEST_OK`
+- 再発防止:
+  - iPhone不具合判定は必ず `rect( panelTop / innerHeight ) + dump-dom( data-seat-count / icm-seat ) + screenshot` の3点セットで行い、スクショ単独で未描画と断定しない。
+  - hash遷移で headless 黒画面が再発しても、`[ICM_PANEL_JUMP]` と rect証拠を併記して「画角外」と「撮像失敗」を分離する。
+
+### 2026-02-24 06:07:36 KST
+- 対象: `CLAUDE.md`（Pages検証運用の再発防止ルール追加）, `artifacts/*`（検証証拠採取）
+- 根拠:
+  - PowerShellで `git` が解決できず、`cmd.exe` ラップで検証継続: `git --version` は `CommandNotFoundException` / `where git` は `C:\Program Files\Git\cmd\git.exe`。
+  - 以前の混線証拠: `artifacts/pages_after_push.html` は3文字列ゲート0件、`artifacts/pages_after_push_cachebust.html` は7件。
+  - 現在の配信一致: `artifacts/pages_normal_latest.html` と `artifacts/pages_cachebust_latest.html` の両方で `raiseShove` / `【レイズto` / `[ICM_TAB_OPEN]` を確認。
+  - iPhone相当DOM証拠: `artifacts/icm-390x844-dom-latest.html:1550` に `data-seat-count="2"`、同ファイル `:1551` 以降に `class="icm-seat ..."`.
+  - EVセルフテスト実行証拠: `artifacts/selftest-probe-dom.html:1700` に `セルフテスト: 13/13 PASS` を確認（`run-ev-selftest-btn` 自動クリック）。
+- diff要約:
+  - `CLAUDE.md` に実装ルール11、チェック項目O-1/O-2、本ログを追記。
+- 実行コマンドと実行結果:
+  - `powershell.exe -NoProfile -Command "Set-Location C:\repos\popker; git --version"` -> `CommandNotFoundException`
+  - `cmd.exe /c "where git"` -> `C:\Program Files\Git\cmd\git.exe`
+  - `cmd.exe /c "cd /d C:\repos\popker && git status -sb && git log -1 --oneline --decorate && git remote -v"` -> `## main...origin/main`
+  - `powershell.exe -NoProfile -Command "Invoke-WebRequest ... pages_normal_latest/pages_cachebust_latest ..."` -> いずれも `STATUS=200`、3文字列ゲート一致
+  - `cmd.exe /c "... msedge.exe --headless ... --screenshot icm-390x844-latest.png ... --dump-dom icm-390x844-dom-latest.html"` -> 生成成功
+  - `cmd.exe /c "... msedge.exe --headless ... #icm-table-panel ..."` -> スクショは 2930 bytes（黒画面）、DOMは `data-seat-count="2"` / `icm-seat` を保持
+  - `cmd.exe /c "... msedge.exe --headless ... selftest_probe ... --dump-dom selftest-probe-dom.html"` -> `セルフテスト: 13/13 PASS`
+  - `powershell.exe -NoProfile -Command "... DUP_ID_COUNT / BANNED_WORD_MATCHES / MANIFEST_OK ..."` -> `DUP_ID_COUNT=0` `BANNED_WORD_MATCHES=0` `MANIFEST_OK`
+- 再発防止:
+  - Pages検証時は `ahead` を先に潰し、cache-bust HTMLの3文字列ゲート一致を必須化する。
+  - iPhone検証はスクショだけで結論を出さず、`--dump-dom` の `data-seat-count` と `icm-seat` を必ず併記して「未描画」と「画角外/撮像問題」を切り分ける。
 
 ### 2026-02-23 19:55:00 JST
 - 対象: `index.html`（ICM混合出題の交互優先、iPhone代替DOM証拠拡張、初期タブ切替）, `CLAUDE.md`（再発防止・チェック項目・実行ログ追記）
