@@ -20,6 +20,7 @@
 17. プリフロップ最適化タスクでは `artifacts/<ts>_preflop_opt_pack/summary.md` に `A/B/C/D` 受け入れ判定と `stopReason` 内訳を必ず残し、`H1/H2` が `REFUTED` の場合は採用判断を進めず「見送り」で固定する。
 18. 評価器改修タスクでは `legacy/h1/h2` の3系統を同一スイートで比較し、`fixed 25k/50k(ms/1k)` `mismatch(trials/seed)` `hotspot(draw/evaluate/other)` を必ず同時採取する。`mismatch>0` の系統は速度が出ても採用禁止とする。
 19. ship-ready 判定では `artifacts/<ts>_ship_ready_pack/git_clean_check.log` を必ず作成し、`STATUS_EXCLUDING_ARTIFACTS_OUT` に tracked変更（`M `）が1件でも残る場合は A〜D がPASSでも出荷不可（E=FAIL）として扱う。
+20. E（git clean）を要求される検証では、証拠出力ディレクトリ（`artifacts/`, `out/`）を `.gitignore` で明示管理し、`git status --porcelain` の `STATUS_TRACKED_ONLY` と `STATUS_FULL` が空であることを最終ログに残す。
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
@@ -61,8 +62,28 @@
 36. P-5（preflop_opt_pack判定ゲート）: `artifacts/<ts>_preflop_opt_pack/compare_summary.json` の `autoP95Ms/p99AbsErrorPct/fixedMsPer1k/stopReasonCounts/verdict` を確認し、`summary.md` の `A/B/C/D` と矛盾が無いことを完了条件にする。
 37. P-6（evaluator_opt_pack判定ゲート）: `artifacts/<ts>_evaluator_opt_pack/evaluator_suite.json` で `mismatchH1/H2` と `improvePct(25k/50k)` を確認し、`summary.md` の `H1/H2 verdict` と `hotspot share` が一致していることを完了条件にする。
 38. P-7（ship-ready 出荷ゲート）: `artifacts/<ts>_ship_ready_pack/summary.md` か `out/_codex/evidence_bundle.md` に A〜E 判定を明記し、E（aheadなし + clean）不達時は `REFUTED` を最終判定として固定する。
+39. P-8（ship-ready rerunゲート）: `artifacts/<ts>_ship_ready_rerun/` に `plan.md` `commands.txt` `git_clean_check.log` `pages_raw_marker_gate.log` `evaluator_suite.json` `mismatch_multiseed.json` を揃え、Pages/Raw は `HTTP/size/firstLine/4markers` を同時記録して判定する。
 
 ## 修正ログ
+
+### 2026-02-26 22:34:39 KST
+- 対象: `.gitignore`（`artifacts/` `out/` 追加）, `artifacts/20260226_215829_ship_ready_rerun/*`（rerun証拠パック）, `out/_codex/*`（deepパック更新・U11固定化）, `CLAUDE.md`（ルール20/P-8/本ログ）
+- 根拠:
+  - E(clean) 改善: commit/push後に `git status --porcelain` が空。根拠: `artifacts/20260226_215829_ship_ready_rerun/git_clean_check.log`。
+  - A/B 維持: evaluator suite で `mismatchH1=0` `mismatchH2=0`、fixed ms/1k は h1/h2 とも legacy比 `+49%` 台。根拠: `artifacts/20260226_215829_ship_ready_rerun/summary.md`。
+  - multi-seed: seeds `20260226/7/19/42` すべて mismatch 0。根拠: `artifacts/20260226_215829_ship_ready_rerun/mismatch_multiseed.json`。
+  - C/D 維持: `DUP_ID=0` `BANNED=0` `MANIFEST_OK` `selftest 13/13 PASS` `ICM未設定出題+ボタン抑止` `HUD static` `Pages/Raw 4マーカー` を確認。根拠: `regression_static.log` `ev_selftest_probe.json` `icm_no_assumed_probe.json` `hud_style_probe.json` `pages_raw_marker_gate.log`。
+- diff要約:
+  - `.gitignore`: 証拠保持とcleanゲート両立のため `artifacts/` `out/` を追加。
+  - `artifacts/20260226_215829_ship_ready_rerun`: plan/commands + rerunログ/JSON/CSV/DOM/PNG + 判定サマリを追加。
+  - `out/_codex`: verification/evidence/risk/runbook/search_key_pack と U11/excerpt を rerun結果基準で更新。
+- 実行コマンドと結果:
+  - `git commit` + `git push origin main`（初回DNS失敗後、昇格再試行で成功）。
+  - suite/mismatch/selftest/icm/hud probes を rerunパックへ出力。
+  - `curl` Pages/Raw cache-bust で `HTTP=200`、`size=226639`、4マーカー一致を採取。
+  - `git_clean_check.log` で `STATUS_TRACKED_ONLY/STATUS_FULL` 空を確認。
+- 再発防止:
+  - E(clean) を伴う出荷判定は、必ず `git_clean_check.log` の空判定を最終ゲートにし、A〜DのみPASSで完了扱いにしない。
 
 ### 2026-02-26 21:14:09 KST
 - 対象: `out/_codex/*`（ship-ready deepパック更新、U11固定化）、`artifacts/20260226_204942_ship_ready_pack/*`（mismatch多seed/回帰/Pages/clean判定）、`CLAUDE.md`（ルール19/P-7/本ログ）
