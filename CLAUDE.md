@@ -21,6 +21,7 @@
 18. 評価器改修タスクでは `legacy/h1/h2` の3系統を同一スイートで比較し、`fixed 25k/50k(ms/1k)` `mismatch(trials/seed)` `hotspot(draw/evaluate/other)` を必ず同時採取する。`mismatch>0` の系統は速度が出ても採用禁止とする。
 19. ship-ready 判定では `artifacts/<ts>_ship_ready_pack/git_clean_check.log` を必ず作成し、`STATUS_EXCLUDING_ARTIFACTS_OUT` に tracked変更（`M `）が1件でも残る場合は A〜D がPASSでも出荷不可（E=FAIL）として扱う。
 20. E（git clean）を要求される検証では、証拠出力ディレクトリ（`artifacts/`, `out/`）を `.gitignore` で明示管理し、`git status --porcelain` の `STATUS_TRACKED_ONLY` と `STATUS_FULL` が空であることを最終ログに残す。
+21. HUD再発防止ゲートは静的/動的の二重確認を必須化する。`artifacts/<ts>_hud_gate/hud_static_grep.log` で `#equity-hud` ブロック内が `position: static` であること、`hud_style_probe.json` で scroll前後とも `getComputedStyle(#equity-hud).position === "static"` を確認する。Pages/RawがDNS不可のときは `pages_raw_fetch_error.log` を残し、判定は `UNKNOWN` と明示する。
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
@@ -63,8 +64,32 @@
 37. P-6（evaluator_opt_pack判定ゲート）: `artifacts/<ts>_evaluator_opt_pack/evaluator_suite.json` で `mismatchH1/H2` と `improvePct(25k/50k)` を確認し、`summary.md` の `H1/H2 verdict` と `hotspot share` が一致していることを完了条件にする。
 38. P-7（ship-ready 出荷ゲート）: `artifacts/<ts>_ship_ready_pack/summary.md` か `out/_codex/evidence_bundle.md` に A〜E 判定を明記し、E（aheadなし + clean）不達時は `REFUTED` を最終判定として固定する。
 39. P-8（ship-ready rerunゲート）: `artifacts/<ts>_ship_ready_rerun/` に `plan.md` `commands.txt` `git_clean_check.log` `pages_raw_marker_gate.log` `evaluator_suite.json` `mismatch_multiseed.json` を揃え、Pages/Raw は `HTTP/size/firstLine/4markers` を同時記録して判定する。
+40. P-9（ship-guard HUD/Pagesゲート）: `artifacts/<ts>_hud_gate/hud_static_grep.log` と `hud_style_probe.json` の双方で HUD static を確認する。Pages/Raw取得が失敗した場合は `pages_raw_fetch_error.log` に `curl exit code` を残し、4マーカー判定を `UNKNOWN` として evidence に固定する。
 
 ## 修正ログ
+
+### 2026-02-26 23:39:21 KST
+- 対象: `artifacts/20260226_045617_tempo_matrix/run_perf_suite.mjs`（Worker計測依存解消）, `out/_codex/*`（U12固定 + deepパック更新）, `artifacts/20260226_231526_{ship_guard_rerun,hud_gate,tempo_rerun}/*`（再検証証拠）, `CLAUDE.md`（ルール21/P-9/本ログ）
+- 根拠:
+  - tempo失敗原因: `normalizeEvaluatorVariant is not defined` と `encodeScoreDigits is not defined` で `run_perf_suite` が停止。根拠: `artifacts/20260226_231526_ship_guard_rerun/run_tempo.log`。
+  - 修正: Worker source に `normalizeEvaluatorVariant` / `toHotspotBreakdown` / `encodeScoreDigits` / score constants / `evaluateLegacy` / `buildRemainingDeckByVillain` を注入し、Worker実行時 `evaluatorVariant='legacy'` を明示。根拠: `artifacts/20260226_045617_tempo_matrix/run_perf_suite.mjs:205-281`。
+  - H1/H2: `p95(time)=89.02ms` `p99(abs_error)=1.7850%`、`tick delta p50=+0.029546` / `elapsed delta p50=+673.45ms`。根拠: `artifacts/20260226_231526_tempo_rerun/tempo_matrix_summary.md`。
+  - 回帰: `DUP_ID=0` `BANNED=0` `MANIFEST_OK` `selftest 13/13 PASS` `ICM未設定出題+ボタン抑止` `HUD static` `git clean PASS`。根拠: `regression_static.log` `ev_selftest_probe.json` `icm_no_assumed_probe.json` `hud_style_probe.json` `git_clean_check.log`。
+  - Pages/Raw: DNS解決不可で `UNKNOWN`。根拠: `pages_raw_fetch_error.log`（`curl: (6) Could not resolve host`）。
+- diff要約:
+  - `run_perf_suite.mjs`: Blob Worker計測時の依存不足で落ちる経路を最小修正し、計測パック生成を回復。
+  - `out/_codex`: `verification_plan/evidence_bundle/risk_register/runbook/search_key_pack` を ship_guard rerun に更新。
+  - `out/_codex/user_evidence_index.md`: U12（最新指示）を固定化し、`user_evidence_index_excerpt.md` を再生成。
+- 実行コマンドと結果:
+  - `node ... run_perf_suite.mjs ... 50000` -> `tempo_matrix.json` 生成（成功）。
+  - `node ... run_evaluator_opt_suite.mjs` -> `summary.md` / `evaluator_suite.json` 生成。
+  - `node ... run_mismatch_multiseed.mjs` -> seeds `20260226/7/19/42` mismatch 0。
+  - `node ... selftest_probe.mjs` -> `13/13 PASS`。
+  - `node ... e2e_probe_icm_no_assumed.mjs` -> 未設定出題 + ボタン抑止を確認。
+  - `curl -L -sS` Pages/Raw -> DNS失敗（外部要因）を `pages_raw_fetch_error.log` に保存。
+- 再発防止:
+  - Worker比較計測は依存関数不足で壊れやすいため、`run_tempo.log` の `ReferenceError` を first gate にし、失敗時は runner修正を先に完了させる。
+  - HUDは静的grepだけで完了扱いにせず、必ず `hud_style_probe.json` の scroll前後 `position=static` を併記する。
 
 ### 2026-02-26 22:34:39 KST
 - 対象: `.gitignore`（`artifacts/` `out/` 追加）, `artifacts/20260226_215829_ship_ready_rerun/*`（rerun証拠パック）, `out/_codex/*`（deepパック更新・U11固定化）, `CLAUDE.md`（ルール20/P-8/本ログ）
