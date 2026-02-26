@@ -71,7 +71,7 @@
 ### 2026-02-26 23:39:21 KST
 - 対象: `artifacts/20260226_045617_tempo_matrix/run_perf_suite.mjs`（Worker計測依存解消）, `out/_codex/*`（U12固定 + deepパック更新）, `artifacts/20260226_231526_{ship_guard_rerun,hud_gate,tempo_rerun}/*`（再検証証拠）, `CLAUDE.md`（ルール21/P-9/本ログ）
 - 根拠:
-  - tempo失敗原因: `normalizeEvaluatorVariant is not defined` と `encodeScoreDigits is not defined` で `run_perf_suite` が停止。根拠: `artifacts/20260226_231526_ship_guard_rerun/run_tempo.log`。
+  - tempo失敗原因: `normalizeEvaluatorVariant is not defined` と `encodeScoreDigits is not defined` で `run_perf_suite` が停止。根拠: `artifacts/20260226_231526_ship_guard_rerun/run_tempo_fail_before_patch.log`。
   - 修正: Worker source に `normalizeEvaluatorVariant` / `toHotspotBreakdown` / `encodeScoreDigits` / score constants / `evaluateLegacy` / `buildRemainingDeckByVillain` を注入し、Worker実行時 `evaluatorVariant='legacy'` を明示。根拠: `artifacts/20260226_045617_tempo_matrix/run_perf_suite.mjs:205-281`。
   - H1/H2: `p95(time)=89.02ms` `p99(abs_error)=1.7850%`、`tick delta p50=+0.029546` / `elapsed delta p50=+673.45ms`。根拠: `artifacts/20260226_231526_tempo_rerun/tempo_matrix_summary.md`。
   - 回帰: `DUP_ID=0` `BANNED=0` `MANIFEST_OK` `selftest 13/13 PASS` `ICM未設定出題+ボタン抑止` `HUD static` `git clean PASS`。根拠: `regression_static.log` `ev_selftest_probe.json` `icm_no_assumed_probe.json` `hud_style_probe.json` `git_clean_check.log`。
@@ -88,7 +88,7 @@
   - `node ... e2e_probe_icm_no_assumed.mjs` -> 未設定出題 + ボタン抑止を確認。
   - `curl -L -sS` Pages/Raw -> DNS失敗（外部要因）を `pages_raw_fetch_error.log` に保存。
 - 再発防止:
-  - Worker比較計測は依存関数不足で壊れやすいため、`run_tempo.log` の `ReferenceError` を first gate にし、失敗時は runner修正を先に完了させる。
+  - Worker比較計測は依存関数不足で壊れやすいため、`run_tempo_fail_before_patch.log` の `ReferenceError` を first gate にし、失敗時は runner修正を先に完了させる。
   - HUDは静的grepだけで完了扱いにせず、必ず `hud_style_probe.json` の scroll前後 `position=static` を併記する。
 
 ### 2026-02-26 22:34:39 KST
