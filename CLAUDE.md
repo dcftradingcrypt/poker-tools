@@ -13,6 +13,13 @@
 10. 混合出題は「存在する」だけでなく偏り監査を行う。`lastIcmDrillSpotType` により `raiseShove`/`directShove` の優先順を交互にし、片側のみ連続固定化する経路を残さない。
 11. Pages反映確認では必ず `git status -sb` の `ahead` を先に確認し、`https://<owner>.github.io/<repo>/?t=<unix>` の cache-bust URL を取得して `raiseShove` / `【レイズto` / `[ICM_TAB_OPEN]` / `jump-icm-table-btn` の4文字列ゲートを通してから完了扱いにする。
 12. 390x844 の ICM 初期表示で卓ビューが画角外になる場合に備え、`jump-icm-table-btn` と `jumpToIcmTablePanel` の導線を維持する。hash遷移（`#icm-table-panel`）時は `requestAnimationFrame` 経由でジャンプし、`[ICM_PANEL_JUMP]` ログの `top/seats` を採取して判定する。
+13. ICMドリルは「出題」と「回答判定」を分離する。`buildIcmDrillQuestion` で想定勝率未設定ケースを `correctCall=null` として許可し、`startIcmDrillQuestion` / `submitIcmDrillAnswer` 側で回答ボタン制御と明示メッセージを必ず同期する。
+14. プリフロップ性能変更は `before/after` を同一条件3回で採取し、`fixed(ms/1k)` `adaptive(時間/誤差帯)` `cache(hit/miss)` `worker PoC(longtask/tickRatio)` の4点を artifacts に残す。`H1/H2` を `SUPPORTED/REFUTED` で明示するまで完了扱いにしない。
+15. Max深掘り監査では、`out/_codex/user_evidence_index.md`（最新U群を固定）と `verification_plan/evidence_bundle/risk_register/runbook` の4点を毎回更新し、`out/_codex/user_evidence_index_excerpt.md`（先頭20行+末尾40行）を必ず再生成する。
+16. テンポ合格判定は単発値で結論を出さず、入力50件以上の分布（`p50/p95/p99`）で判定する。`p99(abs_error)` は baseline `25k` と `50k` の両方を残し、閾値境界（±0.05pt以内）では `50k基準 + 25k感度分析` を必須併記する。
+17. プリフロップ最適化タスクでは `artifacts/<ts>_preflop_opt_pack/summary.md` に `A/B/C/D` 受け入れ判定と `stopReason` 内訳を必ず残し、`H1/H2` が `REFUTED` の場合は採用判断を進めず「見送り」で固定する。
+18. 評価器改修タスクでは `legacy/h1/h2` の3系統を同一スイートで比較し、`fixed 25k/50k(ms/1k)` `mismatch(trials/seed)` `hotspot(draw/evaluate/other)` を必ず同時採取する。`mismatch>0` の系統は速度が出ても採用禁止とする。
+19. ship-ready 判定では `artifacts/<ts>_ship_ready_pack/git_clean_check.log` を必ず作成し、`STATUS_EXCLUDING_ARTIFACTS_OUT` に tracked変更（`M `）が1件でも残る場合は A〜D がPASSでも出荷不可（E=FAIL）として扱う。
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
@@ -45,8 +52,179 @@
 27. O-1（push前提ゲート）: Pages検証前に `git status -sb` を実行し、`ahead` が出ている場合は先に `git push origin main` を完了してからPages HTMLを採取する。根拠は `CLAUDE.md:648` `CLAUDE.md:655` と 2026-02-24 の実行ログ。
 28. O-2（Pages cache-bust文字列ゲート）: Pagesは通常URLだけでなく cache-bust URL（`?t=<unix>`）を取得し、保存HTMLで `raiseShove` `【レイズto` `[ICM_TAB_OPEN]` `jump-icm-table-btn` の一致を `Select-String/rg` で確認する。根拠は `artifacts/pages_after_push.html`（0件） `artifacts/pages_after_push_cachebust.html`（7件） `artifacts/pages_cachebust_latest.html`。
 29. I-19（iPhone卓ビュー導線）: ICM設定パネルに `卓ビューへ移動` ボタン（`#jump-icm-table-btn`）があり、`jumpToIcmTablePanel` が `switchTab('icm-tab')` 後に `#icm-table-panel` へ `scrollIntoView` して `[ICM_PANEL_JUMP]` を出力する。根拠は `index.html:1509` `index.html:2791` `index.html:2803` `index.html:5212` `index.html:5219`。
+30. I-20（想定勝率未設定でも出題）: ICMドリルは想定勝率未設定でも問題生成に進み、`startIcmDrillQuestion` で回答ボタンを非表示にする。根拠は `index.html:4148` `index.html:4150` `index.html:4263` `index.html:4269` `index.html:4271`。
+31. I-21（回答判定のガード）: 想定勝率未設定問題（`correctCall=null`）に対して `submitIcmDrillAnswer` は正誤判定せず、明示メッセージを表示して終了する。根拠は `index.html:4218` `index.html:4235` `index.html:4284` `index.html:4285`。
+32. P-1（プリフロップ軽量初期化）: `#equity-hud` は sticky ではなく、`fast` に `5,000/10,000` があり、`localStorage未保存 && max-width:430px` の初回は `fast` を初期モードにする。根拠は `index.html:417` `index.html:1695` `index.html:2297` `index.html:2355` `index.html:5132` `index.html:5136` `index.html:5142`。
+33. P-2（プリフロップテンポ決定ゲート）: fast改善は `before_perf_suite.json` と `after_repeat_perf_suite.json` の比較を必須とし、`decision_compare.md` で `H1/H2` 判定、`cache miss/hit`、`AUTOの誤差帯内判定` を確認する。根拠は `artifacts/20260226_020243_preflop_tempo_decisionpack/decision_compare.md`。
+34. P-3（A/B監査固定化）: AUTO監査では `hasAutoOption=true` `time_budget停止` `trial範囲内` を `auto_ui_budget_probe.json` で確認し、LRU監査では `sameInputHit=true` かつ `range/hero/mode変更でmiss` を `cache_false_hit_probe.json` で確認する。根拠は `artifacts/20260226_033751_u8_ab_worker_audit/*`。
+35. P-4（テンポ分布ゲート）: `artifacts/<ts>_tempo_matrix/tempo_matrix_summary.md` で `p95(time_ms)` と `p99(abs_error)` を確認し、baseline `50k` 判定と baseline `25k` 感度分析を同時に残す。Workerは `delta tickRatio` と `delta elapsedMs` の両方を提出する。
+36. P-5（preflop_opt_pack判定ゲート）: `artifacts/<ts>_preflop_opt_pack/compare_summary.json` の `autoP95Ms/p99AbsErrorPct/fixedMsPer1k/stopReasonCounts/verdict` を確認し、`summary.md` の `A/B/C/D` と矛盾が無いことを完了条件にする。
+37. P-6（evaluator_opt_pack判定ゲート）: `artifacts/<ts>_evaluator_opt_pack/evaluator_suite.json` で `mismatchH1/H2` と `improvePct(25k/50k)` を確認し、`summary.md` の `H1/H2 verdict` と `hotspot share` が一致していることを完了条件にする。
+38. P-7（ship-ready 出荷ゲート）: `artifacts/<ts>_ship_ready_pack/summary.md` か `out/_codex/evidence_bundle.md` に A〜E 判定を明記し、E（aheadなし + clean）不達時は `REFUTED` を最終判定として固定する。
 
 ## 修正ログ
+
+### 2026-02-26 21:14:09 KST
+- 対象: `out/_codex/*`（ship-ready deepパック更新、U11固定化）、`artifacts/20260226_204942_ship_ready_pack/*`（mismatch多seed/回帰/Pages/clean判定）、`CLAUDE.md`（ルール19/P-7/本ログ）
+- 根拠:
+  - H1/H2: `mismatch=0`（seed=20260226, trials=200k）かつ fixed `ms/1k` が legacy 比 `>=20%` を満たす。根拠: `artifacts/20260226_204942_ship_ready_pack/evaluator_suite.json` `summary.md`。
+  - 多seed監査: seeds `20260226/7/19/42` すべて `mismatchH1=0` `mismatchH2=0`。根拠: `artifacts/20260226_204942_ship_ready_pack/mismatch_multiseed.json`。
+  - 回帰: `DUP_ID=0` `BANNED=0` `MANIFEST_OK` `selftest 13/13 PASS` `ICM未設定出題+ボタン抑止` `HUD static` `Pages/Raw 4マーカーPASS`。根拠: `regression_static.log` `ev_selftest_probe.json` `icm_no_assumed_probe.json` `hud_style_probe.json` `pages_raw_marker_gate.log`。
+  - 出荷ゲートE: `ahead` は無しだが `clean` 未達（`M CLAUDE.md`, `M index.html`）。根拠: `artifacts/20260226_204942_ship_ready_pack/git_clean_check.log`。
+- diff要約:
+  - `out/_codex/verification_plan.md`: ship-ready 判定項目（A〜E）と file:line 根拠を `20260226_204942_ship_ready_pack` 基準へ更新。
+  - `out/_codex/evidence_bundle.md`: A〜Eの PASS/FAIL を1枚判定形式に更新（最終: E failで REFUTED）。
+  - `out/_codex/risk_register.md` `runbook.md`: cleanゲート未達リスクと再現手順を更新。
+  - `out/_codex/user_evidence_index.md`: U11を本指示書内容で固定化、`user_evidence_index_excerpt.md` を再生成。
+- 実行コマンドと結果:
+  - `cmd.exe /c ... run_evaluator_opt_suite.mjs ...` -> `evaluator_suite.json` 生成。
+  - `cmd.exe /c ... run_mismatch_multiseed.mjs ...` -> 4seed mismatch=0。
+  - `cmd.exe /c ... selftest_probe.mjs` -> `セルフテスト: 13/13 PASS`。
+  - `cmd.exe /c ... e2e_probe_icm_no_assumed.mjs` -> 未設定出題 + Call/Fold非表示/disabled を採取。
+  - `cmd.exe /c ... hud_style_probe.mjs` -> `position: static` 採取。
+  - `curl -L -sS` Pages/Raw cache-bust -> 4マーカー一致。
+  - `git status --porcelain ...` -> tracked `M CLAUDE.md`, `M index.html` を検出（E fail）。
+- 再発防止:
+  - ship-ready の最終判定は A〜D の性能/機能PASSだけで完了扱いにせず、必ず E（clean）を同時に通した場合のみ `SUPPORTED` とする。
+
+### 2026-02-26 10:00:00 KST
+- 対象: `index.html`（legacy/h1/h2評価器切替、evaluate7Fast、int/TypedArray経路、hotspot計測、mismatchプローブ）, `artifacts/20260226_094406_evaluator_opt_pack/*`（evaluator実測パック）, `out/_codex/*`（U11固定化 + deepパック更新）, `CLAUDE.md`（ルール18/P-6/本ログ）
+- 根拠:
+  - 評価器3系統: `legacy/h1/h2` 切替と cache key 分離を実装。根拠: `index.html:1705-1707` `index.html:1889-1895` `index.html:3324-3334`。
+  - H1本体: `evaluateLegacy` を温存したまま `evaluate7FastFromIds/evaluate7Fast` を追加。根拠: `index.html:2026-2047` `index.html:2050-2219`。
+  - H2本体: intデッキ経路（`buildRemainingDeckByVillainIds`）と `runFastEquityMonteCarlo` の `useIntPath` 分岐を追加。根拠: `index.html:3432-3447` `index.html:3464-3602`。
+  - 照合: `runEvaluatorMismatchProbe(trials=200000, seed=20260226)` で `mismatchH1=0` `mismatchH2=0`。根拠: `artifacts/20260226_094406_evaluator_opt_pack/evaluator_suite.json`。
+  - 性能: fixed ms/1k は baseline比で h1 `+50.24%/+50.62%`、h2 `+50.09%/+50.61%`（25k/50k）。根拠: `artifacts/20260226_094406_evaluator_opt_pack/summary.md`。
+  - hotspot: legacy は sampled share の `evaluate=0.9679` が支配的。根拠: `artifacts/20260226_094406_evaluator_opt_pack/hotspot_breakdown.csv`。
+  - 回帰: `DUP_ID=0` `BANNED=0` `MANIFEST_OK` `selftest 13/13 PASS` `Pages/Raw 4マーカー` `ICM未設定出題維持` `HUD static`。根拠: `regression_static.log` `ev_selftest_probe.json` `pages_raw_marker_gate.log` `icm_no_assumed_probe.json` `hud_style_probe.json`。
+- diff要約:
+  - `index.html`: 旧評価器を残したまま H1/H2 を切替可能に実装し、fast計算結果に `evaluatorVariant` と hotspot情報を返すよう拡張。
+  - `artifacts/20260226_094406_evaluator_opt_pack`: `plan/commands/evaluator_suite.json/fixed_benchmark.csv/matrix.csv/hotspot_breakdown.csv/summary.md` と回帰ログ群を追加。
+  - `out/_codex`: `user_evidence_index(U1〜U11)` と deepパック4点 + Search Key Packを更新。
+- 実行コマンドと結果:
+  - `cmd.exe /c ... run_evaluator_opt_suite.mjs ...` -> `evaluator_suite.json` 生成。
+  - `cmd.exe /c ... selftest_probe.mjs` -> `セルフテスト: 13/13 PASS`。
+  - `cmd.exe /c ... e2e_probe_icm_no_assumed.mjs` -> 未設定出題 + Call/Fold非表示/disabled を採取。
+  - `cmd.exe /c ... hud_style_probe.mjs` -> `position: static` 採取。
+  - `curl -L -sS` Pages/Raw -> 初回DNS失敗後、昇格再実行で4マーカー一致。
+- 再発防止:
+  - 評価器変更は `mismatch=0` が揃うまで採用判定を進めない。
+  - hotspotは単純elapsedだけで判断せず、`draw/evaluate/other` の内訳を必ず併記する。
+
+### 2026-02-26 07:41:36 KST
+- 対象: `index.html`（H1/H2最小差分の最終反映）, `artifacts/20260226_063332_preflop_opt_pack/*`（before/after比較・回帰証拠）, `out/_codex/*`（U1〜U10固定 + deepパック + Search Key Pack）, `CLAUDE.md`（ルール17/P-5/本ログ）
+- 根拠:
+  - H2誤差予算停止: `FAST_ADAPTIVE_TARGET_ERROR_PCT` と `error_budget` 停止導線を実装。根拠: `index.html:1699` `index.html:2958` `index.html:3088-3092` `index.html:3361`。
+  - H1 deck再構築削減: villainごとの残デッキ事前構築で `FULL_DECK` 再走査を抑制。根拠: `index.html:3038-3051` `index.html:3056` `index.html:3109-3110`。
+  - 計測判定: `compare_summary.json` で `H1=REFUTED` `H2=REFUTED`、`summary.md` で `A/B/C FAIL` `D PASS`。根拠: `artifacts/20260226_063332_preflop_opt_pack/compare_summary.json` `artifacts/20260226_063332_preflop_opt_pack/summary.md`。
+  - 回帰維持: `DUP_ID_COUNT=0` `BANNED_WORD_MATCHES=0` `MANIFEST_OK` `selftest 13/13 PASS` `no-op/multiway明示経路` `Pages/Raw 4マーカー` `ICM未設定出題維持`。根拠: `regression_static.log` `ev_selftest_probe.json` `pages_raw_marker_gate.log` `icm_no_assumed_probe.json`。
+  - HUD非固定: scroll前後で `#equity-hud` が `position: static`。根拠: `hud_style_probe.json`。
+- diff要約:
+  - `index.html`: AUTO誤差予算停止と `stopReason` 表示、fast Monte Carlo の残デッキ事前構築を追加。
+  - `artifacts/20260226_063332_preflop_opt_pack`: before/after JSON&CSV、比較サマリ、DOM/スクショ/console、回帰ログを追加。
+  - `out/_codex`: `verification_plan/evidence_bundle/risk_register/runbook/search_key_pack` と `user_evidence_index(U1〜U10)` を更新。
+- 実行コマンドと結果:
+  - `cmd.exe /c ... run_preflop_opt_suite.mjs ... before` -> `before_opt_suite.json` 生成。
+  - `cmd.exe /c ... run_preflop_opt_suite.mjs ... after` -> `after_opt_suite.json` 生成。
+  - `cmd.exe /c ... build_opt_compare.mjs ...` -> `compare_summary.json` / `summary.md` 生成。
+  - `cmd.exe /c ... selftest_probe.mjs` -> `セルフテスト: 13/13 PASS`。
+  - `curl -L -sS` Pages/Raw -> 4マーカー一致。
+- 再発防止:
+  - `H1/H2` が `REFUTED` の場合、改善主張で進めず `summary.md` の `A/B/C/D` 判定を最終結論として優先する。
+  - AUTO導入変更では `stopReason` 内訳（`time_budget` / `error_budget`）を必ず比較し、時間短縮の有無を同時判定する。
+
+### 2026-02-26 04:56:17 JST
+- 対象: `artifacts/20260226_045617_tempo_matrix/*`（60ケース分布計測, HUD証拠, Worker tradeoff, 回帰ゲート）, `out/_codex/*`（U9固定化 + deepパック更新）, `CLAUDE.md`（ルール16/P-4/本ログ）
+- 根拠:
+  - HUD非固定: `hud_style_probe.json` で scroll前後とも `position=static`。根拠: `index.html:417-418`。
+  - テンポ分布（AUTO miss）: baseline50k で `p95(time_ms)=471.54`、`p99(abs_error)=1.7861%`。根拠: `baseline50k/tempo_matrix_summary.md`。
+  - 感度分析: baseline25k は `p99(abs_error)=2.0182%`。根拠: `tempo_matrix_summary.md`。
+  - Worker tradeoff: `delta tickRatio p50=+0.061998`, `delta elapsed p50=+81.60ms`。根拠: `baseline50k/tempo_matrix_summary.md`。
+  - 回帰: `DUP_ID=0` `BANNED=0` `MANIFEST_OK` `selftest 13/13 PASS` `Pages/Raw 4マーカーOK`。根拠: `regression_static.log` `ev_selftest_probe.json` `pages_raw_marker_gate.log`。
+- diff要約:
+  - `run_perf_suite.mjs` を入力マトリクス（60ケース）+ Worker統合計測へ拡張し、baseline25k/50kを比較可能化。
+  - HUD scroll前後の computed style 採取スクリプトを追加。
+  - out/_codex に U9固定化、verification/evidence/risk/runbook を更新。
+- 実行コマンドと結果:
+  - `cmd.exe /c ... hud_style_probe.mjs` -> `WROTE hud_style_probe`
+  - `cmd.exe /c ... run_perf_suite.mjs ...` -> `WROTE tempo_matrix.json`
+  - `cmd.exe /c ... run_perf_suite.mjs ... 50000` -> `WROTE baseline50k/tempo_matrix.json`
+  - `cmd.exe /c ... selftest_probe.mjs` -> `セルフテスト: 13/13 PASS`
+  - `curl -L -sS` Pages/Raw -> 4マーカーヒット
+- 再発防止:
+  - テンポ判定は baseline1本で断定せず、50k判定 + 25k感度分析を常設する。
+  - Worker評価は「操作性改善」だけで合格にせず、必ず「総時間悪化量」を同時提示する。
+
+### 2026-02-26 03:48:00 JST
+- 対象: `out/_codex/user_evidence_index*.md`（U1〜U8固定化）、`out/_codex/verification_plan.md` `evidence_bundle.md` `risk_register.md` `runbook.md`、`out/_codex/search_key_pack.md`、`artifacts/20260226_033751_u8_ab_worker_audit/*`（A/B/C再監査）
+- 根拠:
+  - A（AUTO UI + 時間予算）: `auto_ui_budget_probe.json` で `hasAutoOption=true`、`stopReason=time_budget (3/3)`、`trial=5376/6400/6144`（4000〜25000）。根拠: `index.html:1693` `index.html:2304` `index.html:2951` `index.html:3049`。
+  - B（LRU誤hit防止）: `cache_false_hit_probe.json` で `sameInputHit=true`、`rangeChangedMiss/heroChangedMiss/modeChangedMiss=true`。根拠: `index.html:2969` `index.html:3339`。
+  - C（Blob Worker成立性）: `blob_worker_preflop_probe.json` で `workerSupported=true`、`tickRatio 0.933 -> 0.971`。根拠: `index.html:1825` `index.html:1926` `index.html:3015`。
+  - 回帰: `regression_static.log` で `DUP_ID=0` `BANNED=0` `MANIFEST_OK`、`ev_selftest_probe.json` で `13/13 PASS`、`pages_marker_gate.log` で4マーカーヒット。
+- diff要約:
+  - `out/_codex`: U1〜U8固定化 + deepパック4点 + Search Key Pack更新を追加。
+  - `artifacts/20260226_033751_u8_ab_worker_audit`: AUTO/LRU/Worker実測、回帰ログ、未適用Blob Workerパッチを追加。
+  - `CLAUDE.md`: 実装ルール15、チェック項目P-3、本ログを追記。
+- 実行コマンドと結果:
+  - `cmd.exe /c ... probe_auto_ui_and_budget.mjs` -> `WROTE auto_ui_budget_probe`
+  - `cmd.exe /c ... cache_false_hit_probe.mjs` -> `WROTE cache_false_hit_probe.json`
+  - `cmd.exe /c ... probe_blob_worker_preflop.mjs` -> `WROTE blob_worker_preflop_probe`
+  - `cmd.exe /c ... selftest_probe.mjs` -> `セルフテスト: 13/13 PASS`
+  - `curl -L -sS https://dcftradingcrypt.github.io/poker-tools/?t=<unix>` -> 4マーカーヒット
+- 再発防止:
+  - A/B監査は `auto_ui_budget_probe.json` と `cache_false_hit_probe.json` の両方が揃うまで完了扱いにしない。
+  - Worker案は `tickRatio` と `elapsedMs` を同時に記録し、応答性改善だけで即採用判断しない。
+
+### 2026-02-26 02:02:43 JST
+- 対象: `index.html`（A: adaptive/time-budget、B: fastメモリLRUキャッシュ）、`CLAUDE.md`（ゲート追記）、`artifacts/20260226_020243_preflop_tempo_decisionpack/*`（意思決定エビデンス）
+- 根拠:
+  - A（adaptive）導線: fastサンプルに `AUTO` を追加し、`resolveFastSamplePlan` で `targetMs/min/max` を管理。根拠: `index.html:1697` `index.html:2304` `index.html:2951`。
+  - B（cache）導線: `buildFastEquityCacheKey` / `readFastEquityCache` / `writeFastEquityCache` を追加し、`simulateFastEquity` で hit/miss を返す。根拠: `index.html:2969` `index.html:2981` `index.html:2993` `index.html:3339` `index.html:3354`。
+  - fast実行統合: `calculateWinRate` fast分岐を `simulateFastEquity` 呼び出しへ統合し、進捗とキャンセル条件を維持。根拠: `index.html:3197` `index.html:3207` `index.html:3211`。
+  - 結果表示: fast結果に `AUTO 実試行数` と `cache hit/miss` を表示。根拠: `index.html:3316` `index.html:3319`。
+- diff要約:
+  - `index.html`: fastに `AUTO(450ms目標)` を追加し、A/Bの比較可能な経路を実装。
+  - `index.html`: fixed計算式は維持しつつ、adaptive/cached実行情報を結果表示へ追加。
+  - `CLAUDE.md`: 実装ルール14、チェック項目P-2、本ログを追記。
+- 実行コマンドと実行結果:
+  - `run_perf_suite.mjs before/after/after_repeat` を実行し、`fixed(3回)` / `adaptive(3回)` / `cache` / `longtask` を採取。
+  - `build_decision_summary.mjs` で比較表を生成: `decision_compare.md`。
+  - 回帰ゲート: `regression_static.log` で `DUP_ID=0` / `禁止語0` / `MANIFEST_OK` / `multiway-no-op経路ヒット`。
+  - `selftest_probe.mjs` で `セルフテスト: 13/13 PASS` を採取。
+- 判定:
+  - H1（ms/1k 20%改善）: `REFUTED`（25k ms/1k: before `75.90` → after `79.76`）。
+  - H2（WorkerでLongTask/操作性改善）: `SUPPORTED`（blocking main `longtasks=1, tickRatio=0.000` / worker `longtasks=0, tickRatio=0.999`）。
+  - A（tempo）: before25k mean `1897.40ms` → adaptive mean `465.33ms`（`75.48%`改善）。
+  - A（精度差）: 25k平均との差 `0.1441%`、許容帯 `±1.8399%` 内。
+  - B（再計算）: cache miss `931.80ms` → hit `0.10ms`（`99.99%`改善）。
+- 再発防止:
+  - プリフロップ性能改修は必ず `before/after/after_repeat` の3セットで採取し、`decision_compare.md` の `H1/H2` を更新する。
+  - adaptive導入時は `tempo改善` と `誤差帯内判定` を必ずペアで記録し、時間短縮だけで完了扱いにしない。
+  - cache導入時は `miss/hit` の両方を同一レポートに残し、`hit` だけで効果を主張しない。
+
+### 2026-02-25 18:26:52 JST
+- 対象: `index.html`（ICMドリル未設定出題の解禁、回答ボタン制御、プリフロップHUD sticky解除、fast軽量化）、`CLAUDE.md`（チェック項目/再発防止追記）、`artifacts/20260225_182652_icm_preflop_ux/*`（検証証拠）
+- 根拠:
+  - 出題ブロックの原因: `buildIcmDrillQuestion` 冒頭で `assumedPct` 非数値時に `return null` していた（変更前）。修正後は `hasAssumedWinrate` 分岐で `correctCall=null` を許可。根拠: `index.html:4148` `index.html:4150` `index.html:4218` `index.html:4235`。
+  - 未設定時回答禁止: `startIcmDrillQuestion` で `setIcmDrillAnswerButtonsVisible(false)` と未設定メッセージを表示。根拠: `index.html:4269` `index.html:4270` `index.html:4271`。
+  - 誤判定防止: `submitIcmDrillAnswer` で `typeof q.correctCall !== 'boolean'` をガード。根拠: `index.html:4284` `index.html:4285`。
+  - ICM計算ブロック解除: `calculateICM` の「想定勝率必須」return分岐を削除し、fold/win/lose/required算出を継続。根拠: `index.html:4767` 以降（`assumedRaw` / `assumed` の early return 不在）。
+  - プリフロップUX: `#equity-hud` を `position: static` 化、`fast` 試行数に `5,000/10,000` を追加、初回狭幅 `fast` 初期化を追加。根拠: `index.html:417` `index.html:1695` `index.html:2297` `index.html:5132` `index.html:5136`。
+- diff要約:
+  - `index.html`: ICMドリルを「出題」と「回答判定」で分離し、想定勝率未設定でも出題可能に変更。回答不可ケースはボタン非表示＋明示文言へ。
+  - `index.html`: HUD sticky解除、`fast` サンプル拡張、初回狭幅モード自動fast寄せを追加。
+  - `CLAUDE.md`: 実装ルール13、チェック項目 I-20/I-21/P-1、本ログを追加。
+- 実行コマンドと実行結果:
+  - PowerShell実行計画: `artifacts/20260225_182652_icm_preflop_ux/plan.txt`
+  - 実行コマンド一覧: `artifacts/20260225_182652_icm_preflop_ux/commands_powershell.txt`
+  - ブラウザ実行ファイル確認: `artifacts/20260225_182652_icm_preflop_ux/browser_binary_check.txt`（`NO_EDGE_X64/NO_EDGE_X86/NO_CHROME_X64/NO_CHROME_X86`）
+  - `cmd.exe /c "... powershell.exe -File .../run_verify.ps1"` -> 根拠行/静的ゲート採取成功
+  - `python3` 13ケース再計算 -> `セルフテスト(式再計算): 13/13 PASS`（`artifacts/20260225_182652_icm_preflop_ux/selftest_formula_probe.txt`）
+  - 静的ゲート: `DUP_ID_COUNT=0` / `BANNED_WORD_MATCHES=0` / `MANIFEST_OK`
+- 再発防止:
+  - ICMドリル修正時は `buildIcmDrillQuestion` 返却値に `correctCall` null許容の分岐があるかを必ず確認し、`startIcmDrillQuestion` と `submitIcmDrillAnswer` の両方で同一条件を使って回答可否を制御する。
+  - プリフロップ軽量化修正時は `SAMPLE_OPTIONS_BY_MODE.fast` と `DOMContentLoaded` 初期モード決定（`hasStoredAppSettings` / `matchMedia`）を必ずペアで監査し、片側だけの変更を禁止する。
 
 ### 2026-02-24 07:11:00 KST
 - 対象: `index.html`（iPhone卓ビュー導線追加）, `CLAUDE.md`（導線ゲート・実行ログ追記）, `artifacts/*`（検証証拠採取）
@@ -965,3 +1143,12 @@
 - 静的監査: `DUP_IDS []`, `MISSING_IDS []`, 禁止語（Bet vs Check / ベットEV（HU） / checkEV / Bet vs）0件
 - 既知の未解決: ブラウザ目視確認（I-7: 出題時に答え非表示 / I-8: 回答後の根拠表示 / I-9: SBvsBB固定 / I-10: オールイン前候補制限）が未回収
 - 次アクション: push未実行。ユーザーに I-7〜I-10 を目視確認してもらい、PASS/FAIL を転記。FAIL時は表示文言と対象席ラベルを根拠に最小差分で再修正する
+
+### 2026-02-26 04:50:00 JST
+- 対象: `artifacts/20260226_033111_preflop_tempo_decisionpack/run_regression_gates.sh`（PowerShell回帰ゲート失敗時の代替実行経路）, `out/_codex/search_key_pack.md`（本タスク向け更新）
+- 根拠:
+  - PowerShell失敗: `regression_gates_powershell_fail.log` に `PositionalParameterNotFound`。
+  - 代替PASS: `regression_gates.log` で `DUP_ID_COUNT=0` `BANNED_WORD_MATCHES=0` `MANIFEST_OK` `SELFTEST_13_13_PASS=True`。
+- 再発防止:
+  - 回帰ゲートで日本語パターンを含む PowerShell スクリプトが失敗した場合は、同等判定を `run_regression_gates.sh` で再実行し、`regression_gates_powershell_fail.log` と `regression_gates.log` を必ずペア保存する。
+  - perf監査の最終判定は `decision_gate_summary.md` の `A/B/C判定 + H1/H2判定 + precision差分 + 回帰ゲート` の4点が揃うまで完了扱いにしない。

@@ -9,3 +9,7 @@ Thumbs.db
 
 # Editor
 .vscode/
+
+# Local evidence outputs
+artifacts/
+out/

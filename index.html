@@ -415,9 +415,7 @@
     }
 
     #equity-hud {
-      position: sticky;
-      top: 0;
-      z-index: 55;
+      position: static;
       margin-bottom: var(--space-3);
       border: 1px solid rgba(255, 212, 105, 0.4);
       border-radius: var(--radius-md);
@@ -1532,7 +1530,7 @@
 
       <div id="icm-drill-panel">
         <div class="icm-section-title">ICMドリル（方式1: プリフロップ想定勝率を使用）</div>
-        <div id="icm-drill-prompt" class="icm-hint">プリフロップでエクイティ計算後に「出題」を押してください。</div>
+        <div id="icm-drill-prompt" class="icm-hint">想定勝率が未設定でも「出題」は可能です。回答判定はプリフロップ計算後に表示されます。</div>
         <div class="actions">
           <button id="icm-drill-start-btn" type="button">出題</button>
           <button id="icm-drill-call-btn" type="button" class="secondary">コール</button>
@@ -1694,8 +1692,25 @@
 		    const TOTAL_HOLE_CARD_COMBOS = 1326;
 		    const SAMPLE_OPTIONS_BY_MODE = {
 		      precise: [5000, 10000, 25000],
-		      fast: [25000, 50000, 100000],
+		      fast: [0, 5000, 10000, 25000, 50000, 100000],
 		    };
+		    const FAST_ADAPTIVE_SAMPLE_SENTINEL = 0;
+		    const FAST_ADAPTIVE_TARGET_MS = 450;
+		    const FAST_ADAPTIVE_TARGET_ERROR_PCT = 2;
+		    const FAST_ADAPTIVE_MIN_SAMPLES = 4000;
+		    const FAST_ADAPTIVE_MAX_SAMPLES = 25000;
+		    const FAST_CACHE_MAX_ENTRIES = 24;
+		    const fastEquityCache = new Map();
+		    const fastEquityCacheStats = { hits: 0, misses: 0, evictions: 0 };
+		    const EVALUATOR_VARIANTS = ['legacy', 'h1', 'h2'];
+		    const DEFAULT_EVALUATOR_VARIANT = 'h2';
+		    let activeEvaluatorVariant = DEFAULT_EVALUATOR_VARIANT;
+		    const EVAL_PROFILE_DEFAULT_SAMPLE_RATE = 64;
+		    const SCORE_BASE = Math.pow(15, 5);
+		    const ENCODE_POW_4 = Math.pow(15, 4);
+		    const ENCODE_POW_3 = Math.pow(15, 3);
+		    const ENCODE_POW_2 = Math.pow(15, 2);
+		    const ENCODE_POW_1 = 15;
 		    const HAND_CATEGORIES = [
       'AA','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s',
       'AKo','KK','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s',
@@ -1733,6 +1748,36 @@
 	    }
 
 		    const FULL_DECK = createDeck();
+		    const CARD_ID_BY_TEXT = Object.create(null);
+		    const CARD_TEXT_BY_ID = FULL_DECK.slice();
+		    const CARD_RANK_BY_ID = new Uint8Array(FULL_DECK.length);
+		    const CARD_SUIT_BY_ID = new Uint8Array(FULL_DECK.length);
+		    const CARD_RANK_MASK_BY_ID = new Uint16Array(FULL_DECK.length);
+		    const SUIT_INDEX_BY_CHAR = { s: 0, h: 1, d: 2, c: 3 };
+		    const FULL_DECK_IDS = (() => {
+		      const out = new Uint8Array(FULL_DECK.length);
+		      for (let i = 0; i < FULL_DECK.length; i++) {
+		        const card = FULL_DECK[i];
+		        CARD_ID_BY_TEXT[card] = i;
+		        const rank = RANK_VALUES[card[0]] || 0;
+		        const suit = SUIT_INDEX_BY_CHAR[card[1]];
+		        CARD_RANK_BY_ID[i] = rank;
+		        CARD_SUIT_BY_ID[i] = Number.isFinite(suit) ? suit : 0;
+		        CARD_RANK_MASK_BY_ID[i] = 1 << rank;
+		        out[i] = i;
+		      }
+		      return out;
+		    })();
+		    const STRAIGHT_MASK_BY_HIGH = (() => {
+		      const out = {};
+		      for (let high = 14; high >= 5; high--) {
+		        let mask = 0;
+		        for (let r = high; r >= high - 4; r--) mask |= (1 << r);
+		        out[high] = mask;
+		      }
+		      return out;
+		    })();
+		    const WHEEL_STRAIGHT_MASK = (1 << 14) | (1 << 5) | (1 << 4) | (1 << 3) | (1 << 2);
 
 		    const CHEN_BASE = {
 		      A: 10, K: 8, Q: 7, J: 6, T: 5,
@@ -1817,19 +1862,90 @@
       }
     }
     
-	    // 5枚の役を評価 (タイブレークを含む)
+	    function encodeScoreDigits(a = 0, b = 0, c = 0, d = 0, e = 0) {
+	      return (
+	        a * ENCODE_POW_4
+	        + b * ENCODE_POW_3
+	        + c * ENCODE_POW_2
+	        + d * ENCODE_POW_1
+	        + e
+	      );
+	    }
+
+	    function getStraightHighFromMask(rankMask) {
+	      for (let high = 14; high >= 5; high--) {
+	        const need = STRAIGHT_MASK_BY_HIGH[high];
+	        if ((rankMask & need) === need) return high;
+	      }
+	      if ((rankMask & WHEEL_STRAIGHT_MASK) === WHEEL_STRAIGHT_MASK) return 5;
+	      return 0;
+	    }
+
+	    function normalizeEvaluatorVariant(variant) {
+	      if (variant === 'legacy' || variant === 'h1' || variant === 'h2') return variant;
+	      return DEFAULT_EVALUATOR_VARIANT;
+	    }
+
+	    function setEvaluatorVariant(variant) {
+	      activeEvaluatorVariant = normalizeEvaluatorVariant(variant);
+	      return activeEvaluatorVariant;
+	    }
+
+	    function getEvaluatorVariant() {
+	      return normalizeEvaluatorVariant(activeEvaluatorVariant);
+	    }
+
+	    function cardTextToId(card) {
+	      if (typeof card !== 'string') return -1;
+	      const id = CARD_ID_BY_TEXT[card];
+	      return Number.isFinite(id) ? id : -1;
+	    }
+
+	    function cardIdsToText(cardIds) {
+	      const out = new Array(cardIds.length);
+	      for (let i = 0; i < cardIds.length; i++) {
+	        out[i] = CARD_TEXT_BY_ID[cardIds[i]];
+	      }
+	      return out;
+	    }
+
+	    function toCardIds(cards, outBuffer = null) {
+	      const out = outBuffer && outBuffer.length >= cards.length ? outBuffer : new Int16Array(cards.length);
+	      for (let i = 0; i < cards.length; i++) {
+	        const id = cardTextToId(cards[i]);
+	        if (id < 0) return null;
+	        out[i] = id;
+	      }
+	      return out;
+	    }
+
+	    function createEvaluatorScratch() {
+	      return {
+	        rankCounts: new Uint8Array(15),
+	        suitCounts: new Uint8Array(4),
+	        suitMasks: new Uint16Array(4),
+	      };
+	    }
+
+	    function resetEvaluatorScratch(scratch) {
+	      scratch.rankCounts.fill(0);
+	      scratch.suitCounts.fill(0);
+	      scratch.suitMasks.fill(0);
+	    }
+
+	    // 5枚の役を評価 (旧評価器, 参照基準)
 	    function evaluateFive(cards) {
 	      const rankValues = cards.map(c => RANK_VALUES[c[0]]);
 	      const suitValues = cards.map(c => c[1]);
-	
+
 	      const isFlush = new Set(suitValues).size === 1;
-	
+
 	      const rankCounts = {};
 	      for (const r of rankValues) {
 	        rankCounts[r] = (rankCounts[r] || 0) + 1;
 	      }
-	      const uniqueRanks = Object.keys(rankCounts).map(r => parseInt(r)).sort((a, b) => b - a);
-	
+	      const uniqueRanks = Object.keys(rankCounts).map(r => parseInt(r, 10)).sort((a, b) => b - a);
+
 	      let isStraight = false;
 	      let straightHigh = 0;
 	      if (uniqueRanks.length === 5) {
@@ -1837,72 +1953,61 @@
 	          isStraight = true;
 	          straightHigh = uniqueRanks[0];
 	        } else if (
-	          uniqueRanks[0] === 14 &&
-	          uniqueRanks[1] === 5 &&
-	          uniqueRanks[2] === 4 &&
-	          uniqueRanks[3] === 3 &&
-	          uniqueRanks[4] === 2
+	          uniqueRanks[0] === 14
+	          && uniqueRanks[1] === 5
+	          && uniqueRanks[2] === 4
+	          && uniqueRanks[3] === 3
+	          && uniqueRanks[4] === 2
 	        ) {
 	          isStraight = true;
-	          straightHigh = 5; // A-5 ストレートは 5 ハイ
+	          straightHigh = 5;
 	        }
 	      }
-	
+
 	      const groups = Object.entries(rankCounts).map(([rank, count]) => ({
-	        rank: parseInt(rank),
+	        rank: parseInt(rank, 10),
 	        count,
 	      }));
 	      groups.sort((a, b) => (b.count - a.count) || (b.rank - a.rank));
-	
-	      const SCORE_BASE = Math.pow(15, 5);
-	      const encode = (digits) => {
-	        let value = 0;
-	        for (let i = 0; i < 5; i++) {
-	          const d = digits[i] || 0;
-	          value += d * Math.pow(15, 4 - i);
-	        }
-	        return value;
-	      };
-	
-	      // category(強) 8..0 + encoded tie-break
+
 	      if (isStraight && isFlush) {
-	        return 8 * SCORE_BASE + encode([straightHigh]);
+	        return 8 * SCORE_BASE + encodeScoreDigits(straightHigh);
 	      }
 	      if (groups[0].count === 4) {
 	        const quadRank = groups[0].rank;
 	        const kicker = groups.find(g => g.count === 1).rank;
-	        return 7 * SCORE_BASE + encode([quadRank, kicker]);
+	        return 7 * SCORE_BASE + encodeScoreDigits(quadRank, kicker);
 	      }
 	      if (groups[0].count === 3 && groups[1].count === 2) {
-	        return 6 * SCORE_BASE + encode([groups[0].rank, groups[1].rank]);
+	        return 6 * SCORE_BASE + encodeScoreDigits(groups[0].rank, groups[1].rank);
 	      }
 	      if (isFlush) {
 	        const sorted = rankValues.slice().sort((a, b) => b - a);
-	        return 5 * SCORE_BASE + encode(sorted);
+	        return 5 * SCORE_BASE + encodeScoreDigits(sorted[0], sorted[1], sorted[2], sorted[3], sorted[4]);
 	      }
 	      if (isStraight) {
-	        return 4 * SCORE_BASE + encode([straightHigh]);
+	        return 4 * SCORE_BASE + encodeScoreDigits(straightHigh);
 	      }
 	      if (groups[0].count === 3) {
 	        const tripsRank = groups[0].rank;
 	        const kickers = groups.filter(g => g.count === 1).map(g => g.rank).sort((a, b) => b - a);
-	        return 3 * SCORE_BASE + encode([tripsRank, ...kickers]);
+	        return 3 * SCORE_BASE + encodeScoreDigits(tripsRank, kickers[0], kickers[1]);
 	      }
 	      if (groups[0].count === 2 && groups[1].count === 2) {
 	        const pairRanks = groups.filter(g => g.count === 2).map(g => g.rank).sort((a, b) => b - a);
 	        const kicker = groups.find(g => g.count === 1).rank;
-	        return 2 * SCORE_BASE + encode([pairRanks[0], pairRanks[1], kicker]);
+	        return 2 * SCORE_BASE + encodeScoreDigits(pairRanks[0], pairRanks[1], kicker);
 	      }
 	      if (groups[0].count === 2) {
 	        const pairRank = groups[0].rank;
 	        const kickers = groups.filter(g => g.count === 1).map(g => g.rank).sort((a, b) => b - a);
-	        return 1 * SCORE_BASE + encode([pairRank, ...kickers]);
+	        return 1 * SCORE_BASE + encodeScoreDigits(pairRank, kickers[0], kickers[1], kickers[2]);
 	      }
-	
+
 	      const sorted = rankValues.slice().sort((a, b) => b - a);
-	      return 0 * SCORE_BASE + encode(sorted);
+	      return encodeScoreDigits(sorted[0], sorted[1], sorted[2], sorted[3], sorted[4]);
 	    }
-    
+
 	    const SEVEN_CHOOSE_FIVE_INDICES = (() => {
 	      const combos = [];
 	      for (let i = 0; i < 6; i++) {
@@ -1917,8 +2022,8 @@
 	      return combos;
 	    })();
 
-	    // 7枚から最高の5枚を評価（7C5=21を固定で回す）
-	    function evaluate(cards) {
+	    // 旧評価器: 7C5=21 を固定で評価
+	    function evaluateLegacy(cards) {
 	      if (cards.length === 7) {
 	        let best = 0;
 	        const fiveCards = new Array(5);
@@ -1940,6 +2045,259 @@
 	        if (score > best) best = score;
 	      }
 	      return best;
+	    }
+
+	    function evaluate7FastFromIds(cardIds, scratch = null) {
+	      if (!cardIds || cardIds.length !== 7) return 0;
+	      const s = scratch || createEvaluatorScratch();
+	      resetEvaluatorScratch(s);
+	      const rankCounts = s.rankCounts;
+	      const suitCounts = s.suitCounts;
+	      const suitMasks = s.suitMasks;
+	      let rankMask = 0;
+
+	      for (let i = 0; i < 7; i++) {
+	        const cardId = cardIds[i];
+	        const rank = CARD_RANK_BY_ID[cardId];
+	        const suit = CARD_SUIT_BY_ID[cardId];
+	        rankCounts[rank]++;
+	        suitCounts[suit]++;
+	        suitMasks[suit] |= CARD_RANK_MASK_BY_ID[cardId];
+	        rankMask |= CARD_RANK_MASK_BY_ID[cardId];
+	      }
+
+	      let straightFlushHigh = 0;
+	      for (let suit = 0; suit < 4; suit++) {
+	        if (suitCounts[suit] < 5) continue;
+	        const high = getStraightHighFromMask(suitMasks[suit]);
+	        if (high > straightFlushHigh) straightFlushHigh = high;
+	      }
+	      if (straightFlushHigh > 0) return 8 * SCORE_BASE + encodeScoreDigits(straightFlushHigh);
+
+	      let quadRank = 0;
+	      for (let rank = 14; rank >= 2; rank--) {
+	        if (rankCounts[rank] === 4) {
+	          quadRank = rank;
+	          break;
+	        }
+	      }
+	      if (quadRank > 0) {
+	        let kicker = 0;
+	        for (let rank = 14; rank >= 2; rank--) {
+	          if (rank !== quadRank && rankCounts[rank] > 0) {
+	            kicker = rank;
+	            break;
+	          }
+	        }
+	        return 7 * SCORE_BASE + encodeScoreDigits(quadRank, kicker);
+	      }
+
+	      let topTrip = 0;
+	      let secondTrip = 0;
+	      let topPair = 0;
+	      for (let rank = 14; rank >= 2; rank--) {
+	        const cnt = rankCounts[rank];
+	        if (cnt >= 3) {
+	          if (topTrip === 0) topTrip = rank;
+	          else if (secondTrip === 0) secondTrip = rank;
+	        } else if (cnt >= 2 && topPair === 0) {
+	          topPair = rank;
+	        }
+	      }
+	      if (topTrip > 0 && (secondTrip > 0 || topPair > 0)) {
+	        return 6 * SCORE_BASE + encodeScoreDigits(topTrip, secondTrip || topPair);
+	      }
+
+	      let bestFlushScore = 0;
+	      for (let suit = 0; suit < 4; suit++) {
+	        if (suitCounts[suit] < 5) continue;
+	        const mask = suitMasks[suit];
+	        let picked = 0;
+	        let r1 = 0;
+	        let r2 = 0;
+	        let r3 = 0;
+	        let r4 = 0;
+	        let r5 = 0;
+	        for (let rank = 14; rank >= 2 && picked < 5; rank--) {
+	          if ((mask & (1 << rank)) === 0) continue;
+	          if (picked === 0) r1 = rank;
+	          else if (picked === 1) r2 = rank;
+	          else if (picked === 2) r3 = rank;
+	          else if (picked === 3) r4 = rank;
+	          else r5 = rank;
+	          picked++;
+	        }
+	        if (picked === 5) {
+	          const score = 5 * SCORE_BASE + encodeScoreDigits(r1, r2, r3, r4, r5);
+	          if (score > bestFlushScore) bestFlushScore = score;
+	        }
+	      }
+	      if (bestFlushScore > 0) return bestFlushScore;
+
+	      const straightHigh = getStraightHighFromMask(rankMask);
+	      if (straightHigh > 0) return 4 * SCORE_BASE + encodeScoreDigits(straightHigh);
+
+	      if (topTrip > 0) {
+	        let k1 = 0;
+	        let k2 = 0;
+	        for (let rank = 14; rank >= 2; rank--) {
+	          if (rank === topTrip || rankCounts[rank] === 0) continue;
+	          if (k1 === 0) k1 = rank;
+	          else {
+	            k2 = rank;
+	            break;
+	          }
+	        }
+	        return 3 * SCORE_BASE + encodeScoreDigits(topTrip, k1, k2);
+	      }
+
+	      let pair1 = 0;
+	      let pair2 = 0;
+	      for (let rank = 14; rank >= 2; rank--) {
+	        if (rankCounts[rank] < 2) continue;
+	        if (pair1 === 0) pair1 = rank;
+	        else {
+	          pair2 = rank;
+	          break;
+	        }
+	      }
+	      if (pair2 > 0) {
+	        let kicker = 0;
+	        for (let rank = 14; rank >= 2; rank--) {
+	          if (rank !== pair1 && rank !== pair2 && rankCounts[rank] > 0) {
+	            kicker = rank;
+	            break;
+	          }
+	        }
+	        return 2 * SCORE_BASE + encodeScoreDigits(pair1, pair2, kicker);
+	      }
+
+	      if (pair1 > 0) {
+	        let k1 = 0;
+	        let k2 = 0;
+	        let k3 = 0;
+	        for (let rank = 14; rank >= 2; rank--) {
+	          if (rank === pair1 || rankCounts[rank] === 0) continue;
+	          if (k1 === 0) k1 = rank;
+	          else if (k2 === 0) k2 = rank;
+	          else {
+	            k3 = rank;
+	            break;
+	          }
+	        }
+	        return 1 * SCORE_BASE + encodeScoreDigits(pair1, k1, k2, k3);
+	      }
+
+	      let r1 = 0;
+	      let r2 = 0;
+	      let r3 = 0;
+	      let r4 = 0;
+	      let r5 = 0;
+	      let picked = 0;
+	      for (let rank = 14; rank >= 2 && picked < 5; rank--) {
+	        if (rankCounts[rank] === 0) continue;
+	        if (picked === 0) r1 = rank;
+	        else if (picked === 1) r2 = rank;
+	        else if (picked === 2) r3 = rank;
+	        else if (picked === 3) r4 = rank;
+	        else r5 = rank;
+	        picked++;
+	      }
+	      return encodeScoreDigits(r1, r2, r3, r4, r5);
+	    }
+
+	    const EVALUATE_TEMP_CARD_IDS = new Int16Array(7);
+	    const EVALUATE_TEMP_SCRATCH = createEvaluatorScratch();
+
+	    function evaluate7Fast(cards) {
+	      if (!cards || cards.length !== 7) return evaluateLegacy(cards);
+	      if (typeof cards[0] === 'number') {
+	        return evaluate7FastFromIds(cards, EVALUATE_TEMP_SCRATCH);
+	      }
+	      const ids = toCardIds(cards, EVALUATE_TEMP_CARD_IDS);
+	      if (!ids) return evaluateLegacy(cards);
+	      return evaluate7FastFromIds(ids, EVALUATE_TEMP_SCRATCH);
+	    }
+
+	    function evaluate(cards, options = null) {
+	      const variant = normalizeEvaluatorVariant(options?.variant || activeEvaluatorVariant);
+	      if (variant === 'legacy') return evaluateLegacy(cards);
+	      return evaluate7Fast(cards);
+	    }
+
+	    function seededRandomFactory(seed) {
+	      let t = (seed >>> 0) || 1;
+	      return function next() {
+	        t += 0x6D2B79F5;
+	        let x = Math.imul(t ^ (t >>> 15), 1 | t);
+	        x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+	        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+	      };
+	    }
+
+	    function runEvaluatorMismatchProbe(opts = null) {
+	      const options = opts || {};
+	      const trials = Number.isFinite(options.trials) ? Math.max(1, Math.floor(options.trials)) : 50000;
+	      const seed = Number.isFinite(options.seed) ? (options.seed >>> 0) : 20260226;
+	      const random = seededRandomFactory(seed);
+	      const source = new Int16Array(FULL_DECK_IDS.length);
+	      const work = new Int16Array(FULL_DECK_IDS.length);
+	      const draw = new Int16Array(7);
+	      const drawCards = new Array(7);
+	      const h2Scratch = createEvaluatorScratch();
+	      let mismatchH1 = 0;
+	      let mismatchH2 = 0;
+	      const mismatchSamples = [];
+	      const startedAt = performance.now();
+
+	      for (let i = 0; i < FULL_DECK_IDS.length; i++) source[i] = FULL_DECK_IDS[i];
+	      for (let n = 0; n < trials; n++) {
+	        work.set(source);
+	        for (let i = 0; i < 7; i++) {
+	          const j = i + Math.floor(random() * (work.length - i));
+	          const tmp = work[i];
+	          work[i] = work[j];
+	          work[j] = tmp;
+	          draw[i] = work[i];
+	          drawCards[i] = CARD_TEXT_BY_ID[draw[i]];
+	        }
+
+	        const legacy = evaluateLegacy(drawCards);
+	        const h1 = evaluate7Fast(drawCards);
+	        const h2 = evaluate7FastFromIds(draw, h2Scratch);
+	        if (legacy !== h1) {
+	          mismatchH1++;
+	          if (mismatchSamples.length < 5) {
+	            mismatchSamples.push({
+	              hand: drawCards.slice(),
+	              legacy,
+	              h1,
+	              h2,
+	            });
+	          }
+	        }
+	        if (legacy !== h2) {
+	          mismatchH2++;
+	          if (mismatchSamples.length < 5) {
+	            mismatchSamples.push({
+	              hand: drawCards.slice(),
+	              legacy,
+	              h1,
+	              h2,
+	            });
+	          }
+	        }
+	      }
+
+	      return {
+	        trials,
+	        seed,
+	        mismatchH1,
+	        mismatchH2,
+	        mismatchTotal: mismatchH1 + mismatchH2,
+	        mismatchSamples,
+	        elapsedMs: performance.now() - startedAt,
+	      };
 	    }
     
 	    function randomInt(maxExclusive) {
@@ -2283,24 +2641,29 @@
       outputEl.classList.add(failCount === 0 ? 'status-positive' : 'status-negative');
       }
 
-    function renderSampleOptions(mode, preferredValue = null) {
-	      const select = document.getElementById('sample-count');
-	      if (!select) return;
-	      const options = SAMPLE_OPTIONS_BY_MODE[mode] || SAMPLE_OPTIONS_BY_MODE.precise;
+	    function renderSampleOptions(mode, preferredValue = null) {
+		      const select = document.getElementById('sample-count');
+		      if (!select) return;
+		      const options = SAMPLE_OPTIONS_BY_MODE[mode] || SAMPLE_OPTIONS_BY_MODE.precise;
 	      const current = preferredValue ?? parseInt(select.value, 10);
 	      select.innerHTML = '';
-	      options.forEach((value, idx) => {
-	        const opt = document.createElement('option');
-	        opt.value = String(value);
-	        if (mode === 'precise') {
-	          const labels = ['標準', '高精度', '最高精度'];
-	          opt.textContent = `${value.toLocaleString()}回/コンボ (${labels[idx] || ''})`;
-	        } else {
-	          const labels = ['高速', '高精度', '超高精度'];
-	          opt.textContent = `${value.toLocaleString()}試行 (${labels[idx] || ''})`;
-	        }
-	        select.appendChild(opt);
-	      });
+		      options.forEach((value, idx) => {
+		        const opt = document.createElement('option');
+		        opt.value = String(value);
+			        if (mode === 'precise') {
+			          const labels = ['標準', '高精度', '最高精度'];
+			          opt.textContent = `${value.toLocaleString()}回/コンボ (${labels[idx] || ''})`;
+			        } else {
+			          if (value === FAST_ADAPTIVE_SAMPLE_SENTINEL) {
+			            opt.textContent = `AUTO (${FAST_ADAPTIVE_TARGET_MS}ms目標 / 誤差±${FAST_ADAPTIVE_TARGET_ERROR_PCT.toFixed(1)}% / ${FAST_ADAPTIVE_MIN_SAMPLES.toLocaleString()}〜${FAST_ADAPTIVE_MAX_SAMPLES.toLocaleString()}試行)`;
+			          } else {
+			            const labels = ['最速', '高速', '標準', '高精度', '超高精度'];
+			            const label = labels[Math.max(0, idx - 1)] || '';
+			            opt.textContent = `${value.toLocaleString()}試行 (${label})`;
+		          }
+		        }
+		        select.appendChild(opt);
+		      });
 	      if (Number.isFinite(current) && options.includes(current)) {
 	        select.value = String(current);
 	      } else {
@@ -2316,12 +2679,12 @@
 	      const defaultModeSelect = document.getElementById('default-mode-select');
 	      if (defaultModeSelect) defaultModeSelect.value = normalized;
 	      renderSampleOptions(normalized, keepSample ? parseInt(document.getElementById('sample-count')?.value, 10) : null);
-	      const note = document.getElementById('calc-mode-note');
-	      if (note) {
-	        note.textContent = normalized === 'fast'
-	          ? '高速: レンジから直接抽選し、広いレンジでも体感を維持します。'
-	          : '精密: 全コンボごとにサンプルを回すため、広いレンジでは時間がかかります。';
-	      }
+		      const note = document.getElementById('calc-mode-note');
+			      if (note) {
+			        note.textContent = normalized === 'fast'
+			          ? `高速: AUTO(${FAST_ADAPTIVE_TARGET_MS}ms目標 / 誤差±${FAST_ADAPTIVE_TARGET_ERROR_PCT.toFixed(1)}%) と固定試行を切り替え、体感テンポを優先できます。`
+			          : '精密: 全コンボごとにサンプルを回すため、広いレンジでは時間がかかります。';
+			      }
 	      updateEquityPrecalcDisplay();
 	    }
 
@@ -2352,6 +2715,14 @@
 	        zoom: ['zoom-sm', 'zoom-md', 'zoom-lg'].includes(raw.zoom) ? raw.zoom : fallback.zoom,
 	        mode: raw.mode === 'fast' ? 'fast' : 'precise',
 	      };
+	    }
+
+	    function hasStoredAppSettings() {
+	      try {
+	        return !!localStorage.getItem(SETTINGS_KEY);
+	      } catch (err) {
+	        return false;
+	      }
 	    }
 
 	    function saveAppSettings() {
@@ -2585,11 +2956,15 @@
 	      villainComboSpan.textContent = String(combosCount);
 	      setHudComboStats(combosCount);
 
-	      const sampleCount = parseInt(document.getElementById('sample-count')?.value, 10);
-	      const mode = document.getElementById('calc-mode')?.value === 'fast' ? 'fast' : 'precise';
-	      const trials = Number.isFinite(sampleCount) ? (mode === 'fast' ? sampleCount : combosCount * sampleCount) : 0;
-		      estimatedTrialsSpan.textContent = trials.toLocaleString();
-		    }
+		      const sampleCount = parseInt(document.getElementById('sample-count')?.value, 10);
+		      const mode = document.getElementById('calc-mode')?.value === 'fast' ? 'fast' : 'precise';
+		      if (mode === 'fast' && sampleCount === FAST_ADAPTIVE_SAMPLE_SENTINEL) {
+		        estimatedTrialsSpan.textContent = `${FAST_ADAPTIVE_MIN_SAMPLES.toLocaleString()}〜${FAST_ADAPTIVE_MAX_SAMPLES.toLocaleString()} (AUTO)`;
+		      } else {
+		        const trials = Number.isFinite(sampleCount) ? (mode === 'fast' ? sampleCount : combosCount * sampleCount) : 0;
+			        estimatedTrialsSpan.textContent = trials.toLocaleString();
+		      }
+			    }
 
 				    function clearEquityForIcmDisplay() {
 				      lastEquityPctForIcm = null;
@@ -2923,11 +3298,313 @@
         }
       }
       
-      return combos;
+	      return combos;
+	    }
+
+	    function resolveFastSamplePlan(sampleCount) {
+	      if (!Number.isFinite(sampleCount) || sampleCount < 0) return null;
+		      if (sampleCount === FAST_ADAPTIVE_SAMPLE_SENTINEL) {
+		        return {
+		          kind: 'adaptive',
+		          targetMs: FAST_ADAPTIVE_TARGET_MS,
+		          targetErrorPct: FAST_ADAPTIVE_TARGET_ERROR_PCT,
+		          minSamples: FAST_ADAPTIVE_MIN_SAMPLES,
+		          maxSamples: FAST_ADAPTIVE_MAX_SAMPLES,
+		        };
+		      }
+		      return {
+		        kind: 'fixed',
+		        targetMs: null,
+		        targetErrorPct: null,
+		        minSamples: sampleCount,
+		        maxSamples: sampleCount,
+		      };
+		    }
+
+	    function buildFastEquityCacheKey(heroCards, rangeCategories, samplePlan, evaluatorVariant = null) {
+	      if (!Array.isArray(heroCards) || heroCards.length !== 2) return null;
+	      if (!Array.isArray(rangeCategories) || rangeCategories.length === 0) return null;
+	      if (!samplePlan || !samplePlan.kind) return null;
+	      const heroKey = heroCards.slice().sort().join(',');
+	      const rangeKey = Array.from(new Set(rangeCategories.filter(Boolean))).sort().join(',');
+		      const planKey = samplePlan.kind === 'adaptive'
+		        ? `adaptive:${samplePlan.targetMs}:${samplePlan.targetErrorPct}:${samplePlan.minSamples}:${samplePlan.maxSamples}`
+		        : `fixed:${samplePlan.maxSamples}`;
+	      const variantKey = normalizeEvaluatorVariant(evaluatorVariant || activeEvaluatorVariant);
+	      return `v1|hero=${heroKey}|range=${rangeKey}|plan=${planKey}|eval=${variantKey}`;
+	    }
+
+	    function readFastEquityCache(cacheKey) {
+	      if (!cacheKey || !fastEquityCache.has(cacheKey)) {
+	        fastEquityCacheStats.misses++;
+	        return null;
+	      }
+	      const cached = fastEquityCache.get(cacheKey);
+	      fastEquityCache.delete(cacheKey);
+	      fastEquityCache.set(cacheKey, cached);
+	      fastEquityCacheStats.hits++;
+	      return cached;
+	    }
+
+	    function writeFastEquityCache(cacheKey, payload) {
+	      if (!cacheKey || !payload) return;
+	      if (fastEquityCache.has(cacheKey)) {
+	        fastEquityCache.delete(cacheKey);
+	      }
+	      fastEquityCache.set(cacheKey, payload);
+	      while (fastEquityCache.size > FAST_CACHE_MAX_ENTRIES) {
+	        const oldestKey = fastEquityCache.keys().next().value;
+	        fastEquityCache.delete(oldestKey);
+	        fastEquityCacheStats.evictions++;
+	      }
+	    }
+
+		    function getFastEquityCacheStats() {
+		      return {
+		        hits: fastEquityCacheStats.hits,
+		        misses: fastEquityCacheStats.misses,
+		        evictions: fastEquityCacheStats.evictions,
+		        size: fastEquityCache.size,
+		      };
+		    }
+
+		    function calculateMonteCarloStats(totalWins, totalTies, totalTrials) {
+		      const totalOutcome = totalWins + totalTies * 0.5;
+		      const equity = totalTrials > 0 ? (totalOutcome / totalTrials) * 100 : 0;
+		      const meanOutcome = totalTrials > 0 ? (totalOutcome / totalTrials) : 0;
+		      const secondMoment = totalTrials > 0 ? ((totalWins + totalTies * 0.25) / totalTrials) : 0;
+		      const variance = Math.max(0, secondMoment - meanOutcome * meanOutcome);
+		      const stderr = totalTrials > 0 ? Math.sqrt(variance / totalTrials) : 0;
+		      const errorPct = stderr * 1.96 * 100;
+		      return { equity, errorPct, variance, stderr };
+		    }
+
+		    function getAdaptiveStopReasonLabel(stopReason) {
+		      if (stopReason === 'error_budget') return '誤差予算';
+		      if (stopReason === 'time_budget') return '時間予算';
+		      if (stopReason === 'max_samples') return '上限試行';
+		      if (stopReason === 'fixed_samples') return '固定試行';
+		      if (stopReason === 'canceled') return 'キャンセル';
+		      return '不明';
+		    }
+
+		    function createHotspotProfile(sampleRate = EVAL_PROFILE_DEFAULT_SAMPLE_RATE) {
+		      const normalized = Number.isFinite(sampleRate) && sampleRate > 0 ? Math.max(1, Math.floor(sampleRate)) : EVAL_PROFILE_DEFAULT_SAMPLE_RATE;
+		      return {
+		        enabled: true,
+		        sampleRate: normalized,
+		        sampled: 0,
+		        drawMs: 0,
+		        evalMs: 0,
+		        loopMs: 0,
+		      };
+		    }
+
+		    function toHotspotBreakdown(profile, totalTrials) {
+		      if (!profile || !profile.enabled || profile.sampled <= 0 || totalTrials <= 0) return null;
+		      const sampledTotal = profile.loopMs;
+		      const sampledOther = Math.max(0, sampledTotal - profile.drawMs - profile.evalMs);
+		      const drawShare = sampledTotal > 0 ? profile.drawMs / sampledTotal : 0;
+		      const evalShare = sampledTotal > 0 ? profile.evalMs / sampledTotal : 0;
+		      const otherShare = sampledTotal > 0 ? sampledOther / sampledTotal : 0;
+		      return {
+		        sampleRate: profile.sampleRate,
+		        sampledTrials: profile.sampled,
+		        sampledMs: {
+		          total: sampledTotal,
+		          draw: profile.drawMs,
+		          evaluate: profile.evalMs,
+		          other: sampledOther,
+		        },
+		        sampledShare: {
+		          draw: drawShare,
+		          evaluate: evalShare,
+		          other: otherShare,
+		        },
+		        estimatedMs: {
+		          draw: drawShare * profile.loopMs * (totalTrials / profile.sampled),
+		          evaluate: evalShare * profile.loopMs * (totalTrials / profile.sampled),
+		          other: otherShare * profile.loopMs * (totalTrials / profile.sampled),
+		        },
+		      };
+		    }
+
+		    function buildRemainingDeckByVillainIds(heroCardIds, villainComboIds) {
+		      if (!heroCardIds || heroCardIds.length !== 2 || !Array.isArray(villainComboIds)) return [];
+		      const h0 = heroCardIds[0];
+		      const h1 = heroCardIds[1];
+		      return villainComboIds.map((villainCardIds) => {
+		        const v0 = villainCardIds?.[0];
+		        const v1 = villainCardIds?.[1];
+		        const deck = new Uint8Array(48);
+		        let ptr = 0;
+		        for (let cardId = 0; cardId < FULL_DECK_IDS.length; cardId++) {
+		          if (cardId === h0 || cardId === h1 || cardId === v0 || cardId === v1) continue;
+		          deck[ptr++] = cardId;
+		        }
+		        return deck;
+		      });
+		    }
+
+		    function buildRemainingDeckByVillain(heroCards, villainCombos) {
+		      if (!Array.isArray(heroCards) || heroCards.length !== 2 || !Array.isArray(villainCombos)) return [];
+		      const [h0, h1] = heroCards;
+		      return villainCombos.map((villainCards) => {
+		        const v0 = villainCards?.[0];
+		        const v1 = villainCards?.[1];
+		        const deck = [];
+		        for (const card of FULL_DECK) {
+		          if (card === h0 || card === h1 || card === v0 || card === v1) continue;
+		          deck.push(card);
+		        }
+		        return deck;
+		      });
+		    }
+
+	    async function runFastEquityMonteCarlo(heroCards, allVillainCombos, samplePlan, onProgress = null, shouldCancel = null, runtimeOptions = null) {
+	      if (!samplePlan) return null;
+	      const options = runtimeOptions || {};
+	      const evaluatorVariant = normalizeEvaluatorVariant(options.evaluatorVariant || activeEvaluatorVariant);
+	      const useIntPath = evaluatorVariant === 'h2';
+	      const profile = options.profile?.enabled ? createHotspotProfile(options.profile.sampleRate) : null;
+
+	      const board = useIntPath ? new Uint8Array(5) : new Array(5);
+	      const swapIndices = new Int32Array(5);
+	      const heroSeven = useIntPath ? new Int16Array(7) : new Array(7);
+	      const villainSeven = useIntPath ? new Int16Array(7) : new Array(7);
+
+	      let remainingDeckByVillain = null;
+	      if (useIntPath) {
+	        const heroCardIds = toCardIds(heroCards, new Int16Array(2));
+	        if (!heroCardIds) return null;
+	        heroSeven[0] = heroCardIds[0];
+	        heroSeven[1] = heroCardIds[1];
+	        const villainComboIds = allVillainCombos.map((combo) => {
+	          const c0 = cardTextToId(combo?.[0]);
+	          const c1 = cardTextToId(combo?.[1]);
+	          return [c0, c1];
+	        }).filter((pair) => pair[0] >= 0 && pair[1] >= 0);
+	        if (villainComboIds.length === 0) return null;
+	        remainingDeckByVillain = buildRemainingDeckByVillainIds(heroCardIds, villainComboIds);
+	        allVillainCombos = villainComboIds;
+	      } else {
+	        const [h0, h1] = heroCards;
+	        heroSeven[0] = h0;
+	        heroSeven[1] = h1;
+	        remainingDeckByVillain = buildRemainingDeckByVillain(heroCards, allVillainCombos);
+	      }
+
+	      const heroScratch = useIntPath ? createEvaluatorScratch() : null;
+	      const villainScratch = useIntPath ? createEvaluatorScratch() : null;
+      let totalWins = 0;
+      let totalTies = 0;
+      let totalTrials = 0;
+      const progressTotal = samplePlan.kind === 'adaptive' ? samplePlan.maxSamples : samplePlan.maxSamples;
+      const loopLimit = samplePlan.maxSamples;
+      const minSamples = samplePlan.kind === 'adaptive' ? samplePlan.minSamples : samplePlan.maxSamples;
+      const startedAt = performance.now();
+      let stopReason = samplePlan.kind === 'adaptive' ? 'max_samples' : 'fixed_samples';
+
+	      for (let i = 0; i < loopLimit; i++) {
+	        if ((i & 255) === 0) {
+	          if (typeof shouldCancel === 'function' && shouldCancel()) {
+	            return {
+              canceled: true,
+              totalWins,
+              totalTies,
+              totalTrials,
+              progressTotal,
+              stopReason: 'canceled',
+              elapsedMs: performance.now() - startedAt,
+              evaluatorVariant,
+              hotspot: toHotspotBreakdown(profile, totalTrials),
+            };
+          }
+	          if (onProgress) onProgress(i, progressTotal);
+	          await nextFrame();
+	          if (samplePlan.kind === 'adaptive' && i >= minSamples) {
+	            if (Number.isFinite(samplePlan.targetErrorPct) && samplePlan.targetErrorPct > 0 && totalTrials > 0) {
+	              const stats = calculateMonteCarloStats(totalWins, totalTies, totalTrials);
+	              if (stats.errorPct <= samplePlan.targetErrorPct) {
+	                stopReason = 'error_budget';
+	                break;
+	              }
+	            }
+	            const elapsed = performance.now() - startedAt;
+	            if (elapsed >= samplePlan.targetMs) {
+	              stopReason = 'time_budget';
+	              break;
+	            }
+          }
+        }
+
+        const villainIndex = randomInt(allVillainCombos.length);
+	        const villainCards = allVillainCombos[villainIndex];
+	        const remainingDeck = remainingDeckByVillain[villainIndex];
+	        if (!remainingDeck || remainingDeck.length < 5) continue;
+
+	        const shouldSample = !!profile && (totalTrials % profile.sampleRate === 0);
+	        let loopStart = 0;
+	        let drawStart = 0;
+	        let evalStart = 0;
+	        if (shouldSample) loopStart = performance.now();
+	        if (shouldSample) drawStart = performance.now();
+	        drawBoardFromDeck(remainingDeck, board, swapIndices);
+	        if (shouldSample) profile.drawMs += performance.now() - drawStart;
+
+	        heroSeven[2] = board[0];
+	        heroSeven[3] = board[1];
+        heroSeven[4] = board[2];
+        heroSeven[5] = board[3];
+        heroSeven[6] = board[4];
+        villainSeven[0] = villainCards[0];
+        villainSeven[1] = villainCards[1];
+        villainSeven[2] = board[0];
+        villainSeven[3] = board[1];
+        villainSeven[4] = board[2];
+        villainSeven[5] = board[3];
+        villainSeven[6] = board[4];
+
+	        if (shouldSample) evalStart = performance.now();
+	        let heroScore = 0;
+	        let villainScore = 0;
+	        if (useIntPath) {
+	          heroScore = evaluate7FastFromIds(heroSeven, heroScratch);
+	          villainScore = evaluate7FastFromIds(villainSeven, villainScratch);
+	        } else if (evaluatorVariant === 'h1') {
+	          heroScore = evaluate7Fast(heroSeven);
+	          villainScore = evaluate7Fast(villainSeven);
+	        } else {
+	          heroScore = evaluateLegacy(heroSeven);
+	          villainScore = evaluateLegacy(villainSeven);
+	        }
+	        if (shouldSample) {
+	          profile.evalMs += performance.now() - evalStart;
+	          profile.loopMs += performance.now() - loopStart;
+	          profile.sampled++;
+	        }
+	        if (heroScore > villainScore) totalWins++;
+	        else if (heroScore === villainScore) totalTies++;
+	        totalTrials++;
+      }
+
+      if (onProgress) onProgress(totalTrials, progressTotal);
+      return {
+        canceled: false,
+        totalWins,
+        totalTies,
+        totalTrials,
+        progressTotal,
+        stopReason,
+        elapsedMs: performance.now() - startedAt,
+        evaluatorVariant,
+        intPath: useIntPath,
+        hotspot: toHotspotBreakdown(profile, totalTrials),
+      };
     }
-    
-	    // エクイティ計算（モンテカルロ法）
-		    async function calculateWinRate() {
+	    
+		    // エクイティ計算（モンテカルロ法）
+			    async function calculateWinRate() {
 	      const winrateResultDiv = document.getElementById('winrate-result');
 	      const calcButton = document.getElementById('calc-winrate-btn');
 	      const cancelButton = document.getElementById('cancel-winrate-btn');
@@ -2970,27 +3647,34 @@
 	        return;
 	      }
 
-	      setUiBusy(true);
-	      winrateCancelRequested = false;
-	      let canceled = false;
-	      try {
-	        const sampleCount = parseInt(document.getElementById('sample-count').value, 10);
-	        if (!Number.isFinite(sampleCount) || sampleCount <= 0) {
-	          winrateResultDiv.innerHTML = '<p class="status-negative">サンプル数が不正です</p>';
-	          return;
-	        }
+		      setUiBusy(true);
+		      winrateCancelRequested = false;
+		      let canceled = false;
+		      try {
+		        const sampleCount = parseInt(document.getElementById('sample-count').value, 10);
+		        const mode = document.getElementById('calc-mode')?.value === 'fast' ? 'fast' : 'precise';
+		        if (!Number.isFinite(sampleCount) || sampleCount < 0 || (mode !== 'fast' && sampleCount <= 0)) {
+		          winrateResultDiv.innerHTML = '<p class="status-negative">サンプル数が不正です</p>';
+		          return;
+		        }
+		        const fastSamplePlan = mode === 'fast' ? resolveFastSamplePlan(sampleCount) : null;
+		        if (mode === 'fast' && !fastSamplePlan) {
+		          winrateResultDiv.innerHTML = '<p class="status-negative">高速モードのサンプル計画が不正です</p>';
+		          return;
+		        }
+		        const startTime = performance.now();
+		        const heroCards = selectedCards.slice();
+		        const heroCategory = getHandCategory(heroCards[0], heroCards[1]);
 
-	        const mode = document.getElementById('calc-mode')?.value === 'fast' ? 'fast' : 'precise';
-	        const startTime = performance.now();
-	        const heroCards = selectedCards.slice();
-	        const heroCategory = getHandCategory(heroCards[0], heroCards[1]);
-
-	        const allVillainCombos = [];
-	        for (const cell of villainCells) {
-	          const handCategory = cell.dataset.hand;
-	          const combos = getCombosForHand(handCategory, heroCards);
-	          allVillainCombos.push(...combos);
-	        }
+		        const allVillainCombos = [];
+		        const rangeCategories = [];
+		        for (const cell of villainCells) {
+		          const handCategory = cell.dataset.hand;
+		          if (!handCategory) continue;
+		          rangeCategories.push(handCategory);
+		          const combos = getCombosForHand(handCategory, heroCards);
+		          allVillainCombos.push(...combos);
+		        }
 	        if (allVillainCombos.length === 0) {
 	          setHudStatus('有効コンボがありません', 'status-negative');
 	          winrateResultDiv.innerHTML = '<p class="status-negative">ブロッカー効果で相手の有効コンボが0です</p>';
@@ -3007,69 +3691,51 @@
 	        setHudProgress(0);
 	        setHudEquityValue(null, null);
 
-	        let totalWins = 0;
-	        let totalTies = 0;
-	        let totalTrials = 0;
+		        let totalWins = 0;
+		        let totalTies = 0;
+		        let totalTrials = 0;
+		        let fastRunMeta = null;
 
-	        const h0 = heroCards[0];
-	        const h1 = heroCards[1];
-	        const remainingDeck = new Array(FULL_DECK.length - 4);
-	        const board = new Array(5);
-	        const swapIndices = new Int32Array(5);
-	        const heroSeven = new Array(7);
-	        heroSeven[0] = h0;
-	        heroSeven[1] = h1;
-	        const villainSeven = new Array(7);
-
-	        if (mode === 'fast') {
-	          const totalSteps = sampleCount;
-	          setProgressText(0, totalSteps);
-	          for (let i = 0; i < sampleCount; i++) {
-	            if ((i & 255) === 0) {
-	              if (winrateCancelRequested) {
-	                canceled = true;
-	                break;
-	              }
-	              setProgressText(i, totalSteps);
-	              await nextFrame();
-	            }
-
-	            const villainCards = allVillainCombos[randomInt(allVillainCombos.length)];
-	            const v0 = villainCards[0];
-	            const v1 = villainCards[1];
-	            villainSeven[0] = v0;
-	            villainSeven[1] = v1;
-
-	            let remainingLen = 0;
-	            for (const c of FULL_DECK) {
-	              if (c === h0 || c === h1 || c === v0 || c === v1) continue;
-	              remainingDeck[remainingLen++] = c;
-	            }
-	            remainingDeck.length = remainingLen;
-
-	            drawBoardFromDeck(remainingDeck, board, swapIndices);
-	            heroSeven[2] = board[0];
-	            heroSeven[3] = board[1];
-	            heroSeven[4] = board[2];
-	            heroSeven[5] = board[3];
-	            heroSeven[6] = board[4];
-	            villainSeven[2] = board[0];
-	            villainSeven[3] = board[1];
-	            villainSeven[4] = board[2];
-	            villainSeven[5] = board[3];
-	            villainSeven[6] = board[4];
-
-	            const heroScore = evaluate(heroSeven);
-	            const villainScore = evaluate(villainSeven);
-	            if (heroScore > villainScore) totalWins++;
-	            else if (heroScore === villainScore) totalTies++;
-	            totalTrials++;
-	          }
-	          setProgressText(totalSteps, totalSteps);
-	        } else {
-	          let processedCombos = 0;
-	          const totalSteps = allVillainCombos.length;
-	          const batchSize = 4;
+		        if (mode === 'fast') {
+		          const totalSteps = fastSamplePlan.maxSamples;
+		          setProgressText(0, totalSteps);
+		          const fastResult = await simulateFastEquity(
+		            heroCards,
+		            rangeCategories,
+		            sampleCount,
+		            (done, totalHint) => {
+		              const totalForDisplay = Number.isFinite(totalHint) && totalHint > 0 ? totalHint : totalSteps;
+		              setProgressText(done, totalForDisplay);
+		            },
+		            {
+		              samplePlan: fastSamplePlan,
+		              shouldCancel: () => winrateCancelRequested,
+		              precomputedCombos: allVillainCombos,
+		              useCache: true,
+		            },
+		          );
+		          if (!fastResult || fastResult.canceled) {
+		            canceled = true;
+		          } else {
+		            totalWins = fastResult.totalWins;
+		            totalTies = fastResult.totalTies;
+		            totalTrials = fastResult.totalTrials;
+		            fastRunMeta = fastResult;
+		            setProgressText(fastResult.totalTrials, fastResult.progressTotal || totalSteps);
+		          }
+		        } else {
+		          const h0 = heroCards[0];
+		          const h1 = heroCards[1];
+		          const remainingDeck = new Array(FULL_DECK.length - 4);
+		          const board = new Array(5);
+		          const swapIndices = new Int32Array(5);
+		          const heroSeven = new Array(7);
+		          heroSeven[0] = h0;
+		          heroSeven[1] = h1;
+		          const villainSeven = new Array(7);
+		          let processedCombos = 0;
+		          const totalSteps = allVillainCombos.length;
+		          const batchSize = 4;
 	          setProgressText(0, totalSteps);
 
 	          for (let batchStart = 0; batchStart < allVillainCombos.length; batchStart += batchSize) {
@@ -3110,8 +3776,8 @@
 	                villainSeven[5] = board[3];
 	                villainSeven[6] = board[4];
 
-	                const heroScore = evaluate(heroSeven);
-	                const villainScore = evaluate(villainSeven);
+	                const heroScore = evaluateLegacy(heroSeven);
+	                const villainScore = evaluateLegacy(villainSeven);
 	                if (heroScore > villainScore) totalWins++;
 	                else if (heroScore === villainScore) totalTies++;
 	                totalTrials++;
@@ -3151,9 +3817,15 @@
 	        setCalculatedEquity(heroEquity, errorMargin);
 	        setHudProgress(100);
 
-	        const sampleDesc = mode === 'fast'
-	          ? `${sampleCount.toLocaleString()} 試行`
-	          : `${sampleCount.toLocaleString()} 回/コンボ × ${allVillainCombos.length.toLocaleString()} コンボ`;
+			        const fastCacheLabel = fastRunMeta?.cache?.state === 'hit'
+			          ? ' / cache hit'
+			          : (fastRunMeta?.cache?.state === 'miss' ? ' / cache miss' : '');
+				        const evaluatorLabel = fastRunMeta?.evaluatorVariant ? ` / 評価器:${fastRunMeta.evaluatorVariant}` : '';
+				        const sampleDesc = mode === 'fast'
+				          ? (fastRunMeta?.samplePlanKind === 'adaptive'
+				            ? `AUTO ${totalTrials.toLocaleString()}試行 (目標${FAST_ADAPTIVE_TARGET_MS}ms / 誤差±${(Number.isFinite(fastRunMeta?.targetErrorPct) ? fastRunMeta.targetErrorPct : FAST_ADAPTIVE_TARGET_ERROR_PCT).toFixed(1)}% / 上限${(fastRunMeta.progressTotal || FAST_ADAPTIVE_MAX_SAMPLES).toLocaleString()}試行 / 停止:${getAdaptiveStopReasonLabel(fastRunMeta?.stopReason)}${fastCacheLabel}${evaluatorLabel})`
+				            : `${totalTrials.toLocaleString()} 試行${fastCacheLabel}${evaluatorLabel}`)
+				          : `${sampleCount.toLocaleString()} 回/コンボ × ${allVillainCombos.length.toLocaleString()} コンボ`;
 	        winrateResultDiv.innerHTML = `
 	          <h3>計算結果</h3>
 	          <p>ヒーロー: <strong>${heroCards[0]} ${heroCards[1]} (${heroCategory})</strong></p>
@@ -3170,77 +3842,83 @@
 	      }
 	    }
 
-	    async function simulateFastEquity(heroCards, rangeCategories, sampleCount, onProgress = null) {
-	      const allVillainCombos = [];
-	      for (const cat of rangeCategories) {
-	        allVillainCombos.push(...getCombosForHand(cat, heroCards));
+	    async function simulateFastEquity(heroCards, rangeCategories, sampleCount, onProgress = null, opts = {}) {
+	      const options = opts || {};
+	      const samplePlan = options.samplePlan || resolveFastSamplePlan(sampleCount);
+	      if (!samplePlan) return null;
+	      const evaluatorVariant = normalizeEvaluatorVariant(options.evaluatorVariant || activeEvaluatorVariant);
+
+	      let allVillainCombos = Array.isArray(options.precomputedCombos) ? options.precomputedCombos.slice() : null;
+	      if (!allVillainCombos) {
+	        allVillainCombos = [];
+	        for (const cat of rangeCategories || []) {
+	          allVillainCombos.push(...getCombosForHand(cat, heroCards));
+	        }
 	      }
 	      if (allVillainCombos.length === 0) return null;
 
-	      const h0 = heroCards[0];
-	      const h1 = heroCards[1];
-	      const remainingDeck = new Array(FULL_DECK.length - 4);
-	      const board = new Array(5);
-	      const swapIndices = new Int32Array(5);
-	      const heroSeven = new Array(7);
-	      heroSeven[0] = h0;
-	      heroSeven[1] = h1;
-	      const villainSeven = new Array(7);
-	      let totalWins = 0;
-	      let totalTies = 0;
-
-	      for (let i = 0; i < sampleCount; i++) {
-	        if ((i & 255) === 0) {
-	          if (onProgress) onProgress(i, sampleCount);
-	          await nextFrame();
+	      const useCache = options.useCache !== false;
+	      const cacheKey = useCache ? buildFastEquityCacheKey(heroCards, rangeCategories || [], samplePlan, evaluatorVariant) : null;
+	      if (cacheKey) {
+	        const cached = readFastEquityCache(cacheKey);
+	        if (cached) {
+	          if (onProgress) onProgress(cached.totalTrials, cached.progressTotal || cached.totalTrials);
+	          return {
+	            ...cached,
+	            cache: { state: 'hit', key: cacheKey },
+	          };
 	        }
-	        const villainCards = allVillainCombos[randomInt(allVillainCombos.length)];
-	        const v0 = villainCards[0];
-	        const v1 = villainCards[1];
-	        villainSeven[0] = v0;
-	        villainSeven[1] = v1;
-
-	        let remainingLen = 0;
-	        for (const c of FULL_DECK) {
-	          if (c === h0 || c === h1 || c === v0 || c === v1) continue;
-	          remainingDeck[remainingLen++] = c;
-	        }
-	        remainingDeck.length = remainingLen;
-	        drawBoardFromDeck(remainingDeck, board, swapIndices);
-
-	        heroSeven[2] = board[0];
-	        heroSeven[3] = board[1];
-	        heroSeven[4] = board[2];
-	        heroSeven[5] = board[3];
-	        heroSeven[6] = board[4];
-	        villainSeven[2] = board[0];
-	        villainSeven[3] = board[1];
-	        villainSeven[4] = board[2];
-	        villainSeven[5] = board[3];
-	        villainSeven[6] = board[4];
-
-	        const heroScore = evaluate(heroSeven);
-	        const villainScore = evaluate(villainSeven);
-	        if (heroScore > villainScore) totalWins++;
-	        else if (heroScore === villainScore) totalTies++;
 	      }
-	      if (onProgress) onProgress(sampleCount, sampleCount);
 
-	      const totalTrials = sampleCount;
-	      const totalOutcome = totalWins + totalTies * 0.5;
-	      const equity = totalTrials > 0 ? (totalOutcome / totalTrials) * 100 : 0;
-	      const meanOutcome = totalTrials > 0 ? (totalOutcome / totalTrials) : 0;
-	      const secondMoment = totalTrials > 0 ? ((totalWins + totalTies * 0.25) / totalTrials) : 0;
-	      const variance = Math.max(0, secondMoment - meanOutcome * meanOutcome);
-	      const stderr = totalTrials > 0 ? Math.sqrt(variance / totalTrials) : 0;
-	      const errorPct = stderr * 1.96 * 100;
+	      const runResult = await runFastEquityMonteCarlo(
+	        heroCards,
+	        allVillainCombos,
+	        samplePlan,
+	        onProgress,
+	        options.shouldCancel || null,
+	        {
+	          evaluatorVariant,
+	          profile: options.profile || null,
+	        },
+	      );
+	      if (!runResult) return null;
+		      if (runResult.canceled) {
+		        return {
+		          canceled: true,
+		          ...runResult,
+		          samplePlanKind: samplePlan.kind,
+		          targetMs: samplePlan.targetMs || null,
+		          targetErrorPct: samplePlan.targetErrorPct || null,
+		          evaluatorVariant,
+		          cache: cacheKey ? { state: 'miss', key: cacheKey } : null,
+		        };
+		      }
 
-	      return {
-	        equity,
-	        errorPct,
-	        combos: allVillainCombos.length,
-	        totalTrials,
-	      };
+		      const totalTrials = runResult.totalTrials;
+		      const stats = calculateMonteCarloStats(runResult.totalWins, runResult.totalTies, totalTrials);
+		      const result = {
+		        equity: stats.equity,
+		        errorPct: stats.errorPct,
+		        combos: allVillainCombos.length,
+		        totalTrials,
+		        trials: totalTrials,
+		        totalWins: runResult.totalWins,
+		        totalTies: runResult.totalTies,
+	        progressTotal: runResult.progressTotal,
+		        stopReason: runResult.stopReason,
+		        elapsedMs: runResult.elapsedMs,
+		        samplePlanKind: samplePlan.kind,
+		        targetMs: samplePlan.targetMs || null,
+		        targetErrorPct: samplePlan.targetErrorPct || null,
+		        evaluatorVariant,
+		        intPath: !!runResult.intPath,
+		        hotspot: runResult.hotspot || null,
+		        cache: cacheKey ? { state: 'miss', key: cacheKey } : null,
+		      };
+	      if (cacheKey) {
+	        writeFastEquityCache(cacheKey, result);
+	      }
+	      return result;
 	    }
 
 	    function loadTrainerHistory() {
@@ -4050,10 +4728,25 @@
 	      resultPanel.classList.toggle('icm-drill-hidden', hidden);
 	    }
 
-	    function resetIcmDrillQuestion(message = 'プリフロップでエクイティ計算後に「出題」を押してください。') {
+	    function setIcmDrillAnswerButtonsVisible(visible) {
+	      const callBtn = document.getElementById('icm-drill-call-btn');
+	      const foldBtn = document.getElementById('icm-drill-fold-btn');
+	      [callBtn, foldBtn].forEach((btn) => {
+	        if (!btn) return;
+	        btn.style.display = visible ? '' : 'none';
+	        btn.disabled = !visible;
+	      });
+	    }
+
+	    function resetIcmDrillQuestion(message = '') {
 	      currentIcmDrillQuestion = null;
-	      setIcmDrillPrompt(message);
+	      const hasAssumedWinrate = Number.isFinite(readAssumedWinratePct());
+	      const defaultMessage = hasAssumedWinrate
+	        ? '「出題」を押してください。'
+	        : '想定勝率が未設定でも「出題」はできます。回答はプリフロップ計算後に表示します。';
+	      setIcmDrillPrompt(message || defaultMessage);
 	      setIcmDrillFeedback('待機中', 'status-neutral');
+	      setIcmDrillAnswerButtonsVisible(hasAssumedWinrate);
 	      setIcmDrillResultPanelHidden(false);
 	    }
 
@@ -4126,7 +4819,7 @@
 
 	    function buildIcmDrillQuestion() {
 	      const assumedPct = readAssumedWinratePct();
-	      if (!Number.isFinite(assumedPct)) return null;
+	      const hasAssumedWinrate = Number.isFinite(assumedPct);
 	      const numPlayersEl = document.getElementById('num-players');
 	      const heroSelect = document.getElementById('hero-index');
 	      const allinSelect = document.getElementById('allin-index');
@@ -4186,27 +4879,35 @@
           if (!lastIcmResult) continue;
 
           const errEl = document.getElementById('icm-error');
-          if (errEl && errEl.classList.contains('active')) continue;
-          const callEv = parseFloat(document.getElementById('assumed-call-ev')?.textContent ?? '');
-          const evDiff = parseFloat(document.getElementById('assumed-ev-diff')?.textContent ?? '');
-          const foldEv = lastIcmResult.foldEV;
-          const requiredWinrateText = document.getElementById('required-winrate')?.textContent || '--';
-          const callAmount = parseFloat(document.getElementById('call-amount')?.textContent ?? '');
-          if (!Number.isFinite(callEv) || !Number.isFinite(evDiff) || !Number.isFinite(foldEv)) continue;
-          if (!Number.isFinite(callAmount) || callAmount <= 0) continue;
+	          if (errEl && errEl.classList.contains('active')) continue;
+	          const foldEv = lastIcmResult.foldEV;
+	          if (!Number.isFinite(foldEv)) continue;
+	          const requiredWinrateText = document.getElementById('required-winrate')?.textContent || '--';
+	          const callAmount = parseFloat(document.getElementById('call-amount')?.textContent ?? '');
+	          if (!Number.isFinite(callAmount) || callAmount <= 0) continue;
+	          let callEv = null;
+	          let evDiff = null;
+	          let correctCall = null;
+	          if (hasAssumedWinrate) {
+	            callEv = parseFloat(document.getElementById('assumed-call-ev')?.textContent ?? '');
+	            evDiff = parseFloat(document.getElementById('assumed-ev-diff')?.textContent ?? '');
+	            if (!Number.isFinite(callEv) || !Number.isFinite(evDiff)) continue;
+	            correctCall = evDiff >= 0;
+	          }
 
-          return {
-            heroIndex,
-            allinIndex,
-            assumedPct,
-            requiredWinrateText,
-            callEv,
-            foldEv,
-            evDiff,
-            correctCall: evDiff >= 0,
-            spotType,
-            raiseTo,
-          };
+	          return {
+	            heroIndex,
+	            allinIndex,
+	            assumedPct: hasAssumedWinrate ? assumedPct : null,
+	            hasAssumedWinrate,
+	            requiredWinrateText,
+	            callEv,
+	            foldEv,
+	            evDiff,
+	            correctCall,
+	            spotType,
+	            raiseTo,
+	          };
         }
 	      }
 	      return null;
@@ -4214,16 +4915,6 @@
 
 	    function startIcmDrillQuestion() {
 	      clearIcmError();
-	      const assumedPct = readAssumedWinratePct();
-	      if (!Number.isFinite(assumedPct)) {
-	        setIcmDrillResultPanelHidden(false);
-	        setIcmError('先にプリフロップでエクイティ計算を実行し、想定勝率を設定してください');
-	        setIcmDrillPrompt('プリフロップ計算が未完了です。先にエクイティ計算を実行してください。');
-	        setIcmDrillFeedback('出題できません: 想定勝率が未設定です。', 'status-negative');
-	        currentIcmDrillQuestion = null;
-	        return;
-	      }
-
 	      const question = buildIcmDrillQuestion();
 	      if (!question) {
 	        setIcmDrillResultPanelHidden(false);
@@ -4241,9 +4932,17 @@
       const spotText = question.spotType === 'raiseShove' && Number.isFinite(question.raiseTo)
         ? `【レイズto ${question.raiseTo.toFixed(2)}】 ${heroLabel}が${question.raiseTo.toFixed(2)}BBにレイズ後、${allinLabel}がオールイン。`
         : `【直オールイン】 ${allinLabel}がオールイン。`;
-	      setIcmDrillPrompt(`${spotText} あなたはコール/フォールド？ / 想定勝率 ${question.assumedPct.toFixed(2)}%`);
-	      setIcmDrillFeedback('回答を選んでください。', 'status-neutral');
-	      setIcmDrillResultPanelHidden(true);
+	      if (question.hasAssumedWinrate && Number.isFinite(question.assumedPct) && typeof question.correctCall === 'boolean') {
+	        setIcmDrillAnswerButtonsVisible(true);
+	        setIcmDrillPrompt(`${spotText} あなたはコール/フォールド？ / 想定勝率 ${question.assumedPct.toFixed(2)}%`);
+	        setIcmDrillFeedback('回答を選んでください。', 'status-neutral');
+	        setIcmDrillResultPanelHidden(true);
+	      } else {
+	        setIcmDrillAnswerButtonsVisible(false);
+	        setIcmDrillPrompt(`${spotText} 想定勝率が未設定のため、この問題は回答判定なしで表示しています。`);
+	        setIcmDrillFeedback('想定勝率が未設定のため回答ボタンは非表示です。プリフロップでエクイティ計算後に再出題してください。', 'status-neutral');
+	        setIcmDrillResultPanelHidden(false);
+	      }
 	    }
 
 	    function submitIcmDrillAnswer(selectedCall) {
@@ -4254,6 +4953,12 @@
 	      }
 	      setIcmDrillResultPanelHidden(false);
 	      const q = currentIcmDrillQuestion;
+	      if (typeof q.correctCall !== 'boolean') {
+	        setIcmDrillFeedback('この問題は想定勝率が未設定のため正誤判定できません。プリフロップでエクイティ計算後に再出題してください。', 'status-negative');
+	        setIcmDrillPrompt('回答不可の問題です。「出題」で次の問題へ進んでください。');
+	        currentIcmDrillQuestion = null;
+	        return;
+	      }
 	      const selectedLabel = selectedCall ? 'コール' : 'フォールド';
 	      const correctLabel = q.correctCall ? 'コール' : 'フォールド';
 	      const ok = selectedCall === q.correctCall;
@@ -4795,17 +5500,6 @@
         return;
       }
 
-	      const assumedRaw = document.getElementById('assumed-winrate')?.value?.trim() ?? '';
-	      const assumed = readAssumedWinratePct();
-	      if (!Number.isFinite(assumed)) {
-	        if (assumedRaw === '') {
-	          setIcmError('先にプリフロップでエクイティ計算を実行し、想定勝率を設定してください');
-	        } else {
-	          setIcmError(`想定勝率が不正です: ${assumedRaw}`);
-	        }
-	        return;
-	      }
-
       const sb = findUniquePositionIndex(positions, 'sb', 'SB');
       if (sb.error) {
         setIcmError(sb.error);
@@ -5107,12 +5801,17 @@
 
 	      // 初期設定読み込み
 	      const settings = readAppSettings();
+	      const hasSavedSettings = hasStoredAppSettings();
+	      const preferFastByViewport = !hasSavedSettings
+	        && typeof window.matchMedia === 'function'
+	        && window.matchMedia('(max-width: 430px)').matches;
+	      const initialMode = preferFastByViewport ? 'fast' : settings.mode;
 	      applyRangeZoomClass(settings.zoom);
 	      const defaultModeSelect = document.getElementById('default-mode-select');
-	      if (defaultModeSelect) defaultModeSelect.value = settings.mode;
+	      if (defaultModeSelect) defaultModeSelect.value = initialMode;
 	      const defaultZoomSelect = document.getElementById('default-zoom-select');
 	      if (defaultZoomSelect) defaultZoomSelect.value = settings.zoom;
-	      applyCalcMode(settings.mode);
+	      applyCalcMode(initialMode);
 	      const currentUrl = window.location.href;
 	      const currentUrlEl = document.getElementById('settings-current-url');
 	      const workspaceWarningEl = document.getElementById('workspace-warning');
