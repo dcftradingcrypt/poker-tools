@@ -22,6 +22,17 @@
 19. ship-ready 判定では `artifacts/<ts>_ship_ready_pack/git_clean_check.log` を必ず作成し、`STATUS_EXCLUDING_ARTIFACTS_OUT` に tracked変更（`M `）が1件でも残る場合は A〜D がPASSでも出荷不可（E=FAIL）として扱う。
 20. E（git clean）を要求される検証では、証拠出力ディレクトリ（`artifacts/`, `out/`）を `.gitignore` で明示管理し、`git status --porcelain` の `STATUS_TRACKED_ONLY` と `STATUS_FULL` が空であることを最終ログに残す。
 21. HUD再発防止ゲートは静的/動的の二重確認を必須化する。`artifacts/<ts>_hud_gate/hud_static_grep.log` で `#equity-hud` ブロック内が `position: static` であること、`hud_style_probe.json` で scroll前後とも `getComputedStyle(#equity-hud).position === "static"` を確認する。Pages/RawがDNS不可のときは `pages_raw_fetch_error.log` を残し、判定は `UNKNOWN` と明示する。
+22. deploy監査で `ahead > 0` が残る場合は `origin/main..HEAD` の `diff_name_status` `ahead_commits` `show_<sha>` を必ず保存し、`index.html` が差分に含まれた時点で H1=`REFUTED`（pushなし出荷判定停止）とする。Pages/RawがDNSで失敗した場合は `resolv.conf/getent/curl/pages_raw_fetch_error.log` を揃えて H2=`UNKNOWN` を確定する。
+23. DNS壊れ環境でPages/Rawを再検証するときは、通常curl失敗ログを先に固定したうえで `dns.google/resolve` のDoH結果（成功/失敗JSON）を保存し、`--resolve` 用IPが得られない場合はゲートを無効化せず H2=`UNKNOWN` のまま `gate_summary.md` に到達点を明記する。
+24. 証拠パックのスコープ監査では、候補repoごとに `git rev-parse --show-toplevel` `git remote -v` `git status -sb` `git log -1 --oneline --decorate` を先頭で採取し、誤提出が発覚したUは `user_evidence_index` に撤回注記（retracted）として固定して以後の判断根拠から除外する。
+25. ツール追加は学習ループ（復習/頻度/レンジ）へ直結する機能を優先し、直結しない機能は後回しにする。ツリーEV/ソルバー方向の要求は実装せず提案で停止する。
+26. Push/Foldデータはインポート方式のみで扱い、無断転載データをリポジトリへ同梱しない。UIには pack メタ（`table/model/ante`）を表示し、期待値からズレる場合は警告する。`>20bb` は簡略モデル注記を必ず表示する。
+27. Push/Fold運用では外部サイトからの自動取得（fetch/scrape）を実装しない。packは手動インポートのみ許可し、`meta`（`table/model/anteBb/source/license/notes`）を表示・監査して前提不一致を見逃さない。復習ログ集計は表示時のみ実行し、通常操作中に常時計算しない。
+28. Push/Foldデータ方針は `out/_codex/pushfold_data_policy.md` を正本とし、2–15bbをデフォルト運用帯、16–30bbは警告付き参考帯として扱う。`meta` に前提（9max/ante/等スタック想定）が欠落するpackは採用しない。
+29. Push/Fold pack QA を追加/変更した場合は `2-15bb欠損=FAIL停止` `16-30bb欠損=WARN継続` を固定し、`valid_synthetic` `missing_required` `broken_rangestring` の3pack probe結果（出題可否/理由付き）を artifacts に必ず保存する。
+30. Push/FoldのTSVインポートは `stack<TAB>position<TAB>rangeString` を正とし、空行/`#`行は無視、3列目は残り全部を読む（カンマ耐性必須）。同一 `(stack,position)` 重複は後勝ち+WARN件数表示を固定する。
+31. Push/Foldのmeta前提ズレ（`table!=9max` / `model!=push-fold` / `maxPlayers!=9`）はQAで必ず可視化し、警告バナーを表示する。`stack` が `2..30` 前提外または `2-15bb x 8position` 欠損はFAIL停止で出題/回答を無効化する。
+32. Push/Fold最終受け入れでは既存QAと別に `python3 scripts/pushfold_strict_gate.py` を必ず実行し、`positions 9max` `2-15 FAIL` `16-20 FAIL` `21-30 WARN` `meta必須` `manifest必須` `pack/inputTSV sha256` を `*_strict_gate_result.json/.md` に保存する。
 
 ## チェックリスト（毎回）
 ### 手動確認（ブラウザ）
@@ -1198,3 +1209,117 @@
 - 再発防止:
   - 回帰ゲートで日本語パターンを含む PowerShell スクリプトが失敗した場合は、同等判定を `run_regression_gates.sh` で再実行し、`regression_gates_powershell_fail.log` と `regression_gates.log` を必ずペア保存する。
   - perf監査の最終判定は `decision_gate_summary.md` の `A/B/C判定 + H1/H2判定 + precision差分 + 回帰ゲート` の4点が揃うまで完了扱いにしない。
+
+### 2026-03-05 21:26:58 JST
+- 対象: handoff生成運用（out/_codex/run_<timestamp>_handoff/ 配下）
+- 具体ルール:
+  - handoff作成時は HANDOFF_PACKET.md / NEW_CHAT_BOOTSTRAP.txt / leak_audit.txt / manifest.txt を同一 run_dir に同時生成する。
+  - leak監査は count-only とし、一致文字列そのものを保存しない（件数のみ記録）。
+
+### 2026-03-05 22:17:50 JST
+- 対象: handoff検証運用（out/_codex/run_<timestamp>_handoff_verify/）
+- 具体ルール:
+  - handoff検証時は本文非表示のまま handoff_verify.json と handoff_verify.md を生成し、存在/サイズ/mtime/sha256/行数のみを記録する。
+  - canonical配置（repoルート HANDOFF_PACKET.md / NEW_CHAT_BOOTSTRAP.md）は上書き禁止で、差分時はコピーせず警告のみ記録する。
+
+### 2026-03-06 00:04:26 JST
+- 対象: handoff最終監査運用（out/_codex/run_<timestamp>_handoff_finalize/）
+- 具体ルール:
+  - handoff_finalizeでは本文を出さず、count-only件数と存在/サイズ/mtime/sha256/行数のみを記録する。
+  - git要約は既存証拠ログ（git_status_porcelain.txt / git_diff_name_only.txt / git_diff_stat.txt）からファイル名のみ抽出して確定する。
+
+### 2026-03-06 01:59:15 JST
+- 対象: H2トリアージ監査（危険/用語パターンの判定運用）
+- 具体ルール:
+  - 漏洩監査の合否は危険パターン0件を必須条件とする。
+  - 用語パターンの非ゼロは即NGにせず、参考値として内訳確定のみ行う。
+
+### 2026-03-06 02:45:09 JST
+- 対象: handoff受け入れチェック表の集約運用（handoff_acceptance_receipt）
+- 具体ルール:
+  - acceptance_matrix.json は既存監査JSONから要点（件数/状態/sha/パス）のみ集約し、本文は含めない。
+  - acceptance_receipt生成後は counts_only.json で危険パターン0件を再確認して受け入れ完了とする。
+
+### 2026-03-06 03:46:58 JST
+- 対象: handoff参照先固定ファイル運用（HANDOFF_ACCEPTANCE_RECEIPT_LATEST.md）
+- 具体ルール:
+  - 参照先固定ファイルには最新receiptの相対パスと参照ルールのみを書き、本文や一致文字列を載せない。
+  - 生成後は pointer_audit_counts.json で危険パターン0件を確認し、git diff要点（name-only/stat）を同runに保存する。
+
+### 2026-03-06 05:01:35 JST
+- 対象: ingest_smoke事前取り込み確認（out/_codex/run_<timestamp>_ingest_smoke/）
+- 具体ルール:
+  - pack取り込みスモークは数値/型/件数のみを記録し、range本文や一致文字列をstdout/stderrへ出さない。
+  - 実行後は run_dir 全体を危険パターン count-only 監査し、danger=0 を leak_counts_only.json で証拠化する。
+
+### 2026-03-06 05:48:01 JST
+- 対象: 学習 ingest dry-run 監査運用（out/_codex/run_<timestamp>_train_ingest_dry_run/）
+- 具体ルール:
+  - 実 ingest 経路の dry-run は exit code と要点数値のみ記録し、stdout/stderr は最小化する。
+  - run_dir 全体で危険パターン count-only 監査を実施し、danger=0 を必須受け入れ条件にする。
+
+### 2026-03-06 06:30:54 JST
+- 対象: WARN理由ID差分監査とacceptance更新運用
+- 具体ルール:
+  - WARN監査は checkId などの識別子のみ抽出し、メッセージ本文や一致文字列は出力しない。
+  - 過去比較は added/removed/common の集合差分で判定し、added空なら既知WARNのみとして扱う。
+
+### 2026-03-06 08:00:23 JST
+- 対象: NEW_CHAT_BOOTSTRAPの固定ポインタ優先運用
+- 具体ルール:
+  - 新規チャット再開時は最優先で HANDOFF_ACCEPTANCE_RECEIPT_LATEST.md を参照し、最新 acceptance_receipt に委譲する。
+  - HANDOFF_PACKET.md や過去 run 参照は補助扱いとし、優先順位を固定ポインタより下げる。
+
+### 2026-03-06 20:57:09 JST
+- 対象: start point check（入口とLATEST整合の最終確認）
+- 具体ルール:
+  - 開始前に bootstrapHasLatestRef と latestTargetExists を真偽値で確認し、固定ポインタ整合を証拠化する。
+  - bootstrap/latest/acceptance_receipt の3点は危険パターン count-only で danger=0 を必須確認する。
+
+### 2026-03-06 21:50:00 JST
+- 対象: real consumer pilot（学習ツール本体経路の隔離検証）
+- 具体ルール:
+  - 本体経路が docs と validation CLI しか見つからない場合は UNKNOWN_STOP(no_real_consumer_entrypoint) とし、候補パスと採用不可理由だけを記録する。
+  - real consumer pilot の受け入れは danger=0 と changedScopeHandTokenLike <= 300 を必須条件にする。
+
+### 2026-03-06 23:59:00 JST
+- 対象: local git consumer search と consumer 系固定参照運用
+- 具体ルール:
+  - working tree に consumer 入口が無くても、local refs/history までは path-only で探索し、候補なしなら UNKNOWN_STOP(no_real_consumer_entrypoint_in_local_git) を固定する。
+  - consumer 系の最新状態は REAL_CONSUMER_STATUS_LATEST.md に分離して固定し、acceptance 系固定参照は更新しない。
+
+### 2026-03-07 01:10:00 JST
+- 対象: external consumer evidence search（upstream / 外部証拠まで拡張した consumer 探索）
+- 具体ルール:
+  - local git の次は外部証拠取得ラダーを実行し、repo metadata / branches / tree / releases の path-only メタで consumer 候補有無を判定する。
+  - external evidence reachable で候補 path が 0 の場合は UNKNOWN_STOP(no_real_consumer_entrypoint_in_local_or_upstream_evidence) を consumer 系固定参照に反映する。
+
+### 2026-03-07 02:20:00 JST
+- 対象: project state freeze（acceptance 系と consumer 系を分離した全体凍結）
+- 具体ルール:
+  - PROJECT_STATE_LATEST.md には acceptance latest / consumer status latest / status ID / reopen 条件だけを記載し、本文や一致文字列は含めない。
+  - acceptance 系固定参照と consumer 系固定参照は更新責務を分離し、project state は両者の現状を束ねるだけに留める。
+
+### 2026-03-07 02:31:13 KST
+- 対象: NEW_CHAT_BOOTSTRAP の project state 開始点固定
+- 具体ルール:
+  - PROJECT_STATE_LATEST.md が存在する間は、NEW_CHAT_BOOTSTRAP.md の最優先参照を PROJECT_STATE_LATEST.md に固定する。
+  - bootstrap 監査では PROJECT_STATE / acceptance latest / consumer latest / handoff packet の4参照を真偽値だけで確認し、本文は保存しない。
+
+### 2026-03-07 23:51:34 KST
+- 対象: 2–20bb 実データの static UI 反映
+- 具体ルール:
+  - static な UI 入口では out/_private の range 本文を public 側へコピーせず、availability と stack 範囲の safe summary 表示に留める。
+  - 1bb は unavailable、2–20bb は available、21–30bb は source missing を UI 上で明示し、full range render を有効扱いしない。
+
+### 2026-03-08 02:37:39 KST
+- 対象: local-only private pack UI bridge
+- 具体ルール:
+  - private pack を UI へ渡す経路は localhost bind の bridge に限定し、repo/public/out/_codex へ range 本文をコピーしない。
+  - pilot 証拠には HTTP status / payload size / category count だけを保存し、response body と TSV 本文は保存しない。
+
+### 2026-03-08 04:19:11 KST
+- 対象: local bridge を consumer 系固定参照へ昇格する reopen 運用
+- 具体ルール:
+  - `scripts/private_pack_ui_server.py` の localhost probe が通ったら、REAL_CONSUMER_STATUS_LATEST.md と PROJECT_STATE_LATEST.md を同じ run receipt へ揃えて更新する。
+  - local bridge consumer の reopen は `FOUND_LOCAL_UI_BRIDGE_CONSUMER` を statusId とし、acceptance 系固定参照は更新しない。
