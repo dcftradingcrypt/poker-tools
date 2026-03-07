@@ -149,6 +149,82 @@
       font-size: var(--font-2);
     }
 
+    .pushfold-status-card {
+      margin-bottom: var(--space-4);
+    }
+
+    .pushfold-status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-2);
+      margin: var(--space-3) 0;
+    }
+
+    .pushfold-band {
+      padding: var(--space-3);
+      border: 1px solid rgba(255, 233, 179, 0.16);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .pushfold-band-label {
+      display: block;
+      margin-bottom: var(--space-1);
+      font-weight: 700;
+    }
+
+    .pushfold-chip {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: var(--font-2);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .pushfold-chip-on {
+      color: #082312;
+      background: var(--ok);
+    }
+
+    .pushfold-chip-off {
+      color: #ffe4e4;
+      background: rgba(255, 111, 111, 0.22);
+    }
+
+    .pushfold-chip-warn {
+      color: #fff3d1;
+      background: rgba(255, 212, 105, 0.2);
+    }
+
+    .pushfold-select-wrap {
+      display: block;
+      margin-top: var(--space-2);
+      font-weight: 700;
+    }
+
+    .pushfold-select-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
+    .pushfold-runtime-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+
+    .pushfold-runtime-status {
+      min-height: 1.4em;
+    }
+
+    .pushfold-runtime-note {
+      margin-top: var(--space-2);
+    }
+
     .chip-text {
       display: inline-block;
       margin-right: var(--space-2);
@@ -1247,6 +1323,68 @@
       <h1>Poker Equity Calculator</h1>
       <p class="section-label">モバイル最適化版: エクイティを判断に直結</p>
     </header>
+
+    <section
+      class="surface-card pushfold-status-card"
+      aria-labelledby="pushfold-status-heading"
+      data-bridge-base="http://127.0.0.1:8765"
+      data-runtime-private-pack-readable="false"
+      data-full-range-render-enabled="false"
+    >
+      <h2 id="pushfold-status-heading">Push/Fold Data Status</h2>
+      <p class="section-label">受け入れ済み 2–20bb の availability のみ表示。static entrypoint のため full render は無効。</p>
+      <div class="pushfold-status-grid">
+        <div class="pushfold-band" data-stack-band="1" data-availability="unavailable">
+          <span class="pushfold-band-label">1bb</span>
+          <span class="pushfold-chip pushfold-chip-off">no data</span>
+        </div>
+        <div class="pushfold-band" data-stack-band="2-20" data-availability="available">
+          <span class="pushfold-band-label">2–20bb</span>
+          <span class="pushfold-chip pushfold-chip-on">available</span>
+        </div>
+        <div class="pushfold-band" data-stack-band="21-30" data-availability="source-missing">
+          <span class="pushfold-band-label">21–30bb</span>
+          <span class="pushfold-chip pushfold-chip-warn">source missing</span>
+        </div>
+      </div>
+      <div class="pushfold-select-grid">
+        <label class="pushfold-select-wrap" for="pushfold-stack-select">
+          利用可能スタック
+          <select id="pushfold-stack-select">
+            <option value="2" selected>2bb</option>
+            <option value="3">3bb</option>
+            <option value="4">4bb</option>
+            <option value="5">5bb</option>
+            <option value="6">6bb</option>
+            <option value="7">7bb</option>
+            <option value="8">8bb</option>
+            <option value="9">9bb</option>
+            <option value="10">10bb</option>
+            <option value="11">11bb</option>
+            <option value="12">12bb</option>
+            <option value="13">13bb</option>
+            <option value="14">14bb</option>
+            <option value="15">15bb</option>
+            <option value="16">16bb</option>
+            <option value="17">17bb</option>
+            <option value="18">18bb</option>
+            <option value="19">19bb</option>
+            <option value="20">20bb</option>
+          </select>
+        </label>
+        <label class="pushfold-select-wrap" for="pushfold-position-select">
+          ポジション
+          <select id="pushfold-position-select" disabled>
+            <option value="">bridge待機中</option>
+          </select>
+        </label>
+      </div>
+      <div class="pushfold-runtime-actions">
+        <button id="pushfold-load-btn" type="button" class="secondary" disabled>選択レンジを反映</button>
+        <span id="pushfold-bridge-status" class="section-label pushfold-runtime-status">bridge offline</span>
+      </div>
+      <p id="pushfold-runtime-note" class="section-label pushfold-runtime-note">known WARN only / safe summary only / runtime private pack unreadable in this UI entrypoint</p>
+    </section>
 
     <!-- EV電卓タブ -->
     <div id="evcalc-tab" class="tab-content active">
@@ -2707,6 +2845,156 @@
 	      const select = document.getElementById('default-zoom-select');
 	      if (select) select.value = normalized;
 	    }
+
+    const PUSHFOLD_BRIDGE_FALLBACK_BASE = 'http://127.0.0.1:8765';
+    const pushfoldRuntimeState = {
+      bridgeBase: PUSHFOLD_BRIDGE_FALLBACK_BASE,
+      bridgeStartOk: false,
+      bridgeHttpOk: false,
+      runtimePrivatePackReadable: false,
+      fullRangeRenderEnabled: false,
+    };
+
+    function readPushfoldBridgeBase() {
+      const card = document.querySelector('.pushfold-status-card');
+      const configured = card?.dataset.bridgeBase || PUSHFOLD_BRIDGE_FALLBACK_BASE;
+      const localHosts = new Set(['127.0.0.1', 'localhost']);
+      if (localHosts.has(window.location.hostname) && /^https?:$/.test(window.location.protocol)) {
+        return `${window.location.protocol}//${window.location.host}`;
+      }
+      return configured;
+    }
+
+    function setPushfoldRuntimeUi(opts = {}) {
+      const {
+        bridgeStartOk = false,
+        bridgeHttpOk = false,
+        runtimePrivatePackReadable = false,
+        fullRangeRenderEnabled = false,
+        statusText = 'bridge offline',
+        noteText = 'known WARN only / safe summary only / runtime private pack unreadable in this UI entrypoint',
+        statusClass = 'section-label',
+      } = opts;
+      pushfoldRuntimeState.bridgeStartOk = bridgeStartOk;
+      pushfoldRuntimeState.bridgeHttpOk = bridgeHttpOk;
+      pushfoldRuntimeState.runtimePrivatePackReadable = runtimePrivatePackReadable;
+      pushfoldRuntimeState.fullRangeRenderEnabled = fullRangeRenderEnabled;
+      const card = document.querySelector('.pushfold-status-card');
+      if (card) {
+        card.dataset.runtimePrivatePackReadable = runtimePrivatePackReadable ? 'true' : 'false';
+        card.dataset.fullRangeRenderEnabled = fullRangeRenderEnabled ? 'true' : 'false';
+      }
+      const statusEl = document.getElementById('pushfold-bridge-status');
+      if (statusEl) {
+        statusEl.textContent = statusText;
+        statusEl.className = statusClass;
+      }
+      const noteEl = document.getElementById('pushfold-runtime-note');
+      if (noteEl) noteEl.textContent = noteText;
+      const loadBtn = document.getElementById('pushfold-load-btn');
+      if (loadBtn) loadBtn.disabled = !fullRangeRenderEnabled;
+      const posSelect = document.getElementById('pushfold-position-select');
+      if (posSelect) posSelect.disabled = !fullRangeRenderEnabled;
+    }
+
+    function populatePushfoldSelect(selectId, values, formatter) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      const previous = select.value;
+      select.innerHTML = '';
+      values.forEach((value, idx) => {
+        const opt = document.createElement('option');
+        opt.value = String(value);
+        opt.textContent = formatter ? formatter(value) : String(value);
+        if ((previous && String(value) === previous) || (!previous && idx === 0)) {
+          opt.selected = true;
+        }
+        select.appendChild(opt);
+      });
+    }
+
+    async function fetchPushfoldBridgeJson(pathname) {
+      const response = await fetch(pushfoldRuntimeState.bridgeBase + pathname, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: { 'Accept': 'application/json' },
+      });
+      if (!response.ok) {
+        throw new Error(`bridge_http_${response.status}`);
+      }
+      return response.json();
+    }
+
+    async function initPushfoldRuntimeBridge() {
+      pushfoldRuntimeState.bridgeBase = readPushfoldBridgeBase();
+      try {
+        const payload = await fetchPushfoldBridgeJson('/api/stacks');
+        const stacks = Array.isArray(payload?.stacks) ? payload.stacks.filter(v => Number.isInteger(v)) : [];
+        const positions = Array.isArray(payload?.positions) ? payload.positions.filter(v => typeof v === 'string' && v) : [];
+        if (stacks.length === 0 || positions.length === 0) throw new Error('bridge_contract_invalid');
+        populatePushfoldSelect('pushfold-stack-select', stacks, value => `${value}bb`);
+        populatePushfoldSelect('pushfold-position-select', positions);
+        setPushfoldRuntimeUi({
+          bridgeStartOk: true,
+          bridgeHttpOk: true,
+          runtimePrivatePackReadable: true,
+          fullRangeRenderEnabled: true,
+          statusText: 'bridge ready',
+          noteText: 'localhost bridge active / selected stack only / no public pack copy',
+          statusClass: 'section-label status-positive pushfold-runtime-status',
+        });
+      } catch (err) {
+        setPushfoldRuntimeUi({
+          bridgeStartOk: false,
+          bridgeHttpOk: false,
+          runtimePrivatePackReadable: false,
+          fullRangeRenderEnabled: false,
+          statusText: 'bridge offline',
+          noteText: 'known WARN only / safe summary only / localhost bridge not reachable',
+          statusClass: 'section-label status-neutral pushfold-runtime-status',
+        });
+      }
+    }
+
+    async function loadPushfoldRangeFromBridge() {
+      if (!pushfoldRuntimeState.fullRangeRenderEnabled) return;
+      const stackSelect = document.getElementById('pushfold-stack-select');
+      const positionSelect = document.getElementById('pushfold-position-select');
+      const loadBtn = document.getElementById('pushfold-load-btn');
+      if (!stackSelect || !positionSelect || !loadBtn) return;
+      const bb = parseInt(stackSelect.value, 10);
+      const position = positionSelect.value;
+      if (!Number.isFinite(bb) || !position) return;
+      loadBtn.disabled = true;
+      try {
+        const payload = await fetchPushfoldBridgeJson(`/api/stack?bb=${encodeURIComponent(String(bb))}&position=${encodeURIComponent(position)}`);
+        const categories = Array.isArray(payload?.categories) ? payload.categories.filter(cat => HAND_CATEGORIES.includes(cat)) : [];
+        applyRangeCategories(categories);
+        setPushfoldRuntimeUi({
+          bridgeStartOk: true,
+          bridgeHttpOk: true,
+          runtimePrivatePackReadable: true,
+          fullRangeRenderEnabled: true,
+          statusText: 'bridge ready',
+          noteText: `${bb}bb / ${position} / ${categories.length} categories loaded`,
+          statusClass: 'section-label status-positive pushfold-runtime-status',
+        });
+        switchTab('winrate-tab');
+      } catch (err) {
+        setPushfoldRuntimeUi({
+          bridgeStartOk: true,
+          bridgeHttpOk: false,
+          runtimePrivatePackReadable: false,
+          fullRangeRenderEnabled: false,
+          statusText: 'bridge error',
+          noteText: 'localhost bridge request failed / availability-only fallback',
+          statusClass: 'section-label status-negative pushfold-runtime-status',
+        });
+      } finally {
+        const loadButton = document.getElementById('pushfold-load-btn');
+        if (loadButton) loadButton.disabled = !pushfoldRuntimeState.fullRangeRenderEnabled;
+      }
+    }
 
 	    function readAppSettings() {
 	      const fallback = { zoom: 'zoom-md', mode: 'precise' };
@@ -5826,6 +6114,7 @@
 	      renderTrainerHistory();
 	      renderTrainerStats();
 	      drawTrainerQuestion();
+	      initPushfoldRuntimeBridge();
 	      setHudHeroCards();
 	      updateRangeCountDisplay();
 	      updateEquityPrecalcDisplay();
@@ -5867,6 +6156,7 @@
 	      document.getElementById('delete-range-btn').addEventListener('click', deleteSelectedRange);
 	      document.getElementById('range-export-btn').addEventListener('click', exportRangeJson);
 	      document.getElementById('range-import-btn').addEventListener('click', importRangeJson);
+	      document.getElementById('pushfold-load-btn').addEventListener('click', loadPushfoldRangeFromBridge);
 
 	      document.getElementById('evbet-set-third').addEventListener('click', () => setEvBetByPotRatio(1 / 3));
 	      document.getElementById('evbet-set-half').addEventListener('click', () => setEvBetByPotRatio(1 / 2));
