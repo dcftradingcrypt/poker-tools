@@ -1397,10 +1397,6 @@
 
     <!-- エクイティ計算タブ -->
     <div id="winrate-tab" class="tab-content">
-      <section class="surface-card tight">
-        <h2>対想定レンジ</h2>
-        <p class="section-label">レンジ対ハンドの勝率を算出</p>
-      </section>
       <div
         id="pushfold-surface-slot"
         class="pushfold-surface-slot"
@@ -1408,6 +1404,10 @@
         data-bridge-base="http://127.0.0.1:8765"
         aria-live="polite"
       ></div>
+      <section class="surface-card tight">
+        <h2>対想定レンジ</h2>
+        <p class="section-label">レンジ対ハンドの勝率を算出</p>
+      </section>
       <section id="equity-hud" aria-live="polite">
         <div class="hud-main">
           <div>
@@ -2978,11 +2978,17 @@
     function readPushfoldBridgeBase() {
       const slot = getPushfoldSurfaceSlot();
       const configured = slot?.dataset.bridgeBase || PUSHFOLD_BRIDGE_FALLBACK_BASE;
-      const localHosts = new Set(['127.0.0.1', 'localhost']);
-      if (localHosts.has(window.location.hostname) && /^https?:$/.test(window.location.protocol)) {
-        return `${window.location.protocol}//${window.location.host}`;
+      try {
+        const configuredUrl = new URL(configured);
+        const currentIsHttp = /^https?:$/.test(window.location.protocol);
+        const sameLocalOrigin = currentIsHttp
+          && configuredUrl.protocol === window.location.protocol
+          && configuredUrl.hostname === window.location.hostname
+          && configuredUrl.port === window.location.port;
+        return sameLocalOrigin ? `${window.location.protocol}//${window.location.host}` : configuredUrl.origin;
+      } catch (err) {
+        return configured;
       }
-      return configured;
     }
 
     function setPushfoldRuntimeUi(opts = {}) {
@@ -3153,6 +3159,11 @@
 	      const navBtn = document.querySelector(`#bottom-nav .nav-btn[data-tab="${tabId}"]`);
 	      if (navBtn) navBtn.classList.add('active');
       renderPushfoldSurface();
+      if (tabId === PUSHFOLD_TARGET_SURFACE_ID) {
+        requestAnimationFrame(() => {
+          initPushfoldRuntimeBridge();
+        });
+      }
       if (tabId === 'icm-tab') {
         requestAnimationFrame(() => {
           renderIcmTableVisual();
