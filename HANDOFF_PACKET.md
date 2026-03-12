@@ -6,7 +6,7 @@
 - VERIFICATION: standard
 - 第一読取点: `HANDOFF_PACKET.md`
 - root 同期対象: `HANDOFF_PACKET.md`, `NEW_CHAT_BOOTSTRAP.md`
-- bootstrap 命名マッピング: repo root 正本は `NEW_CHAT_BOOTSTRAP.md`、run-local mirror は `out/_codex/run_20260312-000434_handoff_pass_sync/handoff/NEW_CHAT_BOOTSTRAP.txt`。内容は byte-identical を維持する。
+- bootstrap 命名マッピング: repo root 正本は `NEW_CHAT_BOOTSTRAP.md`、run-local mirror は `out/_codex/run_20260312-231507_runtime_closure_handoff_sync/handoff/NEW_CHAT_BOOTSTRAP.txt`。内容は byte-identical を維持する。
 - 根拠範囲: `HANDOFF_PACKET.md` を起点に、補助 pointer 文書と指定 run summary の existence / short-status を参照する。
 
 ## 目的
@@ -50,11 +50,19 @@
 - `out/_codex/run_20260311-182657_remote_readonly_verification/no_diff_decision.md` では fix commit に対して `HANDOFF_PACKET.md` / `NEW_CHAT_BOOTSTRAP.md` / `scripts/start_pushfold_local.py` が no-diff。
 - 外部WRITE は今回も未実施。
 
+6. runtime closure は `run_20260312-211329_runtime_aof_root_cause` を current として採用。
+- before actual served page は dirty working tree の `index.html` で、`working=served=456d9858a498d4a5fff9b7c224a70dd5a9779fc7`。
+- verified reference `333f7fa:index.html` の hash は `dbb6cbe2ed552f81cbdd9453cbebaf3f770f9970`。
+- after は `working=served=reference=dbb6cbe2ed552f81cbdd9453cbebaf3f770f9970`。
+- root cause は stale server ではなく provenance mismatch。dirty `index.html` には placement regression と `switchTab('winrate-tab')` 時の `initPushfoldRuntimeBridge()` 欠落があった。
+- current `index.html` は verified reference と空 diff。
+- `out/_codex/run_20260312-211329_runtime_aof_root_cause/summary_key_check.json` では `allPresent=true`、`leak_counts_only.json` では `dangerAllZero=true`。
+
 ## 次チャットの既定手順
 1. 第一読取点は repo root の `HANDOFF_PACKET.md`。
-2. 次に repo root の `NEW_CHAT_BOOTSTRAP.md` を読む。run-local mirror が必要なら `out/_codex/run_20260312-000434_handoff_pass_sync/handoff/NEW_CHAT_BOOTSTRAP.txt` を使ってよいが、内容は root と同一であることを前提にする。
+2. 次に repo root の `NEW_CHAT_BOOTSTRAP.md` を読む。run-local mirror が必要なら `out/_codex/run_20260312-231507_runtime_closure_handoff_sync/handoff/NEW_CHAT_BOOTSTRAP.txt` を使ってよいが、内容は root と同一であることを前提にする。
 3. その後 `PROJECT_STATE_LATEST.md`、`HANDOFF_ACCEPTANCE_RECEIPT_LATEST.md`、`REAL_CONSUMER_STATUS_LATEST.md` を補助 pointer として読む。
-4. local runtime の再検証が要る場合は `out/_codex/run_20260310-024514_handoff_refresh/launcher_durability_report.md` と `scripts/start_pushfold_local.py` を起点にする。
+4. local runtime の再検証が要る場合は `out/_codex/run_20260312-211329_runtime_aof_root_cause/runtime_root_cause_report.md` と `served_asset_compare.md` を第一証拠にし、必要なら `out/_codex/run_20260310-024514_handoff_refresh/launcher_durability_report.md` と `scripts/start_pushfold_local.py` を補助起点にする。
 5. 2-20bb available / 21-30 unavailable を維持し、新証拠が無い限り 21-30 を補完しない。
 6. remote 側の再確認が必要なら `out/_codex/run_20260311-182657_remote_readonly_verification/remote_verification_report.md` を第一証拠にし、broken baseline `handoff-push-only-20260310-052252@5719a38...` は比較用としてのみ扱う。新規変更が無い限り外部WRITEは行わない。
 
@@ -70,6 +78,12 @@
 - `out/_codex/run_20260311-182657_remote_readonly_verification/remote_verification_report.md`
 - `out/_codex/run_20260311-182657_remote_readonly_verification/no_diff_decision.md`
 - `out/_codex/run_20260311-182657_remote_readonly_verification/audit_packet.md`
+- `out/_codex/run_20260312-211329_runtime_aof_root_cause/served_asset_compare.md`
+- `out/_codex/run_20260312-211329_runtime_aof_root_cause/runtime_root_cause_report.md`
+- `out/_codex/run_20260312-211329_runtime_aof_root_cause/before_after_dom.md`
+- `out/_codex/run_20260312-211329_runtime_aof_root_cause/summary_key_check.json`
+- `out/_codex/run_20260312-211329_runtime_aof_root_cause/leak_counts_only.json`
+- `out/_codex/run_20260312-211329_runtime_aof_root_cause/audit_packet.md`
 - `HANDOFF_ACCEPTANCE_RECEIPT_LATEST.md`
 - `REAL_CONSUMER_STATUS_LATEST.md`
 - `PROJECT_STATE_LATEST.md`
