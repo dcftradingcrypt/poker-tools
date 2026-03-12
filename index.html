@@ -1401,13 +1401,6 @@
         <h2>対想定レンジ</h2>
         <p class="section-label">レンジ対ハンドの勝率を算出</p>
       </section>
-      <div
-        id="pushfold-surface-slot"
-        class="pushfold-surface-slot"
-        data-target-surface="winrate-tab"
-        data-bridge-base="http://127.0.0.1:8765"
-        aria-live="polite"
-      ></div>
       <section id="equity-hud" aria-live="polite">
         <div class="hud-main">
           <div>
@@ -1604,6 +1597,21 @@
       <div id="winrate-result" class="results"></div>
     </div>
 
+    <!-- Push/Fold 専用タブ -->
+    <div id="pushfold-tab" class="tab-content">
+      <section class="surface-card tight">
+        <h2>Push/Fold</h2>
+        <p class="section-label">AOF 専用画面。bridge 接続時だけ full render を有効化。</p>
+      </section>
+      <div
+        id="pushfold-surface-slot"
+        class="pushfold-surface-slot"
+        data-target-surface="pushfold-tab"
+        data-bridge-base="http://127.0.0.1:8765"
+        aria-live="polite"
+      ></div>
+    </div>
+
     <!-- ICM計算タブ -->
     <div id="icm-tab" class="tab-content">
       <div class="controls controls-setup">
@@ -1782,6 +1790,7 @@
   <nav id="bottom-nav" aria-label="メインナビゲーション">
     <button type="button" class="nav-btn active" data-tab="evcalc-tab">EV電卓</button>
     <button type="button" class="nav-btn" data-tab="winrate-tab">プリフロップ</button>
+    <button type="button" class="nav-btn" data-tab="pushfold-tab">AOF</button>
     <button type="button" class="nav-btn" data-tab="icm-tab">ICM</button>
     <button type="button" class="nav-btn" data-tab="trainer-tab">トレーナー</button>
     <button type="button" class="nav-btn" data-tab="settings-tab">設定</button>
@@ -2829,7 +2838,7 @@
 	    }
 
     const PUSHFOLD_BRIDGE_FALLBACK_BASE = 'http://127.0.0.1:8765';
-    const PUSHFOLD_TARGET_SURFACE_ID = 'winrate-tab';
+    const PUSHFOLD_TARGET_SURFACE_ID = 'pushfold-tab';
     const PUSHFOLD_DEFAULT_STACKS = Array.from({ length: 19 }, (_, idx) => idx + 2);
     const PUSHFOLD_AVAILABILITY_BANDS = [
       { stackBand: '1', label: '1bb', availability: 'unavailable', chipClass: 'pushfold-chip pushfold-chip-off', chipText: 'no data' },
@@ -2978,11 +2987,17 @@
     function readPushfoldBridgeBase() {
       const slot = getPushfoldSurfaceSlot();
       const configured = slot?.dataset.bridgeBase || PUSHFOLD_BRIDGE_FALLBACK_BASE;
-      const localHosts = new Set(['127.0.0.1', 'localhost']);
-      if (localHosts.has(window.location.hostname) && /^https?:$/.test(window.location.protocol)) {
-        return `${window.location.protocol}//${window.location.host}`;
+      try {
+        const configuredUrl = new URL(configured);
+        const currentIsHttp = /^https?:$/.test(window.location.protocol);
+        const sameLocalOrigin = currentIsHttp
+          && configuredUrl.protocol === window.location.protocol
+          && configuredUrl.hostname === window.location.hostname
+          && configuredUrl.port === window.location.port;
+        return sameLocalOrigin ? `${window.location.protocol}//${window.location.host}` : configuredUrl.origin;
+      } catch (err) {
+        return configured;
       }
-      return configured;
     }
 
     function setPushfoldRuntimeUi(opts = {}) {
@@ -3097,7 +3112,7 @@
           selectedStack: bb,
           selectedPosition: position,
         });
-        switchTab('winrate-tab');
+        switchTab(PUSHFOLD_TARGET_SURFACE_ID);
       } catch (err) {
         setPushfoldRuntimeUi({
           bridgeStartOk: true,
@@ -3153,6 +3168,11 @@
 	      const navBtn = document.querySelector(`#bottom-nav .nav-btn[data-tab="${tabId}"]`);
 	      if (navBtn) navBtn.classList.add('active');
       renderPushfoldSurface();
+      if (tabId === PUSHFOLD_TARGET_SURFACE_ID) {
+        requestAnimationFrame(() => {
+          initPushfoldRuntimeBridge();
+        });
+      }
       if (tabId === 'icm-tab') {
         requestAnimationFrame(() => {
           renderIcmTableVisual();
