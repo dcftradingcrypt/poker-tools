@@ -6,7 +6,7 @@
 - VERIFICATION: standard
 - 第一読取点: `HANDOFF_PACKET.md`
 - root 同期対象: `HANDOFF_PACKET.md`, `NEW_CHAT_BOOTSTRAP.md`
-- bootstrap 命名マッピング: repo root 正本は `NEW_CHAT_BOOTSTRAP.md`、run-local mirror は `out/_codex/run_20260313-061735_unified_publish_sync/handoff/NEW_CHAT_BOOTSTRAP.txt`。内容は byte-identical を維持する。
+- bootstrap 命名マッピング: repo root 正本は `NEW_CHAT_BOOTSTRAP.md`、run-local mirror は `out/_codex/run_20260313-183536_unified_publish_remote_parity/handoff/NEW_CHAT_BOOTSTRAP.txt`。内容は byte-identical を維持する。
 - 根拠範囲: `HANDOFF_PACKET.md` を起点に、補助 pointer 文書と指定 run summary の existence / short-status を参照する。
 
 ## 目的
@@ -58,13 +58,19 @@
 - `bb2to20Available=true`、`bb21to30Available=false` を current state として維持し、21-30bb は frozen。
 - `out/_codex/run_20260313-044416_aof_dedicated_view/summary_key_check.json` では `allPresent=true`、`leak_counts_only.json` では `dangerAllZero=true`。
 
+7. unified publish remote parity は `PASS`。
+- canonical artifact は `out/_codex/run_20260313-183536_unified_publish_remote_parity/remote_verification_report.md`。
+- remote branch `unified-publish-dedicated-view-20260313-061735` の head は `237180afe404f789b335cc88e1fcf898fde7bf28` で、GitHub commit `237180a` の scope は `index.html` / `HANDOFF_PACKET.md` / `NEW_CHAT_BOOTSTRAP.md` の 3 files only。
+- raw remote `HANDOFF_PACKET.md` / `NEW_CHAT_BOOTSTRAP.md` には dedicated-view closure が既に含まれ、remote docs parity は `PASS`。
+- 外部WRITE は今回も未実施。
+
 ## 次チャットの既定手順
 1. 第一読取点は repo root の `HANDOFF_PACKET.md`。
-2. 次に repo root の `NEW_CHAT_BOOTSTRAP.md` を読む。run-local mirror が必要なら `out/_codex/run_20260313-061735_unified_publish_sync/handoff/NEW_CHAT_BOOTSTRAP.txt` を使ってよいが、内容は root と同一であることを前提にする。
+2. 次に repo root の `NEW_CHAT_BOOTSTRAP.md` を読む。run-local mirror が必要なら `out/_codex/run_20260313-183536_unified_publish_remote_parity/handoff/NEW_CHAT_BOOTSTRAP.txt` を使ってよいが、内容は root と同一であることを前提にする。
 3. その後 `PROJECT_STATE_LATEST.md`、`HANDOFF_ACCEPTANCE_RECEIPT_LATEST.md`、`REAL_CONSUMER_STATUS_LATEST.md` を補助 pointer として読む。
 4. local runtime の再検証が要る場合は `out/_codex/run_20260313-044416_aof_dedicated_view/page_boundary_report.md`、`runtime_root_cause_report.md`、`before_after_dom.md` を第一証拠にし、必要なら `out/_codex/run_20260310-024514_handoff_refresh/launcher_durability_report.md` と `scripts/start_pushfold_local.py` を補助起点にする。
 5. 2-20bb available / 21-30 unavailable を維持し、新証拠が無い限り 21-30 を補完しない。
-6. remote 側の再確認が必要なら `out/_codex/run_20260311-182657_remote_readonly_verification/remote_verification_report.md` を第一証拠にし、broken baseline `handoff-push-only-20260310-052252@5719a38...` は比較用としてのみ扱う。新規変更が無い限り外部WRITEは行わない。
+6. remote 側の再確認が必要なら `out/_codex/run_20260313-183536_unified_publish_remote_parity/remote_verification_report.md` を第一証拠にし、same-page historical baseline の remote PASS は `out/_codex/run_20260311-182657_remote_readonly_verification/remote_verification_report.md` を参照する。broken baseline `handoff-push-only-20260310-052252@5719a38...` は比較用としてのみ扱う。新規変更が無い限り外部WRITEは行わない。
 
 ## 参照対象
 - `out/_codex/run_20260306-062913_warn_id_diff_and_acceptance_update/acceptance_receipt.md`
@@ -84,6 +90,8 @@
 - `out/_codex/run_20260313-044416_aof_dedicated_view/summary_key_check.json`
 - `out/_codex/run_20260313-044416_aof_dedicated_view/leak_counts_only.json`
 - `out/_codex/run_20260313-044416_aof_dedicated_view/audit_packet.md`
+- `out/_codex/run_20260313-183536_unified_publish_remote_parity/remote_verification_report.md`
+- `out/_codex/run_20260313-183536_unified_publish_remote_parity/audit_packet.md`
 - `HANDOFF_ACCEPTANCE_RECEIPT_LATEST.md`
 - `REAL_CONSUMER_STATUS_LATEST.md`
 - `PROJECT_STATE_LATEST.md`

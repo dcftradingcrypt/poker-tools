@@ -5,7 +5,7 @@ VERIFICATION: standard
 
 第一読取点は repo ルートの `HANDOFF_PACKET.md`。
 `PROJECT_STATE_LATEST.md` / `HANDOFF_ACCEPTANCE_RECEIPT_LATEST.md` / `REAL_CONSUMER_STATUS_LATEST.md` は `HANDOFF_PACKET.md` から辿る補助 pointer であり、先読みしない。
-repo root 正本の bootstrap 名は `NEW_CHAT_BOOTSTRAP.md`。run-local mirror は `out/_codex/run_20260313-061735_unified_publish_sync/handoff/NEW_CHAT_BOOTSTRAP.txt` で、内容は byte-identical を維持する。
+repo root 正本の bootstrap 名は `NEW_CHAT_BOOTSTRAP.md`。run-local mirror は `out/_codex/run_20260313-183536_unified_publish_remote_parity/handoff/NEW_CHAT_BOOTSTRAP.txt` で、内容は byte-identical を維持する。
 `HANDOFF_PACKET.md` 読後、必要時のみ以下の補助証拠を辿れ。
 - `PROJECT_STATE_LATEST.md`
 - `HANDOFF_ACCEPTANCE_RECEIPT_LATEST.md`
@@ -37,6 +37,7 @@ repo root 正本の bootstrap 名は `NEW_CHAT_BOOTSTRAP.md`。run-local mirror 
 - after は dedicated tab `pushfold-tab` を追加し、`working=served=75abb40192909e6325718b49e4e04f57532a1c53`
 - AOF は `AOF` タブ側だけに表示され、target online=`full` / target offline=`fallback` / non-target=`hidden`
 - `bb2to20Available=true`、`bb21to30Available=false` を current state として維持し、21-30bb は frozen
+- unified publish remote parity canonical artifact は `run_20260313-183536_unified_publish_remote_parity` で、remote branch `unified-publish-dedicated-view-20260313-061735@237180afe404f789b335cc88e1fcf898fde7bf28` は `index.html` / `HANDOFF_PACKET.md` / `NEW_CHAT_BOOTSTRAP.md` の 3 files only scope で `PASS`
 - local 起動は `scripts/start_pushfold_local.py` を優先し、durability の direct proof は `run_20260310-024514_handoff_refresh` を使う
 - broken baseline `handoff-push-only-20260310-052252@5719a38b1263ff0f6a0eafea2c2f8e93c03a8a6f` は comparison only、外部WRITEは未実施
 
