@@ -233,6 +233,79 @@
       margin-top: var(--space-2);
     }
 
+    .pushfold-runtime-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    .pushfold-runtime-meta-inline {
+      margin-bottom: 0;
+    }
+
+    .pushfold-chip-outline {
+      color: var(--text-soft);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 233, 179, 0.16);
+    }
+
+    .pushfold-scenario-panel {
+      display: grid;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 233, 179, 0.14);
+      background: linear-gradient(180deg, rgba(255, 214, 102, 0.06), rgba(255, 255, 255, 0.02));
+    }
+
+    .pushfold-scenario-panel-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+
+    .pushfold-scenario-panel-summary,
+    .pushfold-scenario-panel-note,
+    .pushfold-select-hint {
+      margin: 0;
+      color: var(--text-soft);
+    }
+
+    .pushfold-scenario-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .pushfold-scenario-details {
+      border-top: 1px solid rgba(255, 233, 179, 0.12);
+      padding-top: var(--space-2);
+    }
+
+    .pushfold-scenario-details summary {
+      cursor: pointer;
+      color: var(--text-soft);
+      user-select: none;
+    }
+
+    .pushfold-scenario-details-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 12px;
+      margin-top: var(--space-2);
+      color: var(--text-soft);
+      font-size: var(--font-2);
+    }
+
+    .pushfold-scenario-details-grid strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
     .pushfold-runtime-panel {
       display: grid;
       gap: var(--space-2);
@@ -389,6 +462,7 @@
 
     .card-grid-container,
     .range-grid-container,
+    .pushfold-range-grid-container,
     .icm-table-container {
       overflow: auto;
       -webkit-overflow-scrolling: touch;
@@ -398,7 +472,8 @@
     }
 
     #card-grid,
-    #range-grid {
+    #range-grid,
+    .pushfold-range-grid {
       border-collapse: separate;
       border-spacing: 6px;
       margin: 6px;
@@ -452,7 +527,8 @@
       letter-spacing: 0.04em;
     }
 
-    #range-grid td {
+    #range-grid td,
+    .pushfold-range-grid td {
       width: var(--range-cell-size);
       min-width: var(--range-cell-size);
       height: var(--range-cell-size);
@@ -471,24 +547,29 @@
       position: relative;
     }
 
-    #range-grid td.pair {
+    #range-grid td.pair,
+    .pushfold-range-grid td.pair {
       background: linear-gradient(180deg, #8d2f2f, #6f1f1f);
     }
 
-    #range-grid td.suited {
+    #range-grid td.suited,
+    .pushfold-range-grid td.suited {
       background: linear-gradient(180deg, #2c5f9f, #1e4070);
     }
 
-    #range-grid td.offsuit {
+    #range-grid td.offsuit,
+    .pushfold-range-grid td.offsuit {
       background: linear-gradient(180deg, #404040, #2f2f2f);
     }
 
-    #range-grid td:hover {
+    #range-grid td:hover,
+    .pushfold-range-grid td:hover {
       transform: translateY(-1px);
       box-shadow: 0 5px 10px rgba(0, 0, 0, 0.28);
     }
 
-    #range-grid td.active-range {
+    #range-grid td.active-range,
+    .pushfold-range-grid td.active-range {
       border: 2px solid var(--accent);
       box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.25), 0 8px 12px rgba(0, 0, 0, 0.28);
       filter: saturate(1.18);
@@ -517,6 +598,101 @@
     #range-grid-container.zoom-lg {
       --range-cell-size: 56px;
       --range-font-size: 14px;
+    }
+
+    .pushfold-range-preview {
+      display: grid;
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
+    .pushfold-range-preview-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+
+    .pushfold-range-preview-summary,
+    .pushfold-range-preview-empty {
+      color: var(--text-soft);
+    }
+
+    .pushfold-range-grid {
+      --range-cell-size: 32px;
+      --range-font-size: 10px;
+      width: max-content;
+    }
+
+    .pushfold-range-grid td {
+      cursor: default;
+      opacity: 0.32;
+      border-color: rgba(255, 244, 214, 0.14);
+      filter: grayscale(0.18) saturate(0.38) brightness(0.72);
+      box-shadow: none;
+    }
+
+    .pushfold-range-grid td:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .pushfold-range-grid td.active-range {
+      opacity: 1;
+      border-color: rgba(255, 212, 105, 0.92);
+      filter: none;
+      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.25), 0 8px 12px rgba(0, 0, 0, 0.28);
+    }
+
+    .pushfold-range-preview-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .pushfold-range-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      color: var(--text-soft);
+      font-size: var(--font-2);
+    }
+
+    .pushfold-range-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pushfold-range-legend-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 244, 214, 0.2);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .pushfold-range-legend-swatch-active {
+      border-color: rgba(255, 212, 105, 0.92);
+      background: linear-gradient(180deg, #2c5f9f, #1e4070);
+      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.2);
+    }
+
+    .pushfold-range-legend-swatch-inactive {
+      opacity: 0.45;
+      background: linear-gradient(180deg, #404040, #2f2f2f);
+    }
+
+    .pushfold-range-category-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .pushfold-range-category-chip {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: 0.01em;
     }
 
     .red {
@@ -1601,13 +1777,12 @@
     <div id="pushfold-tab" class="tab-content">
       <section class="surface-card tight">
         <h2>Push/Fold</h2>
-        <p class="section-label">AOF 専用画面。bridge 接続時だけ full render を有効化。</p>
+        <p class="section-label">AOF 専用画面。repo-hosted bundle または explicit bridge で range を表示。</p>
       </section>
       <div
         id="pushfold-surface-slot"
         class="pushfold-surface-slot"
         data-target-surface="pushfold-tab"
-        data-bridge-base="http://127.0.0.1:8765"
         aria-live="polite"
       ></div>
     </div>
@@ -1855,6 +2030,7 @@
       'A3o','K3o','Q3o','J3o','T3o','93o','83o','73o','63o','53o','43o','33','32s',
       'A2o','K2o','Q2o','J2o','T2o','92o','82o','72o','62o','52o','42o','32o','22'
     ];
+    const RANGE_GRID_LAYOUT = Array.from({ length: 13 }, (_, idx) => HAND_CATEGORIES.slice(idx * 13, idx * 13 + 13));
     
     // カードランクとスート
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
@@ -2838,28 +3014,202 @@
 	    }
 
     const PUSHFOLD_BRIDGE_FALLBACK_BASE = 'http://127.0.0.1:8765';
+    const PUSHFOLD_BUNDLED_ASSET_PATH = 'assets/pushfold/aof-bundle.v1.json';
     const PUSHFOLD_TARGET_SURFACE_ID = 'pushfold-tab';
     const PUSHFOLD_DEFAULT_STACKS = Array.from({ length: 19 }, (_, idx) => idx + 2);
+    const PUSHFOLD_JENNIFEAR_FAMILY_ID = 'jennifear_9max_first_in';
+    const PUSHFOLD_JENNIFEAR_FAMILY_LABEL = '9max Jennifear charts / first-in shove';
+    const PUSHFOLD_JENNIFEAR_FAMILY_DESCRIPTION = '9max Jennifear first-in shove chart family. This is separate from the 10max Push72o BB-ante tool modes.';
+    const PUSHFOLD_TOOL_FAMILY_ID = 'push72o_tool_10max_bbante';
+    const PUSHFOLD_TOOL_FAMILY_LABEL = '10max Push72o tool / BB-ante shove-call';
+    const PUSHFOLD_TOOL_FAMILY_DESCRIPTION = '10max BB-ante tool family. Open-jam and call-vs-jam modes are separate from the 9max Jennifear first-in charts.';
+    const PUSHFOLD_DEFAULT_SEMANTICS = {
+      regimeId: 'antes0',
+      regimeLabel: 'No antes',
+      familyId: PUSHFOLD_JENNIFEAR_FAMILY_ID,
+      familyLabel: PUSHFOLD_JENNIFEAR_FAMILY_LABEL,
+      familyDescription: PUSHFOLD_JENNIFEAR_FAMILY_DESCRIPTION,
+      lineageLabel: 'Jennifear chart family',
+      modeLabel: 'First-in shove',
+      positionModeLabel: 'single position selector',
+      requiresSecondaryPosition: false,
+      viewKind: 'binary_category_inclusion',
+      actionLabel: 'open-jam inclusion',
+      activeLabel: 'jam included',
+      weighted: false,
+      table: '9max',
+      model: 'chipEV',
+      spot: 'first-in',
+      ante: '0',
+      anteType: 'normal',
+      anteSize: '0',
+      sourceBucketAnte: '',
+      rangeMode: 'open_jam',
+      primaryPositionRole: 'position',
+      secondaryPositionRole: '',
+      sourceName: 'push72o_real_data_antes0',
+      sourceReference: '',
+      encodingNote: 'source shorthand expanded into exact categories; mixed frequencies are not available',
+      sourceFamily: 'push72o_charts',
+    };
+    const PUSHFOLD_DEFAULT_REGIME_ID = PUSHFOLD_DEFAULT_SEMANTICS.regimeId;
+    const PUSHFOLD_DEFAULT_AVAILABLE_REGIMES = [
+      {
+        id: 'antes0',
+        label: 'No antes',
+        familyId: PUSHFOLD_JENNIFEAR_FAMILY_ID,
+        familyLabel: PUSHFOLD_JENNIFEAR_FAMILY_LABEL,
+        familyDescription: PUSHFOLD_JENNIFEAR_FAMILY_DESCRIPTION,
+        lineageLabel: 'Jennifear chart family',
+        ante: '0',
+        sourceName: 'push72o_real_data_antes0',
+        sourceFamily: 'push72o_charts',
+        table: '9max',
+        spot: 'first-in',
+        modeLabel: 'First-in shove',
+        actionLabel: 'open-jam inclusion',
+        positionModeLabel: 'single position selector',
+        rangeMode: 'open_jam',
+        anteType: 'normal',
+        anteSize: '0',
+      },
+      {
+        id: 'antes10',
+        label: '10% antes',
+        familyId: PUSHFOLD_JENNIFEAR_FAMILY_ID,
+        familyLabel: PUSHFOLD_JENNIFEAR_FAMILY_LABEL,
+        familyDescription: PUSHFOLD_JENNIFEAR_FAMILY_DESCRIPTION,
+        lineageLabel: 'Jennifear chart family',
+        ante: '10%',
+        sourceName: 'push72o_real_data_antes10',
+        sourceFamily: 'push72o_charts',
+        table: '9max',
+        spot: 'first-in',
+        modeLabel: 'First-in shove',
+        actionLabel: 'open-jam inclusion',
+        positionModeLabel: 'single position selector',
+        rangeMode: 'open_jam',
+        anteType: 'normal',
+        anteSize: '10%',
+      },
+      {
+        id: 'antes12_5',
+        label: '12.5% antes',
+        familyId: PUSHFOLD_JENNIFEAR_FAMILY_ID,
+        familyLabel: PUSHFOLD_JENNIFEAR_FAMILY_LABEL,
+        familyDescription: PUSHFOLD_JENNIFEAR_FAMILY_DESCRIPTION,
+        lineageLabel: 'Jennifear chart family',
+        ante: '12.5%',
+        sourceName: 'push72o_real_data_antes12_5',
+        sourceFamily: 'push72o_charts',
+        table: '9max',
+        spot: 'first-in',
+        modeLabel: 'First-in shove',
+        actionLabel: 'open-jam inclusion',
+        positionModeLabel: 'single position selector',
+        rangeMode: 'open_jam',
+        anteType: 'normal',
+        anteSize: '12.5%',
+      },
+      {
+        id: 'antes20',
+        label: '20% antes',
+        familyId: PUSHFOLD_JENNIFEAR_FAMILY_ID,
+        familyLabel: PUSHFOLD_JENNIFEAR_FAMILY_LABEL,
+        familyDescription: PUSHFOLD_JENNIFEAR_FAMILY_DESCRIPTION,
+        lineageLabel: 'Jennifear chart family',
+        ante: '20%',
+        sourceName: 'push72o_real_data_antes20',
+        sourceFamily: 'push72o_charts',
+        table: '9max',
+        spot: 'first-in',
+        modeLabel: 'First-in shove',
+        actionLabel: 'open-jam inclusion',
+        positionModeLabel: 'single position selector',
+        rangeMode: 'open_jam',
+        anteType: 'normal',
+        anteSize: '20%',
+      },
+      {
+        id: 'tool10max_bb100_openjam',
+        label: 'Tool 10max / BB ante 100% / Open jam',
+        familyId: PUSHFOLD_TOOL_FAMILY_ID,
+        familyLabel: PUSHFOLD_TOOL_FAMILY_LABEL,
+        familyDescription: PUSHFOLD_TOOL_FAMILY_DESCRIPTION,
+        lineageLabel: 'Push72o push-or-fold tool',
+        ante: '100% BB',
+        sourceName: 'push72o_tool_10max_bbante100_openjam',
+        sourceFamily: 'push72o_tool',
+        table: '10max',
+        spot: 'open-jam',
+        modeLabel: 'Open jam',
+        actionLabel: 'open-jam inclusion',
+        positionModeLabel: 'single position selector',
+        rangeMode: 'open_jam',
+        anteType: 'big_blind',
+        anteSize: '100% BB',
+      },
+      {
+        id: 'tool10max_bb100_call',
+        label: 'Tool 10max / BB ante 100% / Call vs jam',
+        familyId: PUSHFOLD_TOOL_FAMILY_ID,
+        familyLabel: PUSHFOLD_TOOL_FAMILY_LABEL,
+        familyDescription: PUSHFOLD_TOOL_FAMILY_DESCRIPTION,
+        lineageLabel: 'Push72o push-or-fold tool',
+        ante: '100% BB',
+        sourceName: 'push72o_tool_10max_bbante100_call_vs_jam',
+        sourceFamily: 'push72o_tool',
+        table: '10max',
+        spot: 'call-vs-jam',
+        modeLabel: 'Call vs jam',
+        actionLabel: 'call inclusion',
+        positionModeLabel: 'jammer + caller selectors',
+        rangeMode: 'call_vs_jam',
+        anteType: 'big_blind',
+        anteSize: '100% BB',
+        requiresSecondaryPosition: true,
+      },
+    ];
+    const PUSHFOLD_DEFAULT_FAMILY_ID = PUSHFOLD_DEFAULT_SEMANTICS.familyId;
     const PUSHFOLD_AVAILABILITY_BANDS = [
       { stackBand: '1', label: '1bb', availability: 'unavailable', chipClass: 'pushfold-chip pushfold-chip-off', chipText: 'no data' },
       { stackBand: '2-20', label: '2–20bb', availability: 'available', chipClass: 'pushfold-chip pushfold-chip-on', chipText: 'available' },
       { stackBand: '21-30', label: '21–30bb', availability: 'source-missing', chipClass: 'pushfold-chip pushfold-chip-warn', chipText: 'source missing' },
     ];
     const pushfoldRuntimeState = {
-      bridgeBase: PUSHFOLD_BRIDGE_FALLBACK_BASE,
+      bridgeBase: '',
+      bridgeExplicitlyConfigured: false,
+      publicUnavailable: false,
+      dataSourceMode: 'fallback',
+      bundledAssetPath: PUSHFOLD_BUNDLED_ASSET_PATH,
+      bundledCatalog: null,
       bridgeStartOk: false,
       bridgeHttpOk: false,
       runtimePrivatePackReadable: false,
       fullRangeRenderEnabled: false,
+      refreshInFlight: false,
+      refreshAttemptCount: 0,
       targetSurfaceId: PUSHFOLD_TARGET_SURFACE_ID,
       statusText: 'bridge offline',
       noteText: 'known WARN only / safe summary only / localhost bridge not reachable',
       statusClass: 'section-label status-neutral pushfold-runtime-status',
       availableStacks: PUSHFOLD_DEFAULT_STACKS.slice(),
       availablePositions: [],
+      availableRegimes: PUSHFOLD_DEFAULT_AVAILABLE_REGIMES.map(entry => ({ ...entry })),
+      selectedFamily: PUSHFOLD_DEFAULT_FAMILY_ID,
+      selectedRegime: PUSHFOLD_DEFAULT_REGIME_ID,
       selectedStack: PUSHFOLD_DEFAULT_STACKS[0],
       selectedPosition: '',
+      secondaryPositionsByPosition: {},
+      selectedSecondaryPosition: '',
+      lastLoadedStack: PUSHFOLD_DEFAULT_STACKS[0],
+      lastLoadedPosition: '',
+      lastLoadedSecondaryPosition: '',
+      selectionResetNotice: '',
+      loadedCategories: [],
+      semantics: { ...PUSHFOLD_DEFAULT_SEMANTICS },
     };
+    let pushfoldBundledCatalogPromise = null;
 
     function getPushfoldSurfaceSlot() {
       return document.getElementById('pushfold-surface-slot');
@@ -2877,6 +3227,227 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    }
+
+    function readPushfoldBundledAssetUrl() {
+      const slot = getPushfoldSurfaceSlot();
+      const configuredPath = slot?.dataset.bundlePath || PUSHFOLD_BUNDLED_ASSET_PATH;
+      try {
+        return new URL(configuredPath, window.location.href).toString();
+      } catch (err) {
+        return configuredPath;
+      }
+    }
+
+    function normalizePushfoldBundledCatalogPayload(payload) {
+      const rawRegimes = payload && typeof payload.regimes === 'object' ? payload.regimes : {};
+      const normalizedRegimes = {};
+      Object.entries(rawRegimes).forEach(([rawKey, rawEntry]) => {
+        if (!rawEntry || typeof rawEntry !== 'object') return;
+        const regimeId = typeof rawEntry.id === 'string' && rawEntry.id.trim()
+          ? rawEntry.id.trim()
+          : String(rawKey || '').trim();
+        if (!regimeId) return;
+        const stacks = Array.isArray(rawEntry.stacks)
+          ? rawEntry.stacks
+              .map(value => Number.parseInt(value, 10))
+              .filter(value => Number.isInteger(value))
+          : [];
+        const positions = Array.isArray(rawEntry.positions)
+          ? rawEntry.positions.filter(value => typeof value === 'string' && value)
+          : [];
+        const secondaryPositionsByPosition = normalizePushfoldSecondaryPositionsByPosition(
+          rawEntry.secondaryPositionsByPosition,
+          positions
+        );
+        const normalizedCatalog = {};
+        const rawCatalog = rawEntry.catalog && typeof rawEntry.catalog === 'object' ? rawEntry.catalog : {};
+        Object.entries(rawCatalog).forEach(([bbKey, rawPositions]) => {
+          const bb = Number.parseInt(bbKey, 10);
+          if (!Number.isInteger(bb) || !rawPositions || typeof rawPositions !== 'object') return;
+          const normalizedPositions = {};
+          positions.forEach(position => {
+            const rawValue = rawPositions[position];
+            if (Array.isArray(rawValue)) {
+              normalizedPositions[position] = rawValue.filter(category => HAND_CATEGORIES.includes(category));
+              return;
+            }
+            if (!rawValue || typeof rawValue !== 'object') return;
+            const normalizedSecondaryPositions = {};
+            const knownSecondaryPositions = Array.isArray(secondaryPositionsByPosition[position])
+              ? secondaryPositionsByPosition[position]
+              : Object.keys(rawValue);
+            knownSecondaryPositions.forEach(secondaryPosition => {
+              const rawSecondaryValue = rawValue[secondaryPosition];
+              if (!Array.isArray(rawSecondaryValue)) return;
+              normalizedSecondaryPositions[secondaryPosition] = rawSecondaryValue.filter(category => HAND_CATEGORIES.includes(category));
+            });
+            if (Object.keys(normalizedSecondaryPositions).length) {
+              normalizedPositions[position] = normalizedSecondaryPositions;
+            }
+          });
+          if (Object.keys(normalizedPositions).length) {
+            normalizedCatalog[bb] = normalizedPositions;
+          }
+        });
+        const normalizedAvailableEntry = normalizePushfoldAvailableRegimes([
+          {
+            id: regimeId,
+            label: typeof rawEntry.label === 'string' ? rawEntry.label : regimeId,
+            familyId: rawEntry?.semantics?.familyId || rawEntry.familyId,
+            familyLabel: rawEntry?.semantics?.familyLabel || rawEntry.familyLabel,
+            familyDescription: rawEntry?.semantics?.familyDescription || rawEntry.familyDescription,
+            lineageLabel: rawEntry?.semantics?.lineageLabel || rawEntry.lineageLabel,
+            ante: rawEntry?.semantics?.ante || rawEntry.ante,
+            sourceName: rawEntry?.semantics?.sourceName || rawEntry.sourceName,
+            sourceFamily: rawEntry?.semantics?.sourceFamily || rawEntry.sourceFamily,
+            table: rawEntry?.semantics?.table || rawEntry.table,
+            spot: rawEntry?.semantics?.spot || rawEntry.spot,
+            modeLabel: rawEntry?.semantics?.modeLabel || rawEntry.modeLabel,
+            actionLabel: rawEntry?.semantics?.actionLabel || rawEntry.actionLabel,
+            positionModeLabel: rawEntry?.semantics?.positionModeLabel || rawEntry.positionModeLabel,
+            rangeMode: rawEntry?.semantics?.rangeMode || rawEntry.rangeMode,
+            anteType: rawEntry?.semantics?.anteType || rawEntry.anteType,
+            anteSize: rawEntry?.semantics?.anteSize || rawEntry.anteSize,
+            requiresSecondaryPosition: rawEntry?.semantics?.requiresSecondaryPosition || rawEntry?.requiresSecondaryPosition,
+          },
+        ])[0];
+        if (!normalizedAvailableEntry) return;
+        normalizedRegimes[regimeId] = {
+          ...normalizedAvailableEntry,
+          stacks,
+          positions,
+          secondaryPositionsByPosition,
+          catalog: normalizedCatalog,
+          semantics: normalizePushfoldSemantics(
+            rawEntry.semantics || buildPushfoldSemanticsFromRegimeEntry(normalizedAvailableEntry)
+          ),
+        };
+      });
+      const normalizedAvailableRegimes = normalizePushfoldAvailableRegimes(payload?.availableRegimes)
+        .filter(entry => normalizedRegimes[entry.id]);
+      const availableRegimes = normalizedAvailableRegimes.length
+        ? normalizedAvailableRegimes
+        : normalizePushfoldAvailableRegimes(Object.values(normalizedRegimes));
+      const defaultRegime = typeof payload?.defaultRegime === 'string' && normalizedRegimes[payload.defaultRegime]
+        ? payload.defaultRegime
+        : (availableRegimes[0]?.id || PUSHFOLD_DEFAULT_REGIME_ID);
+      return {
+        bundleKind: typeof payload?.bundleKind === 'string' ? payload.bundleKind : 'repo_hosted_aof',
+        generatedAtUtc: typeof payload?.generatedAtUtc === 'string' ? payload.generatedAtUtc : '',
+        defaultRegime,
+        availableRegimes,
+        regimes: normalizedRegimes,
+      };
+    }
+
+    async function fetchPushfoldBundledCatalog() {
+      const assetUrl = readPushfoldBundledAssetUrl();
+      if (!pushfoldBundledCatalogPromise || pushfoldRuntimeState.bundledAssetPath !== assetUrl) {
+        pushfoldRuntimeState.bundledAssetPath = assetUrl;
+        pushfoldBundledCatalogPromise = fetch(assetUrl, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: { 'Accept': 'application/json' },
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`bundled_http_${response.status}`);
+            }
+            return response.json();
+          })
+          .then(payload => normalizePushfoldBundledCatalogPayload(payload))
+          .then(payload => {
+            pushfoldRuntimeState.bundledCatalog = payload;
+            return payload;
+          })
+          .catch(err => {
+            pushfoldBundledCatalogPromise = null;
+            throw err;
+          });
+      }
+      return pushfoldBundledCatalogPromise;
+    }
+
+    function readPushfoldBundledRegimeEntry(bundlePayload, regimeId) {
+      if (!bundlePayload || typeof bundlePayload !== 'object') return null;
+      const regimes = bundlePayload.regimes && typeof bundlePayload.regimes === 'object'
+        ? bundlePayload.regimes
+        : {};
+      const requestedRegime = typeof regimeId === 'string' ? regimeId.trim() : '';
+      if (requestedRegime && regimes[requestedRegime]) return regimes[requestedRegime];
+      const defaultRegime = typeof bundlePayload.defaultRegime === 'string' ? bundlePayload.defaultRegime.trim() : '';
+      if (defaultRegime && regimes[defaultRegime]) return regimes[defaultRegime];
+      const firstEntry = Object.values(regimes)[0];
+      return firstEntry || null;
+    }
+
+    function buildPushfoldBundledStacksPayload(bundlePayload, regimeId) {
+      const entry = readPushfoldBundledRegimeEntry(bundlePayload, regimeId);
+      if (!entry) {
+        throw new Error('bundled_regime_unavailable');
+      }
+      return {
+        ok: true,
+        runtimePrivatePackReadable: false,
+        fullRangeRenderEnabled: true,
+        stacks: entry.stacks,
+        positions: entry.positions,
+        secondaryPositionsByPosition: entry.secondaryPositionsByPosition,
+        selectedRegime: entry.id,
+        availableRegimes: bundlePayload.availableRegimes,
+        semantics: {
+          ...entry.semantics,
+          sourceReference: pushfoldRuntimeState.bundledAssetPath,
+        },
+      };
+    }
+
+    function buildPushfoldBundledStackPayload(bundlePayload, regimeId, bb, position, secondaryPosition = '') {
+      const entry = readPushfoldBundledRegimeEntry(bundlePayload, regimeId);
+      if (!entry) {
+        throw new Error('bundled_regime_unavailable');
+      }
+      const stackMap = entry.catalog?.[bb];
+      if (!stackMap) {
+        throw new Error('bundled_stack_unavailable');
+      }
+      if (!Object.prototype.hasOwnProperty.call(stackMap, position)) {
+        throw new Error('bundled_position_unavailable');
+      }
+      const rangePayload = stackMap[position];
+      let categories = [];
+      if (Array.isArray(rangePayload)) {
+        categories = rangePayload;
+      } else {
+        if (!secondaryPosition) {
+          throw new Error('bundled_secondary_position_required');
+        }
+        const secondaryCategories = rangePayload?.[secondaryPosition];
+        if (!Array.isArray(secondaryCategories)) {
+          throw new Error('bundled_secondary_position_unavailable');
+        }
+        categories = secondaryCategories;
+      }
+      const payload = {
+        ok: true,
+        status: 'ok',
+        bb,
+        position,
+        categoryCount: categories.length,
+        categories,
+        secondaryPositionsByPosition: entry.secondaryPositionsByPosition,
+        selectedRegime: entry.id,
+        availableRegimes: bundlePayload.availableRegimes,
+        semantics: {
+          ...entry.semantics,
+          sourceReference: pushfoldRuntimeState.bundledAssetPath,
+        },
+      };
+      if (secondaryPosition) {
+        payload.secondaryPosition = secondaryPosition;
+      }
+      return payload;
     }
 
     function renderPushfoldBandMarkup() {
@@ -2905,22 +3476,884 @@
       }).join('');
     }
 
+    function normalizePushfoldSecondaryPositionsByPosition(secondaryPositionsByPosition, knownPositions = []) {
+      const normalized = {};
+      if (!secondaryPositionsByPosition || typeof secondaryPositionsByPosition !== 'object') return normalized;
+      Object.entries(secondaryPositionsByPosition).forEach(([position, values]) => {
+        if (!knownPositions.includes(position) || !Array.isArray(values)) return;
+        normalized[position] = values
+          .filter(value => typeof value === 'string' && value)
+          .map(value => value.trim())
+          .filter(Boolean);
+      });
+      return normalized;
+    }
+
+    function readPushfoldCurrentSecondaryPositions() {
+      const candidates = pushfoldRuntimeState.secondaryPositionsByPosition?.[pushfoldRuntimeState.selectedPosition];
+      return Array.isArray(candidates) ? candidates.filter(value => typeof value === 'string' && value) : [];
+    }
+
+    function hasPushfoldSecondaryPositionRequirement() {
+      return readPushfoldSemantics().rangeMode === 'call_vs_jam';
+    }
+
+    function renderPushfoldSecondaryPositionOptions() {
+      const secondaryPositions = readPushfoldCurrentSecondaryPositions();
+      if (!secondaryPositions.length) {
+        return '<option value="">相手位置を選択</option>';
+      }
+      return secondaryPositions.map(value => {
+        const selected = value === pushfoldRuntimeState.selectedSecondaryPosition ? ' selected' : '';
+        return `<option value="${escapeHtml(value)}"${selected}>${escapeHtml(value)}</option>`;
+      }).join('');
+    }
+
+    function isPushfoldToolFamily(entry = {}) {
+      const sourceFamily = typeof entry?.sourceFamily === 'string' ? entry.sourceFamily.trim() : '';
+      const sourceName = typeof entry?.sourceName === 'string' ? entry.sourceName.trim() : '';
+      const table = typeof entry?.table === 'string' ? entry.table.trim() : '';
+      return sourceFamily === 'push72o_tool' || sourceName.startsWith('push72o_tool_') || table === '10max';
+    }
+
+    function inferPushfoldFamilyId(entry = {}) {
+      const explicitFamilyId = typeof entry?.familyId === 'string' ? entry.familyId.trim() : '';
+      if (explicitFamilyId) return explicitFamilyId;
+      return isPushfoldToolFamily(entry) ? PUSHFOLD_TOOL_FAMILY_ID : PUSHFOLD_DEFAULT_FAMILY_ID;
+    }
+
+    function inferPushfoldFamilyLabel(entry = {}) {
+      const explicitFamilyLabel = typeof entry?.familyLabel === 'string' ? entry.familyLabel.trim() : '';
+      if (explicitFamilyLabel) return explicitFamilyLabel;
+      return inferPushfoldFamilyId(entry) === PUSHFOLD_TOOL_FAMILY_ID
+        ? PUSHFOLD_TOOL_FAMILY_LABEL
+        : PUSHFOLD_DEFAULT_SEMANTICS.familyLabel;
+    }
+
+    function inferPushfoldFamilyDescription(entry = {}) {
+      const explicitDescription = typeof entry?.familyDescription === 'string' ? entry.familyDescription.trim() : '';
+      if (explicitDescription) return explicitDescription;
+      return inferPushfoldFamilyId(entry) === PUSHFOLD_TOOL_FAMILY_ID
+        ? PUSHFOLD_TOOL_FAMILY_DESCRIPTION
+        : PUSHFOLD_DEFAULT_SEMANTICS.familyDescription;
+    }
+
+    function inferPushfoldLineageLabel(entry = {}) {
+      const explicitLineageLabel = typeof entry?.lineageLabel === 'string' ? entry.lineageLabel.trim() : '';
+      if (explicitLineageLabel) return explicitLineageLabel;
+      return inferPushfoldFamilyId(entry) === PUSHFOLD_TOOL_FAMILY_ID
+        ? 'Push72o push-or-fold tool'
+        : PUSHFOLD_DEFAULT_SEMANTICS.lineageLabel;
+    }
+
+    function inferPushfoldModeLabel(entry = {}) {
+      const explicitModeLabel = typeof entry?.modeLabel === 'string' ? entry.modeLabel.trim() : '';
+      if (explicitModeLabel) return explicitModeLabel;
+      const rangeMode = typeof entry?.rangeMode === 'string' ? entry.rangeMode.trim() : '';
+      const spot = typeof entry?.spot === 'string' ? entry.spot.trim().toLowerCase() : '';
+      if (rangeMode === 'call_vs_jam') return 'Call vs jam';
+      if (spot.includes('first-in')) return 'First-in shove';
+      return 'Open jam';
+    }
+
+    function inferPushfoldPositionModeLabel(entry = {}) {
+      const explicitPositionModeLabel = typeof entry?.positionModeLabel === 'string' ? entry.positionModeLabel.trim() : '';
+      if (explicitPositionModeLabel) return explicitPositionModeLabel;
+      const rangeMode = typeof entry?.rangeMode === 'string' ? entry.rangeMode.trim() : '';
+      return rangeMode === 'call_vs_jam' ? 'jammer + caller selectors' : 'single position selector';
+    }
+
+    function normalizePushfoldAvailableRegimes(availableRegimes) {
+      if (!Array.isArray(availableRegimes)) {
+        return PUSHFOLD_DEFAULT_AVAILABLE_REGIMES.map(entry => ({ ...entry }));
+      }
+      const normalized = availableRegimes.map(entry => {
+        const id = typeof entry?.id === 'string' ? entry.id.trim() : '';
+        if (!id) return null;
+        const label = typeof entry?.label === 'string' && entry.label.trim()
+          ? entry.label.trim()
+          : id;
+        return {
+          id,
+          label,
+          familyId: inferPushfoldFamilyId(entry),
+          familyLabel: inferPushfoldFamilyLabel(entry),
+          familyDescription: inferPushfoldFamilyDescription(entry),
+          lineageLabel: inferPushfoldLineageLabel(entry),
+          ante: typeof entry?.ante === 'string' ? entry.ante.trim() : '',
+          sourceName: typeof entry?.sourceName === 'string' ? entry.sourceName.trim() : '',
+          sourceFamily: typeof entry?.sourceFamily === 'string' ? entry.sourceFamily.trim() : '',
+          table: typeof entry?.table === 'string' ? entry.table.trim() : '',
+          spot: typeof entry?.spot === 'string' ? entry.spot.trim() : '',
+          modeLabel: inferPushfoldModeLabel(entry),
+          actionLabel: typeof entry?.actionLabel === 'string' ? entry.actionLabel.trim() : '',
+          positionModeLabel: inferPushfoldPositionModeLabel(entry),
+          rangeMode: typeof entry?.rangeMode === 'string' ? entry.rangeMode.trim() : '',
+          anteType: typeof entry?.anteType === 'string' ? entry.anteType.trim() : '',
+          anteSize: typeof entry?.anteSize === 'string' ? entry.anteSize.trim() : '',
+          requiresSecondaryPosition: entry?.requiresSecondaryPosition === true || entry?.rangeMode === 'call_vs_jam',
+        };
+      }).filter(Boolean);
+      return normalized.length
+        ? normalized
+        : PUSHFOLD_DEFAULT_AVAILABLE_REGIMES.map(entry => ({ ...entry }));
+    }
+
+    function buildPushfoldFamilyEntries(availableRegimes = pushfoldRuntimeState.availableRegimes) {
+      const families = [];
+      const seen = new Set();
+      availableRegimes.forEach(entry => {
+        if (!entry?.familyId || seen.has(entry.familyId)) return;
+        seen.add(entry.familyId);
+        families.push({
+          id: entry.familyId,
+          label: entry.familyLabel || inferPushfoldFamilyLabel(entry),
+          description: entry.familyDescription || inferPushfoldFamilyDescription(entry),
+          lineageLabel: entry.lineageLabel || inferPushfoldLineageLabel(entry),
+          sourceFamily: entry.sourceFamily || '',
+          table: entry.table || '',
+        });
+      });
+      return families;
+    }
+
+    function readPushfoldFamilyEntries() {
+      return buildPushfoldFamilyEntries(pushfoldRuntimeState.availableRegimes);
+    }
+
+    function readPushfoldRegimesForFamily(familyId = pushfoldRuntimeState.selectedFamily) {
+      const normalizedFamilyId = typeof familyId === 'string' ? familyId.trim() : '';
+      const familyRegimes = pushfoldRuntimeState.availableRegimes.filter(entry => entry.familyId === normalizedFamilyId);
+      return familyRegimes.length ? familyRegimes : pushfoldRuntimeState.availableRegimes.slice();
+    }
+
+    function readPushfoldSelectedRegimeEntry() {
+      return pushfoldRuntimeState.availableRegimes.find(entry => entry.id === pushfoldRuntimeState.selectedRegime) || null;
+    }
+
+    function readPushfoldSelectedFamilyEntry() {
+      const selectedRegimeEntry = readPushfoldSelectedRegimeEntry();
+      const selectedFamilyId = selectedRegimeEntry?.familyId || pushfoldRuntimeState.selectedFamily || PUSHFOLD_DEFAULT_FAMILY_ID;
+      return readPushfoldFamilyEntries().find(entry => entry.id === selectedFamilyId) || null;
+    }
+
+    function renderPushfoldFamilyOptions() {
+      return readPushfoldFamilyEntries().map(entry => {
+        const selected = entry.id === pushfoldRuntimeState.selectedFamily ? ' selected' : '';
+        return `<option value="${escapeHtml(entry.id)}"${selected}>${escapeHtml(renderPushfoldFamilyOptionLabel(entry))}</option>`;
+      }).join('');
+    }
+
+    function readPushfoldRequestedRegime() {
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const explicitRegime = searchParams.get('pushfoldRegime') || searchParams.get('regime') || '';
+        if (explicitRegime) return explicitRegime.trim();
+        const explicitFamily = searchParams.get('pushfoldFamily') || searchParams.get('family') || '';
+        if (explicitFamily) {
+          const matchedRegime = pushfoldRuntimeState.availableRegimes.find(entry => entry.familyId === explicitFamily.trim());
+          if (matchedRegime?.id) return matchedRegime.id;
+        }
+      } catch (err) {
+        // Fall through to state-backed default.
+      }
+      return pushfoldRuntimeState.selectedRegime || PUSHFOLD_DEFAULT_REGIME_ID;
+    }
+
+    function readPushfoldRequestedFamily() {
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const explicitRegime = searchParams.get('pushfoldRegime') || searchParams.get('regime') || '';
+        if (explicitRegime) {
+          const matchedRegime = pushfoldRuntimeState.availableRegimes.find(entry => entry.id === explicitRegime.trim());
+          if (matchedRegime?.familyId) return matchedRegime.familyId;
+        }
+        const explicitFamily = searchParams.get('pushfoldFamily') || searchParams.get('family') || '';
+        if (explicitFamily) return explicitFamily.trim();
+      } catch (err) {
+        // Fall through to state-backed default.
+      }
+      return pushfoldRuntimeState.selectedFamily || PUSHFOLD_DEFAULT_FAMILY_ID;
+    }
+
+    function persistPushfoldRuntimeSelectionInUrl() {
+      try {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set('pushfoldFamily', pushfoldRuntimeState.selectedFamily || PUSHFOLD_DEFAULT_FAMILY_ID);
+        nextUrl.searchParams.set('pushfoldRegime', pushfoldRuntimeState.selectedRegime || PUSHFOLD_DEFAULT_REGIME_ID);
+        if (pushfoldRuntimeState.bridgeExplicitlyConfigured && pushfoldRuntimeState.bridgeBase) {
+          nextUrl.searchParams.set('pushfoldBridgeBase', pushfoldRuntimeState.bridgeBase);
+        } else {
+          nextUrl.searchParams.delete('pushfoldBridgeBase');
+        }
+        window.history.replaceState({}, '', nextUrl.toString());
+      } catch (err) {
+        // URL persistence is best-effort only.
+      }
+    }
+
+    function readPushfoldSelectedRegimeLabel() {
+      const selectedRegime = pushfoldRuntimeState.selectedRegime || readPushfoldSemantics().regimeId || PUSHFOLD_DEFAULT_REGIME_ID;
+      const matchedRegime = pushfoldRuntimeState.availableRegimes.find(entry => entry.id === selectedRegime);
+      if (matchedRegime?.label) return matchedRegime.label;
+      const semantics = readPushfoldSemantics();
+      if (semantics.regimeLabel) return semantics.regimeLabel;
+      return selectedRegime;
+    }
+
+    function readPushfoldSelectedFamilyLabel() {
+      const matchedFamily = readPushfoldSelectedFamilyEntry();
+      if (matchedFamily?.label) return matchedFamily.label;
+      return readPushfoldSemantics().familyLabel || PUSHFOLD_DEFAULT_SEMANTICS.familyLabel;
+    }
+
+    function readPushfoldSelectedFamilyDescription() {
+      const matchedFamily = readPushfoldSelectedFamilyEntry();
+      if (matchedFamily?.description) return matchedFamily.description;
+      return readPushfoldSemantics().familyDescription || PUSHFOLD_DEFAULT_SEMANTICS.familyDescription;
+    }
+
+    function readPushfoldSelectedLineageLabel() {
+      const matchedRegime = readPushfoldSelectedRegimeEntry();
+      if (matchedRegime?.lineageLabel) return matchedRegime.lineageLabel;
+      return readPushfoldSemantics().lineageLabel || PUSHFOLD_DEFAULT_SEMANTICS.lineageLabel;
+    }
+
+    function readPushfoldSelectedModeLabel() {
+      const matchedRegime = readPushfoldSelectedRegimeEntry();
+      if (matchedRegime?.modeLabel) return matchedRegime.modeLabel;
+      return readPushfoldSemantics().modeLabel || readPushfoldSelectedRegimeLabel();
+    }
+
+    function readPushfoldPositionModeLabel() {
+      const semantics = readPushfoldSemantics();
+      return semantics.positionModeLabel || inferPushfoldPositionModeLabel(semantics);
+    }
+
+    function readPushfoldFamilyShortLabel(entry = null) {
+      const familyId = inferPushfoldFamilyId(entry || readPushfoldSelectedFamilyEntry() || readPushfoldSemantics());
+      return familyId === PUSHFOLD_TOOL_FAMILY_ID ? '10max' : '9max';
+    }
+
+    function readPushfoldRegimeShortLabel(entry = null) {
+      const rangeMode = typeof entry?.rangeMode === 'string'
+        ? entry.rangeMode.trim()
+        : readPushfoldSemantics().rangeMode;
+      return rangeMode === 'call_vs_jam' ? 'call' : 'jam';
+    }
+
+    function readPushfoldAnteShortLabel(entry = null) {
+      const resolvedEntry = entry || readPushfoldSemantics();
+      const anteType = typeof resolvedEntry?.anteType === 'string' ? resolvedEntry.anteType.trim() : '';
+      const anteValue = typeof resolvedEntry?.ante === 'string' ? resolvedEntry.ante.trim() : '';
+      if (anteType === 'big_blind') return 'BB ante';
+      if (anteValue && anteValue !== '0') return `${anteValue} ante`;
+      return 'no ante';
+    }
+
+    function readPushfoldCompactScenarioLabel(entry = null) {
+      const resolvedEntry = entry || readPushfoldSelectedRegimeEntry() || readPushfoldSemantics();
+      return `${readPushfoldFamilyShortLabel(resolvedEntry)} / ${readPushfoldRegimeShortLabel(resolvedEntry)} / ${readPushfoldAnteShortLabel(resolvedEntry)}`;
+    }
+
+    function readPushfoldCompactFamilySummary(entry = null) {
+      return readPushfoldFamilyShortLabel(entry) === '10max'
+        ? 'Push72o BB-ante'
+        : 'Jennifear first-in';
+    }
+
+    function renderPushfoldFamilyOptionLabel(entry) {
+      return readPushfoldFamilyShortLabel(entry);
+    }
+
+    function renderPushfoldRegimeOptionLabel(entry) {
+      return `${readPushfoldRegimeShortLabel(entry)} · ${readPushfoldAnteShortLabel(entry)}`;
+    }
+
+    function renderPushfoldRegimeOptions() {
+      return readPushfoldRegimesForFamily().map(entry => {
+        const selected = entry.id === pushfoldRuntimeState.selectedRegime ? ' selected' : '';
+        return `<option value="${escapeHtml(entry.id)}"${selected}>${escapeHtml(renderPushfoldRegimeOptionLabel(entry))}</option>`;
+      }).join('');
+    }
+
+    function summarizePushfoldStackCoverage() {
+      const stacks = Array.isArray(pushfoldRuntimeState.availableStacks)
+        ? pushfoldRuntimeState.availableStacks.filter(value => Number.isInteger(value))
+        : [];
+      if (!stacks.length) return '2-20bb';
+      const sorted = stacks.slice().sort((left, right) => left - right);
+      const min = sorted[0];
+      const max = sorted[sorted.length - 1];
+      return min === max ? `${min}bb` : `${min}-${max}bb`;
+    }
+
+    function readPushfoldCoverageBoundaryLabel() {
+      return `${summarizePushfoldStackCoverage()} only`;
+    }
+
+    function readPushfoldSourceMissingLabel() {
+      const fallbackLabel = '21-30 source missing / unavailable';
+      const sourceMissingBand = PUSHFOLD_AVAILABILITY_BANDS.find(({ availability }) => availability === 'source-missing');
+      if (!sourceMissingBand) return fallbackLabel;
+      if (sourceMissingBand.stackBand === '21-30') return fallbackLabel;
+      return `${sourceMissingBand.stackBand} source missing / unavailable`;
+    }
+
+    function readPushfoldRoleTag(role) {
+      if (role === 'jam_position') return 'jam';
+      if (role === 'caller_position') return 'caller';
+      return 'position';
+    }
+
+    function readPushfoldRoleFieldLabel(role) {
+      if (role === 'jam_position') return 'Jam position';
+      if (role === 'caller_position') return 'Caller position';
+      return 'Position';
+    }
+
+    function readPushfoldPrimaryPositionFieldLabel() {
+      return readPushfoldRoleFieldLabel(readPushfoldSemantics().primaryPositionRole);
+    }
+
+    function readPushfoldSecondaryPositionFieldLabel() {
+      return readPushfoldRoleFieldLabel(readPushfoldSemantics().secondaryPositionRole || 'caller_position');
+    }
+
+    function formatPushfoldSelectionLabel(stack, position, secondaryPosition = '') {
+      if (!position) return '';
+      if (secondaryPosition) {
+        return `${stack}bb / ${readPushfoldRoleTag(readPushfoldSemantics().primaryPositionRole)} ${position} / ${readPushfoldRoleTag(readPushfoldSemantics().secondaryPositionRole || 'caller_position')} ${secondaryPosition}`;
+      }
+      return `${stack}bb / ${position}`;
+    }
+
+    function readPushfoldRetainedSelectionLabel() {
+      const currentLabel = formatPushfoldSelectionLabel(
+        pushfoldRuntimeState.selectedStack,
+        pushfoldRuntimeState.selectedPosition,
+        pushfoldRuntimeState.selectedSecondaryPosition
+      );
+      const retainedLabel = formatPushfoldSelectionLabel(
+        pushfoldRuntimeState.lastLoadedStack,
+        pushfoldRuntimeState.lastLoadedPosition,
+        pushfoldRuntimeState.lastLoadedSecondaryPosition
+      );
+      if (pushfoldRuntimeState.bridgeHttpOk && currentLabel) return currentLabel;
+      if (retainedLabel) return `${retainedLabel} (retained)`;
+      return currentLabel || 'pending';
+    }
+
+    function buildPushfoldRetainedSelectionNote(baseNote) {
+      const retainedLabel = formatPushfoldSelectionLabel(
+        pushfoldRuntimeState.lastLoadedStack,
+        pushfoldRuntimeState.lastLoadedPosition,
+        pushfoldRuntimeState.lastLoadedSecondaryPosition
+      );
+      return retainedLabel ? `${baseNote} / last selection ${retainedLabel} retained` : baseNote;
+    }
+
+    function readPushfoldSelectedSummaryLabel() {
+      const selectedLabel = pushfoldRuntimeState.selectedPosition
+        ? formatPushfoldSelectionLabel(
+            pushfoldRuntimeState.selectedStack,
+            pushfoldRuntimeState.selectedPosition,
+            pushfoldRuntimeState.selectedSecondaryPosition
+          )
+        : readPushfoldRetainedSelectionLabel();
+      return selectedLabel;
+    }
+
+    function hasPushfoldPendingSelection() {
+      const secondaryRequired = hasPushfoldSecondaryPositionRequirement();
+      const hasRequiredSelection = !!pushfoldRuntimeState.selectedPosition
+        && (!secondaryRequired || !!pushfoldRuntimeState.selectedSecondaryPosition);
+      return hasRequiredSelection && (
+        pushfoldRuntimeState.selectedStack !== pushfoldRuntimeState.lastLoadedStack
+        || pushfoldRuntimeState.selectedPosition !== pushfoldRuntimeState.lastLoadedPosition
+        || pushfoldRuntimeState.selectedSecondaryPosition !== pushfoldRuntimeState.lastLoadedSecondaryPosition
+      );
+    }
+
+    function readPushfoldLoadedSummaryLabel() {
+      const loadedLabel = formatPushfoldSelectionLabel(
+        pushfoldRuntimeState.lastLoadedStack,
+        pushfoldRuntimeState.lastLoadedPosition,
+        pushfoldRuntimeState.lastLoadedSecondaryPosition
+      );
+      if (loadedLabel && hasPushfoldPendingSelection()) return `${loadedLabel} / pending apply`;
+      if (loadedLabel) return loadedLabel;
+      return pushfoldRuntimeState.bridgeHttpOk ? 'pending apply' : 'pending';
+    }
+
+    function readPushfoldLoadedCategories() {
+      return Array.isArray(pushfoldRuntimeState.loadedCategories)
+        ? pushfoldRuntimeState.loadedCategories.filter(cat => HAND_CATEGORIES.includes(cat))
+        : [];
+    }
+
+    function readPushfoldLoadedCategoriesInGridOrder() {
+      const loadedSet = new Set(readPushfoldLoadedCategories());
+      return HAND_CATEGORIES.filter(cat => loadedSet.has(cat));
+    }
+
+    function normalizePushfoldSemantics(semantics) {
+      if (!semantics || typeof semantics !== 'object') return { ...PUSHFOLD_DEFAULT_SEMANTICS };
+      const normalized = {
+        ...PUSHFOLD_DEFAULT_SEMANTICS,
+        ...Object.fromEntries(
+          Object.entries(semantics).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])
+        ),
+      };
+      if (!normalized.regimeId) normalized.regimeId = PUSHFOLD_DEFAULT_REGIME_ID;
+      if (!normalized.regimeLabel) normalized.regimeLabel = normalized.ante === '0' ? 'No antes' : `${normalized.ante} antes`;
+      return normalized;
+    }
+
+    function readPushfoldSemantics() {
+      return normalizePushfoldSemantics(pushfoldRuntimeState.semantics);
+    }
+
+    function buildPushfoldSemanticsFromRegimeEntry(entry = {}) {
+      const rangeMode = typeof entry?.rangeMode === 'string' ? entry.rangeMode.trim() : '';
+      const normalizedRangeMode = rangeMode || PUSHFOLD_DEFAULT_SEMANTICS.rangeMode;
+      const isCallMode = normalizedRangeMode === 'call_vs_jam';
+      return normalizePushfoldSemantics({
+        ...PUSHFOLD_DEFAULT_SEMANTICS,
+        familyId: inferPushfoldFamilyId(entry),
+        familyLabel: inferPushfoldFamilyLabel(entry),
+        familyDescription: inferPushfoldFamilyDescription(entry),
+        lineageLabel: inferPushfoldLineageLabel(entry),
+        regimeId: typeof entry?.id === 'string' && entry.id.trim() ? entry.id.trim() : PUSHFOLD_DEFAULT_REGIME_ID,
+        regimeLabel: typeof entry?.label === 'string' && entry.label.trim() ? entry.label.trim() : PUSHFOLD_DEFAULT_SEMANTICS.regimeLabel,
+        modeLabel: inferPushfoldModeLabel(entry),
+        positionModeLabel: inferPushfoldPositionModeLabel(entry),
+        rangeMode: normalizedRangeMode,
+        actionLabel: typeof entry?.actionLabel === 'string' && entry.actionLabel.trim()
+          ? entry.actionLabel.trim()
+          : (isCallMode ? 'call inclusion' : PUSHFOLD_DEFAULT_SEMANTICS.actionLabel),
+        activeLabel: isCallMode ? 'call included' : PUSHFOLD_DEFAULT_SEMANTICS.activeLabel,
+        ante: typeof entry?.ante === 'string' && entry.ante.trim() ? entry.ante.trim() : PUSHFOLD_DEFAULT_SEMANTICS.ante,
+        anteType: typeof entry?.anteType === 'string' && entry.anteType.trim() ? entry.anteType.trim() : PUSHFOLD_DEFAULT_SEMANTICS.anteType,
+        anteSize: typeof entry?.anteSize === 'string' && entry.anteSize.trim() ? entry.anteSize.trim() : PUSHFOLD_DEFAULT_SEMANTICS.anteSize,
+        requiresSecondaryPosition: entry?.requiresSecondaryPosition === true || isCallMode,
+        primaryPositionRole: isCallMode ? 'jam_position' : PUSHFOLD_DEFAULT_SEMANTICS.primaryPositionRole,
+        secondaryPositionRole: isCallMode ? 'caller_position' : '',
+        sourceName: typeof entry?.sourceName === 'string' && entry.sourceName.trim() ? entry.sourceName.trim() : PUSHFOLD_DEFAULT_SEMANTICS.sourceName,
+        sourceFamily: typeof entry?.sourceFamily === 'string' && entry.sourceFamily.trim() ? entry.sourceFamily.trim() : PUSHFOLD_DEFAULT_SEMANTICS.sourceFamily,
+        table: typeof entry?.table === 'string' && entry.table.trim() ? entry.table.trim() : PUSHFOLD_DEFAULT_SEMANTICS.table,
+        spot: typeof entry?.spot === 'string' && entry.spot.trim() ? entry.spot.trim() : PUSHFOLD_DEFAULT_SEMANTICS.spot,
+      });
+    }
+
+    function renderPushfoldScenarioDetailsMarkup() {
+      const semantics = readPushfoldSemantics();
+      const detailRows = [
+        ['Family', readPushfoldSelectedFamilyLabel()],
+        ['Lineage', readPushfoldSelectedLineageLabel()],
+        ['Mode', readPushfoldSelectedModeLabel()],
+        ['Ante', readPushfoldAnteShortLabel()],
+        ['Output', `${semantics.actionLabel || 'binary inclusion'} / binary`],
+        ['Selectors', readPushfoldPositionModeLabel()],
+        ['Coverage', `${readPushfoldCoverageBoundaryLabel()} / ${readPushfoldSourceMissingLabel()}`],
+        ['Source', readPushfoldSourceChipLabel()],
+      ];
+      if (semantics.sourceBucketAnte) {
+        detailRows.splice(4, 0, ['Source bucket', semantics.sourceBucketAnte]);
+      }
+      return `
+        <details id="pushfold-scenario-details" class="pushfold-scenario-details">
+          <summary>Details</summary>
+          <div class="pushfold-scenario-details-grid">
+            ${detailRows.map(([label, value]) => `
+              <strong>${escapeHtml(label)}</strong>
+              <span>${escapeHtml(value)}</span>
+            `).join('')}
+          </div>
+        </details>
+      `;
+    }
+
+    function hasPushfoldResolvedSemantics() {
+      if (pushfoldRuntimeState.publicUnavailable) return true;
+      return pushfoldRuntimeState.bridgeHttpOk
+        || pushfoldRuntimeState.runtimePrivatePackReadable
+        || pushfoldRuntimeState.fullRangeRenderEnabled
+        || !!pushfoldRuntimeState.lastLoadedPosition
+        || readPushfoldLoadedCategories().length > 0;
+    }
+
+    function isPushfoldBundledSourceMode() {
+      return pushfoldRuntimeState.dataSourceMode === 'bundle';
+    }
+
+    function isPushfoldBridgeSourceMode() {
+      return pushfoldRuntimeState.dataSourceMode === 'bridge';
+    }
+
+    function readPushfoldSourceChipLabel() {
+      if (pushfoldRuntimeState.publicUnavailable) return 'bundle unavailable';
+      if (!hasPushfoldResolvedSemantics()) return isPushfoldBundledSourceMode() ? 'bundle wait' : 'bridge wait';
+      const semantics = readPushfoldSemantics();
+      const sourcePrefix = isPushfoldBundledSourceMode() ? 'repo-hosted bundle' : 'bridge mode';
+      return semantics.sourceBucketAnte
+        ? `${sourcePrefix} / ${semantics.sourceName || 'AOF data'} / ${semantics.sourceBucketAnte}`
+        : `${sourcePrefix} / ${semantics.sourceName || 'AOF data'}`;
+    }
+
+    function readPushfoldEncodingNote() {
+      const semantics = readPushfoldSemantics();
+      return semantics.encodingNote || PUSHFOLD_DEFAULT_SEMANTICS.encodingNote;
+    }
+
+    function renderPushfoldFamilyPanelMarkup() {
+      return `
+        <div
+          id="pushfold-family-panel"
+          class="pushfold-scenario-panel"
+          data-family-id="${escapeHtml(pushfoldRuntimeState.selectedFamily || readPushfoldSemantics().familyId || PUSHFOLD_DEFAULT_FAMILY_ID)}"
+        >
+          <div class="pushfold-scenario-panel-header">
+            <strong>Scenario</strong>
+            <div class="pushfold-scenario-summary" aria-label="AOF scenario summary">
+              <span id="pushfold-family-badge" class="pushfold-chip pushfold-chip-outline">${escapeHtml(readPushfoldFamilyShortLabel())}</span>
+              <span id="pushfold-regime-badge" class="pushfold-chip pushfold-chip-outline">${escapeHtml(readPushfoldRegimeShortLabel())}</span>
+              <span id="pushfold-ante-badge" class="pushfold-chip pushfold-chip-outline">${escapeHtml(readPushfoldAnteShortLabel())}</span>
+            </div>
+          </div>
+          <p id="pushfold-family-summary" class="pushfold-scenario-panel-summary">${escapeHtml(readPushfoldCompactFamilySummary())}</p>
+          ${renderPushfoldScenarioDetailsMarkup()}
+        </div>
+      `;
+    }
+
+    function classifyRangeGridHand(handCategory) {
+      if (handCategory.length === 2) return 'pair';
+      return handCategory.endsWith('s') ? 'suited' : 'offsuit';
+    }
+
+    function renderPushfoldRangeGridMarkup(categories) {
+      const activeSet = new Set(categories);
+      const rows = RANGE_GRID_LAYOUT.map(row => `
+        <tr>
+          ${row.map(handCategory => `
+            <td
+              class="${classifyRangeGridHand(handCategory)}${activeSet.has(handCategory) ? ' active-range' : ''}"
+              data-hand="${handCategory}"
+              data-active="${activeSet.has(handCategory) ? 'true' : 'false'}"
+            >${handCategory}</td>
+          `).join('')}
+        </tr>
+      `).join('');
+      return `
+        <div class="pushfold-range-grid-container" data-active-count="${categories.length}">
+          <table id="pushfold-range-grid" class="pushfold-range-grid" aria-label="AOF loaded range preview">
+            ${rows}
+          </table>
+        </div>
+      `;
+    }
+
+    function renderPushfoldRangeLegendMarkup() {
+      const activeLabel = readPushfoldSemantics().activeLabel || 'jam included';
+      return `
+        <div id="pushfold-range-legend" class="pushfold-range-legend" data-view-kind="${escapeHtml(readPushfoldSemantics().viewKind)}">
+          <span class="pushfold-range-legend-item">
+            <span class="pushfold-range-legend-swatch pushfold-range-legend-swatch-active" aria-hidden="true"></span>
+            active = ${escapeHtml(activeLabel)}
+          </span>
+          <span class="pushfold-range-legend-item">
+            <span class="pushfold-range-legend-swatch pushfold-range-legend-swatch-inactive" aria-hidden="true"></span>
+            inactive = excluded from this source range
+          </span>
+          <span class="pushfold-range-legend-item">${escapeHtml(readPushfoldEncodingNote())}</span>
+        </div>
+      `;
+    }
+
+    function renderPushfoldCategoryListMarkup(categories) {
+      if (!categories.length) return '';
+      return `
+        <div
+          id="pushfold-range-category-list"
+          class="pushfold-range-category-list"
+          data-category-count="${categories.length}"
+        >
+          ${categories.map(category => `<span class="pushfold-chip pushfold-chip-outline pushfold-range-category-chip">${escapeHtml(category)}</span>`).join('')}
+        </div>
+      `;
+    }
+
+    function renderPushfoldRangePreviewMarkup() {
+      const loadedLabel = formatPushfoldSelectionLabel(
+        pushfoldRuntimeState.lastLoadedStack,
+        pushfoldRuntimeState.lastLoadedPosition,
+        pushfoldRuntimeState.lastLoadedSecondaryPosition
+      );
+      const loadedCategories = readPushfoldLoadedCategoriesInGridOrder();
+      const selectedLabel = formatPushfoldSelectionLabel(
+        pushfoldRuntimeState.selectedStack,
+        pushfoldRuntimeState.selectedPosition,
+        pushfoldRuntimeState.selectedSecondaryPosition
+      );
+      const pendingSelection = hasPushfoldPendingSelection();
+      const hasLoadedSelection = !!loadedLabel;
+      const loadedCategoriesCsv = loadedCategories.join(',');
+      const compactScenarioLabel = readPushfoldCompactScenarioLabel();
+      const selectionPrompt = hasPushfoldSecondaryPositionRequirement()
+        ? `stack / ${readPushfoldPrimaryPositionFieldLabel()} / ${readPushfoldSecondaryPositionFieldLabel()}`
+        : 'stack と position';
+      let previewState = 'idle';
+      let bodyMarkup = '';
+      if (hasLoadedSelection && loadedCategories.length) {
+        previewState = pushfoldRuntimeState.bridgeHttpOk ? 'loaded' : 'retained';
+        const retainedSuffix = pushfoldRuntimeState.bridgeHttpOk ? '' : ' / retained offline';
+        const pendingSuffix = pendingSelection && selectedLabel
+          ? ` / pending ${escapeHtml(selectedLabel)}`
+          : '';
+        bodyMarkup = `
+          <p id="pushfold-range-preview-summary" class="pushfold-range-preview-summary">${escapeHtml(loadedLabel)} / ${loadedCategories.length} active / ${escapeHtml(compactScenarioLabel)}${retainedSuffix}${pendingSuffix}</p>
+          ${renderPushfoldRangeLegendMarkup()}
+          ${renderPushfoldRangeGridMarkup(loadedCategories)}
+          ${renderPushfoldCategoryListMarkup(loadedCategories)}
+        `;
+      } else if (hasLoadedSelection) {
+        previewState = 'empty';
+        const pendingSuffix = pendingSelection && selectedLabel
+          ? ` / pending ${escapeHtml(selectedLabel)}`
+          : '';
+        bodyMarkup = `
+          <p id="pushfold-range-preview-empty" class="pushfold-range-preview-empty">${escapeHtml(loadedLabel)} / empty / ${escapeHtml(compactScenarioLabel)} / 0 supported${pendingSuffix}</p>
+          ${renderPushfoldRangeLegendMarkup()}
+        `;
+      } else if (pushfoldRuntimeState.fullRangeRenderEnabled) {
+        previewState = 'ready';
+        bodyMarkup = `
+          <p id="pushfold-range-preview-empty" class="pushfold-range-preview-empty">${escapeHtml(selectionPrompt)} を選んで「${escapeHtml(readPushfoldLoadButtonLabel())}」を押すと、ここに 13x13 matrix を表示します。${escapeHtml(compactScenarioLabel)}</p>
+          ${renderPushfoldRangeLegendMarkup()}
+        `;
+      } else if (pushfoldRuntimeState.refreshInFlight) {
+        previewState = 'checking';
+        bodyMarkup = `
+          <p id="pushfold-range-preview-empty" class="pushfold-range-preview-empty">bridge再確認中 / 復帰後に preview を表示します。</p>
+        `;
+      } else if (pushfoldRuntimeState.publicUnavailable) {
+        previewState = 'unavailable';
+        bodyMarkup = `
+          <p id="pushfold-range-preview-empty" class="pushfold-range-preview-empty">AOF needs the bundled asset or an explicit bridge</p>
+        `;
+      } else {
+        previewState = 'offline';
+        bodyMarkup = `
+          <p id="pushfold-range-preview-empty" class="pushfold-range-preview-empty">bridge offline / 復帰後に ${escapeHtml(selectionPrompt)} を選んで preview を表示します。</p>
+        `;
+      }
+      const openDisabled = hasLoadedSelection ? '' : ' disabled';
+      return `
+        <div
+          id="pushfold-range-preview"
+          class="pushfold-range-preview"
+          data-preview-state="${previewState}"
+          data-loaded-label="${escapeHtml(loadedLabel)}"
+          data-loaded-category-count="${loadedCategories.length}"
+          data-loaded-categories="${escapeHtml(loadedCategoriesCsv)}"
+          data-pending-selection="${pendingSelection ? 'true' : 'false'}"
+        >
+          <div class="pushfold-range-preview-header">
+            <strong>選択レンジ表示</strong>
+            <div class="pushfold-range-preview-actions">
+              <button id="pushfold-open-preflop-btn" type="button" class="secondary"${openDisabled}>プリフロップで詳細を見る</button>
+            </div>
+          </div>
+          ${bodyMarkup}
+        </div>
+      `;
+    }
+
+    function syncPushfoldSelectedSummaryChip(root = document) {
+      const selectedChip = root.querySelector
+        ? root.querySelector('#pushfold-runtime-selected-chip')
+        : document.getElementById('pushfold-runtime-selected-chip');
+      if (!selectedChip) return;
+      const selectedLabel = readPushfoldSelectedSummaryLabel();
+      selectedChip.textContent = `selected ${selectedLabel}`;
+      selectedChip.dataset.selectedLabel = selectedLabel;
+    }
+
+    function syncPushfoldLoadedSummaryChip(root = document) {
+      const loadedChip = root.querySelector
+        ? root.querySelector('#pushfold-runtime-loaded-chip')
+        : document.getElementById('pushfold-runtime-loaded-chip');
+      if (!loadedChip) return;
+      const loadedLabel = readPushfoldLoadedSummaryLabel();
+      loadedChip.textContent = `loaded ${loadedLabel}`;
+      loadedChip.dataset.loadedLabel = loadedLabel;
+      loadedChip.dataset.pendingSelection = hasPushfoldPendingSelection() ? 'true' : 'false';
+    }
+
+    function readPushfoldLoadButtonLabel() {
+      return hasPushfoldPendingSelection() ? '選択レンジを表示' : '現在の選択を表示中';
+    }
+
+    function shouldEnablePushfoldLoadButton() {
+      return pushfoldRuntimeState.fullRangeRenderEnabled
+        && !pushfoldRuntimeState.refreshInFlight
+        && !!pushfoldRuntimeState.availablePositions.length
+        && hasPushfoldPendingSelection();
+    }
+
+    function syncPushfoldLoadButtonState(root = document) {
+      const loadButton = root.querySelector
+        ? root.querySelector('#pushfold-load-btn')
+        : document.getElementById('pushfold-load-btn');
+      if (!loadButton) return;
+      loadButton.textContent = readPushfoldLoadButtonLabel();
+      loadButton.disabled = !shouldEnablePushfoldLoadButton();
+      loadButton.dataset.pendingSelection = hasPushfoldPendingSelection() ? 'true' : 'false';
+    }
+
+    function buildPushfoldPendingSelectionNote() {
+      const selectedLabel = formatPushfoldSelectionLabel(
+        pushfoldRuntimeState.selectedStack,
+        pushfoldRuntimeState.selectedPosition,
+        pushfoldRuntimeState.selectedSecondaryPosition
+      );
+      const loadedLabel = formatPushfoldSelectionLabel(
+        pushfoldRuntimeState.lastLoadedStack,
+        pushfoldRuntimeState.lastLoadedPosition,
+        pushfoldRuntimeState.lastLoadedSecondaryPosition
+      );
+      if (loadedLabel && selectedLabel) return `loaded ${loadedLabel} / pending ${selectedLabel} / load to update`;
+      if (selectedLabel) return `pending ${selectedLabel} / load to show`;
+      return pushfoldRuntimeState.noteText;
+    }
+
+    function syncPushfoldRuntimeNote(root = document) {
+      const runtimeNote = root.querySelector
+        ? root.querySelector('#pushfold-runtime-note')
+        : document.getElementById('pushfold-runtime-note');
+      if (!runtimeNote) return;
+      if (pushfoldRuntimeState.publicUnavailable) {
+        runtimeNote.textContent = pushfoldRuntimeState.noteText;
+        runtimeNote.dataset.pendingSelection = 'false';
+        return;
+      }
+      const hasPendingSelection = hasPushfoldPendingSelection();
+      const resetNotice = pushfoldRuntimeState.selectionResetNotice && pushfoldRuntimeState.fullRangeRenderEnabled
+        ? pushfoldRuntimeState.selectionResetNotice
+        : '';
+      const pendingNote = (pushfoldRuntimeState.fullRangeRenderEnabled && pushfoldRuntimeState.bridgeHttpOk && hasPendingSelection)
+        ? buildPushfoldPendingSelectionNote()
+        : '';
+      const noteText = resetNotice && pendingNote
+        ? `${resetNotice} / ${pendingNote}`
+        : (pendingNote || resetNotice || pushfoldRuntimeState.noteText);
+      runtimeNote.textContent = noteText;
+      runtimeNote.dataset.pendingSelection = hasPendingSelection ? 'true' : 'false';
+    }
+
+    function renderPushfoldRuntimeMetaMarkup() {
+      if (pushfoldRuntimeState.publicUnavailable) return '';
+      const coverageBoundaryLabel = readPushfoldCoverageBoundaryLabel();
+      const sourceMissingLabel = readPushfoldSourceMissingLabel();
+      const selectedLabel = readPushfoldSelectedSummaryLabel();
+      const loadedLabel = readPushfoldLoadedSummaryLabel();
+      return `
+        <div
+          id="pushfold-runtime-meta"
+          class="pushfold-runtime-meta"
+          aria-label="Push/Fold runtime summary"
+          data-scenario-label="${escapeHtml(readPushfoldCompactScenarioLabel())}"
+          data-family-summary="${escapeHtml(readPushfoldCompactFamilySummary())}"
+        >
+          <span
+            id="pushfold-runtime-coverage-chip"
+            class="pushfold-chip pushfold-chip-outline"
+            data-coverage-label="${escapeHtml(summarizePushfoldStackCoverage())}"
+          >coverage ${escapeHtml(summarizePushfoldStackCoverage())}</span>
+          <span
+            id="pushfold-runtime-coverage-boundary-chip"
+            class="pushfold-chip pushfold-chip-outline"
+            data-coverage-boundary="${escapeHtml(coverageBoundaryLabel)}"
+          >available ${escapeHtml(coverageBoundaryLabel)}</span>
+          <span
+            id="pushfold-runtime-selected-chip"
+            class="pushfold-chip pushfold-chip-outline"
+            data-selected-label="${escapeHtml(selectedLabel)}"
+          >selected ${escapeHtml(selectedLabel)}</span>
+          <span
+            id="pushfold-runtime-loaded-chip"
+            class="pushfold-chip pushfold-chip-outline"
+            data-loaded-label="${escapeHtml(loadedLabel)}"
+            data-pending-selection="${hasPushfoldPendingSelection() ? 'true' : 'false'}"
+          >loaded ${escapeHtml(loadedLabel)}</span>
+          <span
+            id="pushfold-runtime-source-missing-chip"
+            class="pushfold-chip pushfold-chip-warn"
+            data-source-missing-label="${escapeHtml(sourceMissingLabel)}"
+            data-unavailable-reason="source missing"
+          >${escapeHtml(sourceMissingLabel)}</span>
+        </div>
+      `;
+    }
+
     function bindPushfoldRuntimeControls(root) {
+      const familySelect = root.querySelector('#pushfold-family-select');
+      if (familySelect) {
+        familySelect.addEventListener('change', (event) => {
+          applyPushfoldFamilySelection(event.target.value);
+        });
+      }
+      const regimeSelect = root.querySelector('#pushfold-regime-select');
+      if (regimeSelect) {
+        regimeSelect.addEventListener('change', (event) => {
+          applyPushfoldRegimeSelection(event.target.value);
+        });
+      }
       const stackSelect = root.querySelector('#pushfold-stack-select');
       if (stackSelect) {
         stackSelect.addEventListener('change', (event) => {
           const nextValue = parseInt(event.target.value, 10);
-          if (Number.isFinite(nextValue)) pushfoldRuntimeState.selectedStack = nextValue;
+          if (Number.isFinite(nextValue)) {
+            pushfoldRuntimeState.selectedStack = nextValue;
+            renderPushfoldSurface();
+          }
         });
       }
       const positionSelect = root.querySelector('#pushfold-position-select');
       if (positionSelect) {
         positionSelect.addEventListener('change', (event) => {
           pushfoldRuntimeState.selectedPosition = event.target.value;
+          const secondaryPositions = readPushfoldCurrentSecondaryPositions();
+          pushfoldRuntimeState.selectedSecondaryPosition = secondaryPositions.includes(pushfoldRuntimeState.selectedSecondaryPosition)
+            ? pushfoldRuntimeState.selectedSecondaryPosition
+            : (secondaryPositions[0] || '');
+          renderPushfoldSurface();
         });
       }
+      const secondaryPositionSelect = root.querySelector('#pushfold-secondary-position-select');
+      if (secondaryPositionSelect) {
+        secondaryPositionSelect.addEventListener('change', (event) => {
+          pushfoldRuntimeState.selectedSecondaryPosition = event.target.value;
+          renderPushfoldSurface();
+        });
+      }
+      const refreshButton = root.querySelector('#pushfold-refresh-btn');
+      if (refreshButton) refreshButton.addEventListener('click', refreshPushfoldRuntimeBridge);
       const loadButton = root.querySelector('#pushfold-load-btn');
       if (loadButton) loadButton.addEventListener('click', loadPushfoldRangeFromBridge);
+      const openPreflopButton = root.querySelector('#pushfold-open-preflop-btn');
+      if (openPreflopButton) {
+        openPreflopButton.addEventListener('click', () => {
+          switchTab('winrate-tab');
+          const rangeSelection = document.getElementById('range-selection');
+          if (rangeSelection && typeof rangeSelection.scrollIntoView === 'function') {
+            requestAnimationFrame(() => {
+              rangeSelection.scrollIntoView({ block: 'start', behavior: 'smooth' });
+            });
+          }
+        });
+      }
     }
 
     function renderPushfoldSurface() {
@@ -2933,30 +4366,76 @@
         return;
       }
       const isFull = pushfoldRuntimeState.fullRangeRenderEnabled;
+      const isPublicUnavailable = pushfoldRuntimeState.publicUnavailable;
       const cardClass = isFull
         ? 'surface-card tight pushfold-status-card pushfold-status-card-scoped'
         : 'surface-card tight pushfold-status-card pushfold-status-card-scoped pushfold-status-card-compact';
-      const runtimePanelMarkup = isFull ? `
+      const refreshDisabled = pushfoldRuntimeState.refreshInFlight ? ' disabled' : '';
+      const loadDisabled = shouldEnablePushfoldLoadButton() ? '' : ' disabled';
+      const loadButtonLabel = readPushfoldLoadButtonLabel();
+      const runtimePanelMarkup = (isFull || isPublicUnavailable) ? `
         <div class="pushfold-runtime-panel">
-          <div class="pushfold-select-grid">
-            <label class="pushfold-select-wrap" for="pushfold-stack-select">
-              利用可能スタック
-              <select id="pushfold-stack-select">
-                ${renderPushfoldStackOptions()}
-              </select>
-            </label>
-            <label class="pushfold-select-wrap" for="pushfold-position-select">
-              ポジション
-              <select id="pushfold-position-select">
-                ${renderPushfoldPositionOptions()}
-              </select>
-            </label>
-          </div>
-          <div class="pushfold-runtime-actions">
-            <button id="pushfold-load-btn" type="button" class="secondary">選択レンジを反映</button>
-          </div>
+          ${renderPushfoldFamilyPanelMarkup()}
+          ${isFull ? `
+            <div class="pushfold-select-grid">
+              <label class="pushfold-select-wrap" for="pushfold-family-select">
+                Family
+                <select id="pushfold-family-select"${refreshDisabled}>
+                  ${renderPushfoldFamilyOptions()}
+                </select>
+              </label>
+              <label class="pushfold-select-wrap" for="pushfold-regime-select">
+                Mode
+                <select id="pushfold-regime-select"${refreshDisabled}>
+                  ${renderPushfoldRegimeOptions()}
+                </select>
+              </label>
+              <label class="pushfold-select-wrap" for="pushfold-stack-select">
+                Stack
+                <select id="pushfold-stack-select">
+                  ${renderPushfoldStackOptions()}
+                </select>
+              </label>
+              <label class="pushfold-select-wrap" for="pushfold-position-select">
+                ${escapeHtml(readPushfoldPrimaryPositionFieldLabel())}
+                <select id="pushfold-position-select">
+                  ${renderPushfoldPositionOptions()}
+                </select>
+              </label>
+              ${hasPushfoldSecondaryPositionRequirement() ? `
+                <label class="pushfold-select-wrap" for="pushfold-secondary-position-select">
+                  ${escapeHtml(readPushfoldSecondaryPositionFieldLabel())}
+                  <select id="pushfold-secondary-position-select">
+                    ${renderPushfoldSecondaryPositionOptions()}
+                  </select>
+                </label>
+              ` : ''}
+            </div>
+            <div class="pushfold-runtime-actions">
+              <button
+                id="pushfold-load-btn"
+                type="button"
+                class="secondary"
+                data-pending-selection="${hasPushfoldPendingSelection() ? 'true' : 'false'}"
+                ${loadDisabled}
+              >${loadButtonLabel}</button>
+            </div>
+          ` : ''}
         </div>
       ` : '';
+      const runtimeMode = isFull ? 'full' : (isPublicUnavailable ? 'public-unavailable' : 'fallback');
+      const sectionLabel = isFull
+        ? (isPushfoldBundledSourceMode() ? 'repo-hosted AOF bundle' : 'bridge-backed AOF')
+        : (isPublicUnavailable ? 'bundled AOF unavailable' : 'bridge未接続: compact fallback');
+      const refreshButtonMarkup = isPublicUnavailable || !isPushfoldBridgeSourceMode()
+        ? ''
+        : `<button id="pushfold-refresh-btn" type="button" class="secondary"${refreshDisabled}>bridge再確認</button>`;
+      const runtimeMetaMarkup = isPublicUnavailable ? '' : renderPushfoldRuntimeMetaMarkup();
+      const availabilityBandsMarkup = isPublicUnavailable ? '' : `
+          <div class="pushfold-status-grid">
+            ${renderPushfoldBandMarkup()}
+          </div>
+      `;
       slot.innerHTML = `
         <section
           class="${cardClass}"
@@ -2964,55 +4443,132 @@
           aria-labelledby="pushfold-status-heading"
           data-target-surface="${pushfoldRuntimeState.targetSurfaceId}"
           data-bridge-base="${pushfoldRuntimeState.bridgeBase}"
+          data-source-mode="${pushfoldRuntimeState.dataSourceMode}"
           data-runtime-private-pack-readable="${pushfoldRuntimeState.runtimePrivatePackReadable ? 'true' : 'false'}"
           data-full-range-render-enabled="${isFull ? 'true' : 'false'}"
-          data-runtime-mode="${isFull ? 'full' : 'fallback'}"
+          data-runtime-mode="${runtimeMode}"
         >
           <h2 id="pushfold-status-heading">Push/Fold Data Status</h2>
-          <p class="section-label">${isFull ? '対象画面限定。bridge 接続時だけ full render を有効化。' : '対象画面限定。bridge 不達時は compact fallback のみ表示。'}</p>
+          <p class="section-label">${sectionLabel}</p>
           <div class="pushfold-runtime-actions">
             <span id="pushfold-bridge-status" class="${pushfoldRuntimeState.statusClass}">${escapeHtml(pushfoldRuntimeState.statusText)}</span>
+            ${refreshButtonMarkup}
           </div>
-          <div class="pushfold-status-grid">
-            ${renderPushfoldBandMarkup()}
-          </div>
+          ${runtimeMetaMarkup}
+          ${availabilityBandsMarkup}
           ${runtimePanelMarkup}
-          <p id="pushfold-runtime-note" class="section-label pushfold-runtime-note">${escapeHtml(pushfoldRuntimeState.noteText)}</p>
+          <p
+            id="pushfold-runtime-note"
+            class="section-label pushfold-runtime-note"
+            data-pending-selection="${hasPushfoldPendingSelection() ? 'true' : 'false'}"
+          >${escapeHtml(pushfoldRuntimeState.noteText)}</p>
+          ${renderPushfoldRangePreviewMarkup()}
         </section>
       `;
-      slot.dataset.surfaceState = isFull ? 'full' : 'fallback';
+      slot.dataset.surfaceState = runtimeMode;
       bindPushfoldRuntimeControls(slot);
+      syncPushfoldRuntimeNote(slot);
     }
 
-    function readPushfoldBridgeBase() {
-      const slot = getPushfoldSurfaceSlot();
-      const configured = slot?.dataset.bridgeBase || PUSHFOLD_BRIDGE_FALLBACK_BASE;
+    function isPushfoldLoopbackHostname(hostname) {
+      const normalized = String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '');
+      return normalized === 'localhost'
+        || normalized === '::1'
+        || normalized === '0.0.0.0'
+        || normalized.endsWith('.localhost')
+        || /^127(?:\.\d{1,3}){3}$/.test(normalized);
+    }
+
+    function readPushfoldBridgeResolution() {
+      const currentIsHttp = /^https?:$/.test(window.location.protocol);
+      const isFileProtocol = window.location.protocol === 'file:';
+      const bundledAssetPath = readPushfoldBundledAssetUrl();
       try {
-        const configuredUrl = new URL(configured);
-        const currentIsHttp = /^https?:$/.test(window.location.protocol);
-        const sameLocalOrigin = currentIsHttp
-          && configuredUrl.protocol === window.location.protocol
-          && configuredUrl.hostname === window.location.hostname
-          && configuredUrl.port === window.location.port;
-        return sameLocalOrigin ? `${window.location.protocol}//${window.location.host}` : configuredUrl.origin;
+        const searchParams = new URLSearchParams(window.location.search);
+        const explicitBridgeBase = searchParams.get('pushfoldBridgeBase') || searchParams.get('bridgeBase') || '';
+        if (explicitBridgeBase) {
+          return {
+            dataSourceMode: 'bridge',
+            bridgeBase: new URL(explicitBridgeBase, window.location.href).origin,
+            bridgeExplicitlyConfigured: true,
+            canAttemptBridge: true,
+            canAttemptBundle: false,
+            publicUnavailable: false,
+            isFileProtocol,
+            bundledAssetPath,
+          };
+        }
       } catch (err) {
-        return configured;
+        // Fall through to bundled/static resolution.
       }
+      if (currentIsHttp) {
+        return {
+          dataSourceMode: 'bundle',
+          bridgeBase: '',
+          bridgeExplicitlyConfigured: false,
+          canAttemptBridge: false,
+          canAttemptBundle: true,
+          publicUnavailable: false,
+          isFileProtocol,
+          bundledAssetPath,
+        };
+      }
+      return {
+        dataSourceMode: 'fallback',
+        bridgeBase: '',
+        bridgeExplicitlyConfigured: false,
+        canAttemptBridge: false,
+        canAttemptBundle: false,
+        publicUnavailable: true,
+        isFileProtocol,
+        bundledAssetPath,
+      };
+    }
+
+    function buildPushfoldBridgePath(pathname, extraParams = {}) {
+      const searchParams = new URLSearchParams();
+      const selectedRegime = pushfoldRuntimeState.selectedRegime || readPushfoldRequestedRegime();
+      if (selectedRegime) searchParams.set('regime', selectedRegime);
+      Object.entries(extraParams).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === '') return;
+        searchParams.set(key, String(value));
+      });
+      const queryString = searchParams.toString();
+      return queryString ? `${pathname}?${queryString}` : pathname;
     }
 
     function setPushfoldRuntimeUi(opts = {}) {
       const {
+        bridgeBase = pushfoldRuntimeState.bridgeBase,
+        bridgeExplicitlyConfigured = pushfoldRuntimeState.bridgeExplicitlyConfigured,
+        publicUnavailable = pushfoldRuntimeState.publicUnavailable,
+        dataSourceMode = pushfoldRuntimeState.dataSourceMode,
+        bundledAssetPath = pushfoldRuntimeState.bundledAssetPath,
+        bundledCatalog = pushfoldRuntimeState.bundledCatalog,
         bridgeStartOk = false,
         bridgeHttpOk = false,
         runtimePrivatePackReadable = false,
         fullRangeRenderEnabled = false,
+        refreshInFlight = false,
+        refreshAttemptCount = pushfoldRuntimeState.refreshAttemptCount,
         statusText = 'bridge offline',
         noteText = 'known WARN only / safe summary only / runtime private pack unreadable in this UI entrypoint',
         statusClass = 'section-label',
         availableStacks = pushfoldRuntimeState.availableStacks,
         availablePositions = pushfoldRuntimeState.availablePositions,
+        secondaryPositionsByPosition = pushfoldRuntimeState.secondaryPositionsByPosition,
+        availableRegimes = pushfoldRuntimeState.availableRegimes,
+        selectedFamily = pushfoldRuntimeState.selectedFamily,
+        selectedRegime = pushfoldRuntimeState.selectedRegime,
         selectedStack = pushfoldRuntimeState.selectedStack,
         selectedPosition = pushfoldRuntimeState.selectedPosition,
+        selectedSecondaryPosition = pushfoldRuntimeState.selectedSecondaryPosition,
+        lastLoadedStack = pushfoldRuntimeState.lastLoadedStack,
+        lastLoadedPosition = pushfoldRuntimeState.lastLoadedPosition,
+        lastLoadedSecondaryPosition = pushfoldRuntimeState.lastLoadedSecondaryPosition,
+        selectionResetNotice = pushfoldRuntimeState.selectionResetNotice,
+        loadedCategories = pushfoldRuntimeState.loadedCategories,
+        semantics = pushfoldRuntimeState.semantics,
       } = opts;
       const nextStacks = Array.isArray(availableStacks) && availableStacks.length
         ? availableStacks.filter(value => Number.isInteger(value))
@@ -3020,17 +4576,82 @@
       const nextPositions = Array.isArray(availablePositions)
         ? availablePositions.filter(value => typeof value === 'string' && value)
         : [];
+      const nextSecondaryPositionsByPosition = normalizePushfoldSecondaryPositionsByPosition(
+        secondaryPositionsByPosition,
+        nextPositions
+      );
+      const nextRegimes = normalizePushfoldAvailableRegimes(availableRegimes);
+      const preferredFamilyId = typeof selectedFamily === 'string' && selectedFamily.trim()
+        ? selectedFamily.trim()
+        : (
+            nextRegimes.find(entry => entry.id === selectedRegime)?.familyId
+            || pushfoldRuntimeState.selectedFamily
+            || PUSHFOLD_DEFAULT_FAMILY_ID
+          );
+      const nextSelectedFamily = nextRegimes.some(entry => entry.familyId === preferredFamilyId)
+        ? preferredFamilyId
+        : (nextRegimes[0]?.familyId || PUSHFOLD_DEFAULT_FAMILY_ID);
+      const nextFamilyRegimes = nextRegimes.filter(entry => entry.familyId === nextSelectedFamily);
+      const nextSelectedRegime = nextFamilyRegimes.some(entry => entry.id === selectedRegime)
+        ? selectedRegime
+        : (nextFamilyRegimes[0]?.id || nextRegimes[0]?.id || PUSHFOLD_DEFAULT_REGIME_ID);
+      const nextLoadedCategories = Array.isArray(loadedCategories)
+        ? loadedCategories.filter(cat => HAND_CATEGORIES.includes(cat))
+        : pushfoldRuntimeState.loadedCategories;
+      const nextSemantics = normalizePushfoldSemantics(semantics);
+      const nextSelectedPosition = nextPositions.includes(selectedPosition) ? selectedPosition : (nextPositions[0] || '');
+      const selectedSecondaryCandidates = Array.isArray(nextSecondaryPositionsByPosition[nextSelectedPosition])
+        ? nextSecondaryPositionsByPosition[nextSelectedPosition]
+        : [];
+      const nextSelectedSecondaryPosition = selectedSecondaryCandidates.includes(selectedSecondaryPosition)
+        ? selectedSecondaryPosition
+        : (selectedSecondaryCandidates[0] || '');
+      const nextLastLoadedSecondaryPosition = typeof lastLoadedSecondaryPosition === 'string'
+        ? lastLoadedSecondaryPosition
+        : pushfoldRuntimeState.lastLoadedSecondaryPosition;
+      pushfoldRuntimeState.bridgeBase = typeof bridgeBase === 'string' ? bridgeBase : pushfoldRuntimeState.bridgeBase;
+      pushfoldRuntimeState.bridgeExplicitlyConfigured = bridgeExplicitlyConfigured === true;
+      pushfoldRuntimeState.publicUnavailable = publicUnavailable === true;
+      pushfoldRuntimeState.dataSourceMode = typeof dataSourceMode === 'string' && dataSourceMode.trim()
+        ? dataSourceMode.trim()
+        : pushfoldRuntimeState.dataSourceMode;
+      pushfoldRuntimeState.bundledAssetPath = typeof bundledAssetPath === 'string' && bundledAssetPath.trim()
+        ? bundledAssetPath.trim()
+        : pushfoldRuntimeState.bundledAssetPath;
+      pushfoldRuntimeState.bundledCatalog = bundledCatalog ?? pushfoldRuntimeState.bundledCatalog;
       pushfoldRuntimeState.bridgeStartOk = bridgeStartOk;
       pushfoldRuntimeState.bridgeHttpOk = bridgeHttpOk;
       pushfoldRuntimeState.runtimePrivatePackReadable = runtimePrivatePackReadable;
       pushfoldRuntimeState.fullRangeRenderEnabled = fullRangeRenderEnabled;
+      pushfoldRuntimeState.refreshInFlight = refreshInFlight;
+      pushfoldRuntimeState.refreshAttemptCount = Number.isInteger(refreshAttemptCount) && refreshAttemptCount >= 0
+        ? refreshAttemptCount
+        : pushfoldRuntimeState.refreshAttemptCount;
       pushfoldRuntimeState.statusText = statusText;
       pushfoldRuntimeState.noteText = noteText;
       pushfoldRuntimeState.statusClass = statusClass;
       pushfoldRuntimeState.availableStacks = nextStacks;
       pushfoldRuntimeState.availablePositions = nextPositions;
+      pushfoldRuntimeState.secondaryPositionsByPosition = nextSecondaryPositionsByPosition;
+      pushfoldRuntimeState.availableRegimes = nextRegimes;
+      pushfoldRuntimeState.selectedFamily = nextSelectedFamily;
+      pushfoldRuntimeState.selectedRegime = nextSelectedRegime;
       pushfoldRuntimeState.selectedStack = nextStacks.includes(selectedStack) ? selectedStack : nextStacks[0];
-      pushfoldRuntimeState.selectedPosition = nextPositions.includes(selectedPosition) ? selectedPosition : (nextPositions[0] || '');
+      pushfoldRuntimeState.selectedPosition = nextSelectedPosition;
+      pushfoldRuntimeState.selectedSecondaryPosition = nextSelectedSecondaryPosition;
+      pushfoldRuntimeState.lastLoadedStack = Number.isInteger(lastLoadedStack)
+        ? lastLoadedStack
+        : pushfoldRuntimeState.lastLoadedStack;
+      pushfoldRuntimeState.lastLoadedPosition = typeof lastLoadedPosition === 'string'
+        ? lastLoadedPosition
+        : pushfoldRuntimeState.lastLoadedPosition;
+      pushfoldRuntimeState.lastLoadedSecondaryPosition = nextLastLoadedSecondaryPosition;
+      pushfoldRuntimeState.selectionResetNotice = typeof selectionResetNotice === 'string'
+        ? selectionResetNotice
+        : pushfoldRuntimeState.selectionResetNotice;
+      pushfoldRuntimeState.loadedCategories = nextLoadedCategories;
+      pushfoldRuntimeState.semantics = nextSemantics;
+      persistPushfoldRuntimeSelectionInUrl();
       renderPushfoldSurface();
     }
 
@@ -3046,39 +4667,324 @@
       return response.json();
     }
 
+    function describePushfoldRuntimeError(err) {
+      const message = typeof err?.message === 'string' ? err.message : '';
+      if (message === 'bridge_contract_invalid' || message === 'bundled_contract_invalid') return message;
+      if (/^(bridge|bundled)_http_\d+$/.test(message)) return message;
+      if (/^(bridge|bundled)_[a-z_]+$/.test(message)) return message;
+      if (err?.name === 'TypeError') {
+        return isPushfoldBundledSourceMode() ? 'bundled_fetch_failed' : 'bridge_fetch_failed';
+      }
+      return isPushfoldBundledSourceMode() ? 'bundled_unknown' : 'bridge_unknown';
+    }
+
+    function buildPushfoldScenarioSwitchNote(nextRegimeEntry, switchKind) {
+      const nextScenarioLabel = readPushfoldCompactScenarioLabel(nextRegimeEntry || undefined);
+      const hadPreview = !!pushfoldRuntimeState.lastLoadedPosition || readPushfoldLoadedCategories().length > 0;
+      if (hadPreview) return `${nextScenarioLabel} selected / preview cleared`;
+      return `${nextScenarioLabel} selected`;
+    }
+
+    async function applyPushfoldFamilySelection(nextFamilyId) {
+      const normalizedFamilyId = typeof nextFamilyId === 'string' ? nextFamilyId.trim() : '';
+      if (!normalizedFamilyId || normalizedFamilyId === pushfoldRuntimeState.selectedFamily) return;
+      const familyRegimes = readPushfoldRegimesForFamily(normalizedFamilyId);
+      const nextRegimeId = familyRegimes[0]?.id || '';
+      if (!nextRegimeId) return;
+      await applyPushfoldRegimeSelection(nextRegimeId, { switchKind: 'family', nextFamilyId: normalizedFamilyId });
+    }
+
+    async function applyPushfoldRegimeSelection(nextRegimeId, opts = {}) {
+      const { switchKind = 'regime', nextFamilyId = '' } = opts;
+      const normalizedRegimeId = typeof nextRegimeId === 'string' ? nextRegimeId.trim() : '';
+      if (!normalizedRegimeId) return;
+      const nextRegimeEntry = pushfoldRuntimeState.availableRegimes.find(entry => entry.id === normalizedRegimeId) || null;
+      const resolvedNextFamilyId = nextFamilyId || nextRegimeEntry?.familyId || pushfoldRuntimeState.selectedFamily;
+      if (normalizedRegimeId === pushfoldRuntimeState.selectedRegime && resolvedNextFamilyId === pushfoldRuntimeState.selectedFamily) return;
+      const nextRegimeLabel = nextRegimeEntry?.label || normalizedRegimeId;
+      const resetNotice = buildPushfoldScenarioSwitchNote(nextRegimeEntry, switchKind);
+      const sourceResolution = readPushfoldBridgeResolution();
+      const switchStatusText = sourceResolution.dataSourceMode === 'bundle'
+        ? (switchKind === 'family' ? 'bundled mode / family switch' : 'bundled mode / regime switch')
+        : (switchKind === 'family' ? 'bridge checking / family switch' : 'bridge checking / regime switch');
+      setPushfoldRuntimeUi({
+        dataSourceMode: sourceResolution.dataSourceMode,
+        bundledAssetPath: sourceResolution.bundledAssetPath,
+        bridgeStartOk: pushfoldRuntimeState.bridgeStartOk,
+        bridgeHttpOk: false,
+        runtimePrivatePackReadable: false,
+        fullRangeRenderEnabled: false,
+        refreshInFlight: false,
+        refreshAttemptCount: pushfoldRuntimeState.refreshAttemptCount,
+        statusText: switchStatusText,
+        noteText: resetNotice,
+        statusClass: 'section-label status-neutral pushfold-runtime-status',
+        availableStacks: PUSHFOLD_DEFAULT_STACKS.slice(),
+        availablePositions: [],
+        secondaryPositionsByPosition: {},
+        availableRegimes: pushfoldRuntimeState.availableRegimes,
+        selectedFamily: resolvedNextFamilyId,
+        selectedRegime: normalizedRegimeId,
+        selectedStack: pushfoldRuntimeState.selectedStack,
+        selectedPosition: '',
+        selectedSecondaryPosition: '',
+        lastLoadedStack: pushfoldRuntimeState.selectedStack,
+        lastLoadedPosition: '',
+        lastLoadedSecondaryPosition: '',
+        selectionResetNotice: resetNotice,
+        loadedCategories: [],
+        semantics: {
+          ...readPushfoldSemantics(),
+          familyId: resolvedNextFamilyId,
+          familyLabel: nextRegimeEntry?.familyLabel || readPushfoldSelectedFamilyLabel(),
+          familyDescription: nextRegimeEntry?.familyDescription || readPushfoldSelectedFamilyDescription(),
+          lineageLabel: nextRegimeEntry?.lineageLabel || readPushfoldSelectedLineageLabel(),
+          regimeId: normalizedRegimeId,
+          regimeLabel: nextRegimeLabel,
+          modeLabel: nextRegimeEntry?.modeLabel || nextRegimeLabel,
+          positionModeLabel: nextRegimeEntry?.positionModeLabel || readPushfoldPositionModeLabel(),
+          rangeMode: nextRegimeEntry?.rangeMode || readPushfoldSemantics().rangeMode,
+          anteType: nextRegimeEntry?.anteType || readPushfoldSemantics().anteType,
+          anteSize: nextRegimeEntry?.anteSize || readPushfoldSemantics().anteSize,
+          sourceFamily: nextRegimeEntry?.sourceFamily || readPushfoldSemantics().sourceFamily,
+          table: nextRegimeEntry?.table || readPushfoldSemantics().table,
+          spot: nextRegimeEntry?.spot || readPushfoldSemantics().spot,
+        },
+      });
+      await initPushfoldRuntimeBridge();
+    }
+
+    async function refreshPushfoldRuntimeBridge() {
+      if (pushfoldRuntimeState.refreshInFlight || pushfoldRuntimeState.publicUnavailable || !isPushfoldBridgeSourceMode()) return;
+      const nextRefreshAttemptCount = pushfoldRuntimeState.refreshAttemptCount + 1;
+      setPushfoldRuntimeUi({
+        bridgeBase: pushfoldRuntimeState.bridgeBase,
+        bridgeExplicitlyConfigured: pushfoldRuntimeState.bridgeExplicitlyConfigured,
+        publicUnavailable: false,
+        bridgeStartOk: pushfoldRuntimeState.bridgeStartOk,
+        bridgeHttpOk: pushfoldRuntimeState.bridgeHttpOk,
+        runtimePrivatePackReadable: pushfoldRuntimeState.runtimePrivatePackReadable,
+        fullRangeRenderEnabled: pushfoldRuntimeState.fullRangeRenderEnabled,
+        refreshInFlight: true,
+        refreshAttemptCount: nextRefreshAttemptCount,
+        statusText: `bridge checking / retry ${nextRefreshAttemptCount}`,
+        noteText: `retry ${nextRefreshAttemptCount} / checking local bridge`,
+        statusClass: 'section-label status-neutral pushfold-runtime-status',
+        availableStacks: pushfoldRuntimeState.availableStacks,
+        availablePositions: pushfoldRuntimeState.availablePositions,
+        availableRegimes: pushfoldRuntimeState.availableRegimes,
+        selectedRegime: pushfoldRuntimeState.selectedRegime,
+        selectedStack: pushfoldRuntimeState.selectedStack,
+        selectedPosition: pushfoldRuntimeState.selectedPosition,
+        selectionResetNotice: pushfoldRuntimeState.selectionResetNotice,
+      });
+      await initPushfoldRuntimeBridge();
+    }
+
     async function initPushfoldRuntimeBridge() {
-      pushfoldRuntimeState.bridgeBase = readPushfoldBridgeBase();
-      try {
-        const payload = await fetchPushfoldBridgeJson('/api/stacks');
-        const stacks = Array.isArray(payload?.stacks) ? payload.stacks.filter(v => Number.isInteger(v)) : [];
-        const positions = Array.isArray(payload?.positions) ? payload.positions.filter(v => typeof v === 'string' && v) : [];
-        if (stacks.length === 0 || positions.length === 0) throw new Error('bridge_contract_invalid');
+      const bridgeResolution = readPushfoldBridgeResolution();
+      const requestedFamily = readPushfoldRequestedFamily();
+      const requestedRegime = readPushfoldRequestedRegime();
+      pushfoldRuntimeState.bridgeBase = bridgeResolution.bridgeBase;
+      pushfoldRuntimeState.bridgeExplicitlyConfigured = bridgeResolution.bridgeExplicitlyConfigured;
+      pushfoldRuntimeState.publicUnavailable = bridgeResolution.publicUnavailable;
+      pushfoldRuntimeState.dataSourceMode = bridgeResolution.dataSourceMode;
+      pushfoldRuntimeState.bundledAssetPath = bridgeResolution.bundledAssetPath;
+      pushfoldRuntimeState.selectedFamily = requestedFamily;
+      pushfoldRuntimeState.selectedRegime = requestedRegime;
+      const retryAttemptCount = pushfoldRuntimeState.refreshAttemptCount;
+      const recoveringFromManualRefresh = pushfoldRuntimeState.refreshInFlight && retryAttemptCount > 0;
+      if (bridgeResolution.dataSourceMode === 'bundle' && bridgeResolution.canAttemptBundle) {
+        try {
+          const bundlePayload = await fetchPushfoldBundledCatalog();
+          const payload = buildPushfoldBundledStacksPayload(bundlePayload, requestedRegime);
+          const stacks = Array.isArray(payload?.stacks) ? payload.stacks.filter(v => Number.isInteger(v)) : [];
+          const positions = Array.isArray(payload?.positions) ? payload.positions.filter(v => typeof v === 'string' && v) : [];
+          const secondaryPositionsByPosition = normalizePushfoldSecondaryPositionsByPosition(payload?.secondaryPositionsByPosition, positions);
+          const regimes = normalizePushfoldAvailableRegimes(payload?.availableRegimes);
+          const selectedRegime = typeof payload?.selectedRegime === 'string' && payload.selectedRegime.trim()
+            ? payload.selectedRegime.trim()
+            : pushfoldRuntimeState.selectedRegime;
+          if (stacks.length === 0 || positions.length === 0) throw new Error('bundled_contract_invalid');
+          setPushfoldRuntimeUi({
+            bridgeBase: '',
+            bridgeExplicitlyConfigured: false,
+            publicUnavailable: false,
+            dataSourceMode: 'bundle',
+            bundledAssetPath: bridgeResolution.bundledAssetPath,
+            bundledCatalog: bundlePayload,
+            bridgeStartOk: true,
+            bridgeHttpOk: true,
+            runtimePrivatePackReadable: false,
+            fullRangeRenderEnabled: true,
+            refreshInFlight: false,
+            refreshAttemptCount: 0,
+            statusText: 'bundled data ready',
+            noteText: 'repo-hosted AOF bundle',
+            statusClass: 'section-label status-positive pushfold-runtime-status',
+            availableStacks: stacks,
+            availablePositions: positions,
+            secondaryPositionsByPosition,
+            availableRegimes: regimes,
+            selectedFamily: readPushfoldRequestedFamily(),
+            selectedRegime,
+            selectedStack: stacks.includes(pushfoldRuntimeState.selectedStack) ? pushfoldRuntimeState.selectedStack : stacks[0],
+            selectedPosition: positions.includes(pushfoldRuntimeState.selectedPosition) ? pushfoldRuntimeState.selectedPosition : positions[0],
+            selectedSecondaryPosition: pushfoldRuntimeState.selectedSecondaryPosition,
+            selectionResetNotice: pushfoldRuntimeState.selectionResetNotice,
+            semantics: payload?.semantics,
+          });
+        } catch (err) {
+          const selectedRegimeEntry = normalizePushfoldAvailableRegimes(pushfoldRuntimeState.availableRegimes)
+            .find(entry => entry.id === requestedRegime)
+            || null;
+          setPushfoldRuntimeUi({
+            bridgeBase: '',
+            bridgeExplicitlyConfigured: false,
+            publicUnavailable: true,
+            dataSourceMode: 'fallback',
+            bundledAssetPath: bridgeResolution.bundledAssetPath,
+            bundledCatalog: null,
+            bridgeStartOk: false,
+            bridgeHttpOk: false,
+            runtimePrivatePackReadable: false,
+            fullRangeRenderEnabled: false,
+            refreshInFlight: false,
+            refreshAttemptCount: 0,
+            statusText: 'bundled AOF unavailable',
+            noteText: `repo-hosted bundle unavailable / ${describePushfoldRuntimeError(err)}`,
+            statusClass: 'section-label status-neutral pushfold-runtime-status',
+            availableStacks: PUSHFOLD_DEFAULT_STACKS,
+            availablePositions: [],
+            secondaryPositionsByPosition: {},
+            availableRegimes: pushfoldRuntimeState.availableRegimes,
+            selectedFamily: requestedFamily,
+            selectedRegime: requestedRegime,
+            selectedStack: PUSHFOLD_DEFAULT_STACKS[0],
+            selectedPosition: '',
+            selectedSecondaryPosition: '',
+            lastLoadedStack: PUSHFOLD_DEFAULT_STACKS[0],
+            lastLoadedPosition: '',
+            lastLoadedSecondaryPosition: '',
+            selectionResetNotice: '',
+            loadedCategories: [],
+            semantics: buildPushfoldSemanticsFromRegimeEntry(selectedRegimeEntry || {}),
+          });
+        }
+        return;
+      }
+      if (!bridgeResolution.canAttemptBridge) {
+        const selectedRegimeEntry = normalizePushfoldAvailableRegimes(pushfoldRuntimeState.availableRegimes)
+          .find(entry => entry.id === requestedRegime)
+          || null;
         setPushfoldRuntimeUi({
-          bridgeStartOk: true,
-          bridgeHttpOk: true,
-          runtimePrivatePackReadable: true,
-          fullRangeRenderEnabled: true,
-          statusText: 'bridge ready',
-          noteText: 'localhost bridge active / selected stack only / no public pack copy',
-          statusClass: 'section-label status-positive pushfold-runtime-status',
-          availableStacks: stacks,
-          availablePositions: positions,
-          selectedStack: stacks.includes(pushfoldRuntimeState.selectedStack) ? pushfoldRuntimeState.selectedStack : stacks[0],
-          selectedPosition: positions.includes(pushfoldRuntimeState.selectedPosition) ? pushfoldRuntimeState.selectedPosition : positions[0],
-        });
-      } catch (err) {
-        setPushfoldRuntimeUi({
+          bridgeBase: '',
+          bridgeExplicitlyConfigured: false,
+          publicUnavailable: true,
+          dataSourceMode: 'fallback',
+          bundledAssetPath: bridgeResolution.bundledAssetPath,
+          bundledCatalog: null,
           bridgeStartOk: false,
           bridgeHttpOk: false,
           runtimePrivatePackReadable: false,
           fullRangeRenderEnabled: false,
-          statusText: 'bridge offline',
-          noteText: 'known WARN only / safe summary only / localhost bridge not reachable',
+          refreshInFlight: false,
+          refreshAttemptCount: 0,
+          statusText: 'AOF unavailable',
+          noteText: bridgeResolution.isFileProtocol
+            ? 'serve this page or use explicit bridge'
+            : 'bundled asset unavailable',
           statusClass: 'section-label status-neutral pushfold-runtime-status',
           availableStacks: PUSHFOLD_DEFAULT_STACKS,
           availablePositions: [],
+          secondaryPositionsByPosition: {},
+          availableRegimes: pushfoldRuntimeState.availableRegimes,
+          selectedFamily: requestedFamily,
+          selectedRegime: requestedRegime,
           selectedStack: PUSHFOLD_DEFAULT_STACKS[0],
           selectedPosition: '',
+          selectedSecondaryPosition: '',
+          lastLoadedStack: PUSHFOLD_DEFAULT_STACKS[0],
+          lastLoadedPosition: '',
+          lastLoadedSecondaryPosition: '',
+          selectionResetNotice: '',
+          loadedCategories: [],
+          semantics: buildPushfoldSemanticsFromRegimeEntry(selectedRegimeEntry || {}),
+        });
+        return;
+      }
+      try {
+        const payload = await fetchPushfoldBridgeJson(buildPushfoldBridgePath('/api/stacks'));
+        const stacks = Array.isArray(payload?.stacks) ? payload.stacks.filter(v => Number.isInteger(v)) : [];
+        const positions = Array.isArray(payload?.positions) ? payload.positions.filter(v => typeof v === 'string' && v) : [];
+        const secondaryPositionsByPosition = normalizePushfoldSecondaryPositionsByPosition(payload?.secondaryPositionsByPosition, positions);
+        const regimes = normalizePushfoldAvailableRegimes(payload?.availableRegimes);
+        const selectedRegime = typeof payload?.selectedRegime === 'string' && payload.selectedRegime.trim()
+          ? payload.selectedRegime.trim()
+          : pushfoldRuntimeState.selectedRegime;
+        if (stacks.length === 0 || positions.length === 0) throw new Error('bridge_contract_invalid');
+        setPushfoldRuntimeUi({
+          bridgeBase: bridgeResolution.bridgeBase,
+          bridgeExplicitlyConfigured: bridgeResolution.bridgeExplicitlyConfigured,
+          publicUnavailable: false,
+          dataSourceMode: 'bridge',
+          bundledAssetPath: bridgeResolution.bundledAssetPath,
+          bundledCatalog: null,
+          bridgeStartOk: true,
+          bridgeHttpOk: true,
+          runtimePrivatePackReadable: true,
+          fullRangeRenderEnabled: true,
+          refreshInFlight: false,
+          refreshAttemptCount: retryAttemptCount,
+          statusText: recoveringFromManualRefresh ? `bridge ready / retry ${retryAttemptCount} recovered` : 'bridge ready',
+          noteText: recoveringFromManualRefresh
+            ? `retry ${retryAttemptCount} recovered / local bridge active`
+            : 'local bridge active / private pack',
+          statusClass: 'section-label status-positive pushfold-runtime-status',
+          availableStacks: stacks,
+          availablePositions: positions,
+          secondaryPositionsByPosition,
+          availableRegimes: regimes,
+          selectedFamily: readPushfoldRequestedFamily(),
+          selectedRegime,
+          selectedStack: stacks.includes(pushfoldRuntimeState.selectedStack) ? pushfoldRuntimeState.selectedStack : stacks[0],
+          selectedPosition: positions.includes(pushfoldRuntimeState.selectedPosition) ? pushfoldRuntimeState.selectedPosition : positions[0],
+          selectedSecondaryPosition: pushfoldRuntimeState.selectedSecondaryPosition,
+          selectionResetNotice: pushfoldRuntimeState.selectionResetNotice,
+          semantics: payload?.semantics,
+        });
+      } catch (err) {
+        setPushfoldRuntimeUi({
+          bridgeBase: bridgeResolution.bridgeBase,
+          bridgeExplicitlyConfigured: bridgeResolution.bridgeExplicitlyConfigured,
+          publicUnavailable: false,
+          dataSourceMode: 'bridge',
+          bundledAssetPath: bridgeResolution.bundledAssetPath,
+          bundledCatalog: null,
+          bridgeStartOk: false,
+          bridgeHttpOk: false,
+          runtimePrivatePackReadable: false,
+          fullRangeRenderEnabled: false,
+          refreshInFlight: false,
+          refreshAttemptCount: retryAttemptCount,
+          statusText: recoveringFromManualRefresh ? `bridge retry ${retryAttemptCount} failed` : 'bridge offline',
+          noteText: buildPushfoldRetainedSelectionNote(
+            recoveringFromManualRefresh
+              ? `retry ${retryAttemptCount} failed / bridge unreachable / ${describePushfoldRuntimeError(err)}`
+              : `bridge unreachable / ${describePushfoldRuntimeError(err)}`
+          ),
+          statusClass: 'section-label status-neutral pushfold-runtime-status',
+          availableStacks: PUSHFOLD_DEFAULT_STACKS,
+          availablePositions: [],
+          secondaryPositionsByPosition: {},
+          availableRegimes: pushfoldRuntimeState.availableRegimes,
+          selectedFamily: pushfoldRuntimeState.selectedFamily,
+          selectedRegime: pushfoldRuntimeState.selectedRegime,
+          selectedStack: PUSHFOLD_DEFAULT_STACKS[0],
+          selectedPosition: '',
+          selectedSecondaryPosition: '',
+          selectionResetNotice: pushfoldRuntimeState.selectionResetNotice,
+          semantics: pushfoldRuntimeState.semantics,
         });
       }
     }
@@ -3087,49 +4993,99 @@
       if (!pushfoldRuntimeState.fullRangeRenderEnabled) return;
       const stackSelect = document.getElementById('pushfold-stack-select');
       const positionSelect = document.getElementById('pushfold-position-select');
+      const secondaryPositionSelect = document.getElementById('pushfold-secondary-position-select');
       const loadBtn = document.getElementById('pushfold-load-btn');
       if (!stackSelect || !positionSelect || !loadBtn) return;
       const bb = parseInt(stackSelect.value, 10);
       const position = positionSelect.value;
+      const secondaryPosition = secondaryPositionSelect ? secondaryPositionSelect.value : '';
       if (!Number.isFinite(bb) || !position) return;
+      if (hasPushfoldSecondaryPositionRequirement() && !secondaryPosition) return;
       pushfoldRuntimeState.selectedStack = bb;
       pushfoldRuntimeState.selectedPosition = position;
+      pushfoldRuntimeState.selectedSecondaryPosition = secondaryPosition;
       loadBtn.disabled = true;
       try {
-        const payload = await fetchPushfoldBridgeJson(`/api/stack?bb=${encodeURIComponent(String(bb))}&position=${encodeURIComponent(position)}`);
+        const payload = isPushfoldBundledSourceMode()
+          ? buildPushfoldBundledStackPayload(
+              pushfoldRuntimeState.bundledCatalog || await fetchPushfoldBundledCatalog(),
+              pushfoldRuntimeState.selectedRegime,
+              bb,
+              position,
+              secondaryPosition
+            )
+          : await fetchPushfoldBridgeJson(buildPushfoldBridgePath('/api/stack', { bb, position, secondaryPosition }));
         const categories = Array.isArray(payload?.categories) ? payload.categories.filter(cat => HAND_CATEGORIES.includes(cat)) : [];
+        const secondaryPositionsByPosition = normalizePushfoldSecondaryPositionsByPosition(
+          payload?.secondaryPositionsByPosition || pushfoldRuntimeState.secondaryPositionsByPosition,
+          pushfoldRuntimeState.availablePositions
+        );
+        const regimes = normalizePushfoldAvailableRegimes(payload?.availableRegimes);
+        const selectedRegime = typeof payload?.selectedRegime === 'string' && payload.selectedRegime.trim()
+          ? payload.selectedRegime.trim()
+          : pushfoldRuntimeState.selectedRegime;
         applyRangeCategories(categories);
+        pushfoldRuntimeState.lastLoadedStack = bb;
+        pushfoldRuntimeState.lastLoadedPosition = position;
+        pushfoldRuntimeState.lastLoadedSecondaryPosition = secondaryPosition;
         setPushfoldRuntimeUi({
           bridgeStartOk: true,
           bridgeHttpOk: true,
-          runtimePrivatePackReadable: true,
+          runtimePrivatePackReadable: !isPushfoldBundledSourceMode(),
           fullRangeRenderEnabled: true,
-          statusText: 'bridge ready',
-          noteText: `${bb}bb / ${position} / ${categories.length} categories loaded`,
+          refreshInFlight: false,
+          statusText: isPushfoldBundledSourceMode() ? 'bundled data ready' : 'bridge ready',
+          noteText: categories.length
+            ? `${formatPushfoldSelectionLabel(bb, position, secondaryPosition)} loaded`
+            : `${formatPushfoldSelectionLabel(bb, position, secondaryPosition)} / empty result`,
           statusClass: 'section-label status-positive pushfold-runtime-status',
           availableStacks: pushfoldRuntimeState.availableStacks,
           availablePositions: pushfoldRuntimeState.availablePositions,
+          secondaryPositionsByPosition,
+          availableRegimes: regimes,
+          selectedFamily: pushfoldRuntimeState.selectedFamily,
+          selectedRegime,
           selectedStack: bb,
           selectedPosition: position,
+          selectedSecondaryPosition: secondaryPosition,
+          lastLoadedStack: bb,
+          lastLoadedPosition: position,
+          lastLoadedSecondaryPosition: secondaryPosition,
+          selectionResetNotice: '',
+          loadedCategories: categories,
+          semantics: payload?.semantics || pushfoldRuntimeState.semantics,
         });
         switchTab(PUSHFOLD_TARGET_SURFACE_ID);
       } catch (err) {
+        const bundledMode = isPushfoldBundledSourceMode();
         setPushfoldRuntimeUi({
           bridgeStartOk: true,
-          bridgeHttpOk: false,
-          runtimePrivatePackReadable: false,
-          fullRangeRenderEnabled: false,
-          statusText: 'bridge error',
-          noteText: 'localhost bridge request failed / availability-only fallback',
-          statusClass: 'section-label status-negative pushfold-runtime-status',
+          bridgeHttpOk: bundledMode,
+          runtimePrivatePackReadable: !bundledMode,
+          fullRangeRenderEnabled: bundledMode,
+          refreshInFlight: false,
+          statusText: bundledMode ? 'bundled data ready' : 'bridge error',
+          noteText: buildPushfoldRetainedSelectionNote(
+            bundledMode
+              ? `bundled lookup failed / diagnostic=${describePushfoldRuntimeError(err)}`
+              : `localhost bridge request failed / availability-only fallback / diagnostic=${describePushfoldRuntimeError(err)}`
+          ),
+          statusClass: bundledMode
+            ? 'section-label status-neutral pushfold-runtime-status'
+            : 'section-label status-negative pushfold-runtime-status',
           availableStacks: pushfoldRuntimeState.availableStacks,
           availablePositions: pushfoldRuntimeState.availablePositions,
+          availableRegimes: pushfoldRuntimeState.availableRegimes,
+          selectedFamily: pushfoldRuntimeState.selectedFamily,
+          selectedRegime: pushfoldRuntimeState.selectedRegime,
           selectedStack: pushfoldRuntimeState.selectedStack,
           selectedPosition: pushfoldRuntimeState.selectedPosition,
+          selectionResetNotice: pushfoldRuntimeState.selectionResetNotice,
+          semantics: pushfoldRuntimeState.semantics,
         });
       } finally {
-        const loadButton = document.getElementById('pushfold-load-btn');
-        if (loadButton) loadButton.disabled = !pushfoldRuntimeState.fullRangeRenderEnabled;
+        syncPushfoldLoadButtonState();
+        syncPushfoldRuntimeNote();
       }
     }
 
@@ -3199,25 +5155,9 @@
     // レンジグリッドの生成
     function generateRangeGrid() {
       const rangeGrid = document.getElementById('range-grid');
-      const rangeLayout = [
-        ['AA','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s'],
-        ['AKo','KK','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s'],
-        ['AQo','KQo','QQ','QJs','QTs','Q9s','Q8s','Q7s','Q6s','Q5s','Q4s','Q3s','Q2s'],
-        ['AJo','KJo','QJo','JJ','JTs','J9s','J8s','J7s','J6s','J5s','J4s','J3s','J2s'],
-        ['ATo','KTo','QTo','JTo','TT','T9s','T8s','T7s','T6s','T5s','T4s','T3s','T2s'],
-        ['A9o','K9o','Q9o','J9o','T9o','99','98s','97s','96s','95s','94s','93s','92s'],
-        ['A8o','K8o','Q8o','J8o','T8o','98o','88','87s','86s','85s','84s','83s','82s'],
-        ['A7o','K7o','Q7o','J7o','T7o','97o','87o','77','76s','75s','74s','73s','72s'],
-        ['A6o','K6o','Q6o','J6o','T6o','96o','86o','76o','66','65s','64s','63s','62s'],
-        ['A5o','K5o','Q5o','J5o','T5o','95o','85o','75o','65o','55','54s','53s','52s'],
-        ['A4o','K4o','Q4o','J4o','T4o','94o','84o','74o','64o','54o','44','43s','42s'],
-        ['A3o','K3o','Q3o','J3o','T3o','93o','83o','73o','63o','53o','43o','33','32s'],
-        ['A2o','K2o','Q2o','J2o','T2o','92o','82o','72o','62o','52o','42o','32o','22']
-      ];
-      
-      rangeLayout.forEach((row, i) => {
+      RANGE_GRID_LAYOUT.forEach((row) => {
         const tr = document.createElement('tr');
-        row.forEach((hand, j) => {
+        row.forEach((hand) => {
           const td = document.createElement('td');
           td.textContent = hand;
           const catIndex = HAND_CATEGORIES.indexOf(hand);
@@ -3225,13 +5165,7 @@
           td.dataset.hand = hand;
           
           // スタイルクラス
-          if (hand[0] === hand[1]) {
-            td.classList.add('pair');
-          } else if (hand.endsWith('s')) {
-            td.classList.add('suited');
-          } else {
-            td.classList.add('offsuit');
-          }
+          td.classList.add(classifyRangeGridHand(hand));
           
           tr.appendChild(td);
         });
