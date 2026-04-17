@@ -1,0 +1,1239 @@
+{
+  "dataset_id": "plo8_preflop_position_ranges_v1",
+  "version": 1,
+  "scope": {
+    "game": "pot_limit_omaha_hi_lo_eight_or_better_4card",
+    "phase": "preflop",
+    "table_format": "6-max",
+    "effective_stack": "100bb",
+    "position_buttons": [
+      "UTG",
+      "MP",
+      "CO",
+      "BTN",
+      "SB"
+    ],
+    "position_button_meaning": "6-max cash seats normalized as UTG / MP / CO / BTN / SB. BB is intentionally omitted from this public position-first surface.",
+    "reconstruction_method": "Public HTML articles and one supplemental PDF / manual were rechecked, then normalized into position-first open and cold-call bands. This is a public-consensus range surface, not a fake exact solver tree."
+  },
+  "collection_notes": [
+    "2026-04-18 に OmahaPlanet、Steve Badger、Pokerology、PokerStars Learn の公開 lesson snippet、Omaha Indicator PDF / manual transcript を再確認しました。",
+    "前回の source dump はやめ、PLO8 を position-first で open と cold-call に分解し、代表ハンドと削るハンドまで seat ごとに固定しました。",
+    "公開領域の PLO8 は exact 6-max 100bb solver chart より hand-class guidance が中心なので、UI も hand-family / backup / quarter-risk を前面に出します。",
+    "A2xx は自動参加ではなく、backup low、suited ace、high backup の有無で分けています。naked A2 と middle-card clusters は main surface から外しています。",
+    "SB cold call は特に締めています。公開ソースは OOP one-way flats を嫌い、SB は good hand だけ残すか 3-bet-or-fold 寄りに読むものが多いためです。",
+    "PDF はメインの position authority ではありません。Omaha Indicator manual の Group 1-4 と Hutchison / strength sections は、AA23 系と A2 family ordering の補助証拠としてだけ使っています."
+  ],
+  "global_source_refs": [
+    "omahaplanet_starting_hands",
+    "omahaplanet_high_only",
+    "omahaplanet_ace_two",
+    "pokerstars_part2",
+    "pokerstars_part3",
+    "pokerstars_raising",
+    "steve_badger_strategy",
+    "steve_badger_secret",
+    "pokerology_starting_hands",
+    "omahaindicator_manual_pdf"
+  ],
+  "verification": {
+    "checked_on": "2026-04-18",
+    "method": "公開 HTML を直接再確認し、PokerStars Learn は公開検索スニペットで lesson 要点を照合、Omaha Indicator PDF は manual / transcript snippet で Group 1-4 と Hutchison / strength sections を確認。",
+    "confirmed_source_refs": [
+      "omahaplanet_starting_hands",
+      "omahaplanet_high_only",
+      "omahaplanet_ace_two",
+      "pokerstars_part2",
+      "pokerstars_part3",
+      "pokerstars_raising",
+      "steve_badger_strategy",
+      "steve_badger_secret",
+      "pokerology_starting_hands",
+      "omahaindicator_manual_pdf"
+    ]
+  },
+  "position_order": [
+    "UTG",
+    "MP",
+    "CO",
+    "BTN",
+    "SB"
+  ],
+  "source_index": {
+    "omahaplanet_starting_hands": {
+      "title": "OmahaPlanet: Starting Hands Guide",
+      "short_label": "OmahaPlanet SHG",
+      "source_type": "HTML",
+      "weight": "primary",
+      "url": "https://www.omahaplanet.com/omaha-hi-lo-8b/strategy/starting-hands-guide/",
+      "why_it_matters": "Premium suited babies, AA2x, KKAx, 2345/2346, marginal A2, and late-position high-only guidance are all laid out explicitly."
+    },
+    "omahaplanet_high_only": {
+      "title": "OmahaPlanet: PLO8 High-Only Hands Part 1",
+      "short_label": "High-only",
+      "source_type": "HTML",
+      "weight": "primary",
+      "url": "https://www.omahaplanet.com/omaha-hi-lo-8b/strategy/plo8-introduction-to-playing-high-only-hands-part-1/",
+      "why_it_matters": "Strong warning against middle cards, early-position high-only overplays, and calling too much preflop with one-way hands."
+    },
+    "omahaplanet_ace_two": {
+      "title": "OmahaPlanet: PLO8 Poker – Ace-Two Errors & How To Spot Them",
+      "short_label": "A2 Errors",
+      "source_type": "HTML",
+      "weight": "primary",
+      "url": "https://www.omahaplanet.com/omaha-hi-lo-8b/strategy/plo8-poker-ace-two-errors-and-how-to-spot-them/",
+      "why_it_matters": "Explains why naked A2 is not an automatic continue and why extra wheel cards, suited ace, and high backup matter."
+    },
+    "pokerstars_part2": {
+      "title": "PokerStars Learn: Starting Hands (Part 2)",
+      "short_label": "PokerStars P2",
+      "source_type": "HTML",
+      "weight": "secondary",
+      "url": "https://www.pokerstars.com/poker/learn/lesson/omaha-hi-lo-starting-hands-p2/",
+      "why_it_matters": "Concrete example hands anchor A245 as a raised-pot low core, AKKQ as the model premium high-only hand, and 6789 as a classic middle-card trap."
+    },
+    "pokerstars_part3": {
+      "title": "PokerStars Learn: Starting Hands (Part 3)",
+      "short_label": "PokerStars P3",
+      "source_type": "HTML",
+      "weight": "secondary",
+      "url": "https://www.pokerstars.com/poker/learn/lesson/omaha-hl-starting-hands-p3/",
+      "why_it_matters": "Trap-hand discussion sharpens the filter on A299, bare AA without backup, and conservative blind defense / out-of-position play."
+    },
+    "pokerstars_raising": {
+      "title": "PokerStars Learn: Raising in Omaha Hi-Lo",
+      "short_label": "PokerStars Raise",
+      "source_type": "HTML",
+      "weight": "secondary",
+      "url": "https://www.pokerstars.com/poker/learn/lesson/omaha-hi-lo-raising/",
+      "why_it_matters": "Confirms AA23 / AA24 type hands as premium late-position raises while warning that even the best PLO8 hand does not dominate multi-way."
+    },
+    "steve_badger_strategy": {
+      "title": "Steve Badger: Omaha High-Low Poker Strategy",
+      "short_label": "Badger Strategy",
+      "source_type": "HTML",
+      "weight": "secondary",
+      "url": "https://www.stevebadger.com/poker/omaha/strategy/",
+      "why_it_matters": "Strong scoop-first framing, counterfeit awareness, and explicit dislike for garbage hands that only make weak lows or weak halves."
+    },
+    "steve_badger_secret": {
+      "title": "Steve Badger: The Secret of Omaha High-Low",
+      "short_label": "Badger Secret",
+      "source_type": "HTML",
+      "weight": "primary",
+      "url": "https://www.stevebadger.com/poker/omaha/secret/",
+      "why_it_matters": "The 'play five-card hands' rule is the cleanest public explanation for preferring ace-led, two-way structures over pretty ace-less traps."
+    },
+    "pokerology_starting_hands": {
+      "title": "Pokerology: Starting Hand Requirements for Omaha Hi-Lo Poker",
+      "short_label": "Pokerology",
+      "source_type": "HTML",
+      "weight": "secondary",
+      "url": "https://www.pokerology.com/poker/strategy/omaha8-starting-hands/",
+      "why_it_matters": "Powerhouse / Good / Caution examples provide clean public anchors for AA23, A234, 2345, AKQJ, and cautionary middling hands."
+    },
+    "omahaindicator_manual_pdf": {
+      "title": "Omaha Indicator User Manual",
+      "short_label": "OI PDF",
+      "source_type": "PDF",
+      "weight": "supplemental_pdf",
+      "url": "https://www.omahaindicator.com/download/UserManualOI.pdf",
+      "why_it_matters": "Supplemental PDF grouping: Group 1 lists AA23 / AA24 / AA25 / AA26 class hands, Group 2 includes AA2x / AA3x / A23x / A24x / A2xx / A345 / A3KK, and Group 3 allows only a narrow high-only class."
+    }
+  },
+  "positions": {
+    "UTG": {
+      "label": "UTG / first-in core",
+      "role_label": "first-in open seat",
+      "open_band": "very tight / scoop-first",
+      "versus_open_band": "n/a in this map",
+      "position_summary": "後ろ全員に action が残るので、公開レンジでも最もタイトに始める seat です。open は A2 premium wheel と strongest two-way support が中心になります。",
+      "caution_note": "公開 exact chart が乏しいため、UTG では '開ける理由が複数ある hand' だけを front surface に残しています。high-only と weak ace-low tails はここでは切ります。",
+      "overview": {
+        "seat_trigger": "後ろに MP / CO / BTN / blinds が残るため、reverse implied odds と quarter-risk の低い hand だけを残す席です。",
+        "open_identity": "AA23 系、AA2x + extra wheel、A234 / A235 / A245、そして強い suited A2 broadway backup が軸です。",
+        "adds_here": "UTG は widen する席ではありません。A2 broadway も double-suited か suited ace 前提の条件付きに止めます。",
+        "still_avoid": "naked A2、A3 / A4 / A5 tails、2345 / 2346 no ace、high-only、そして 6-J middles を外します。"
+      },
+      "at_a_glance": {
+        "open_core": "AA23ds / AA24-26 ds / A234 / A235 / A245 / AK23 ss / AQ24 ss",
+        "position_add": "A2KQ ds / A2KJ ds は suits と backup がきれいな時だけ",
+        "vs_open": "n/a - この position map では first-in 参照 seat として扱う",
+        "snap_fold": "A299 / A2TT / A3xx no backup / 2345 no ace / 6789 / 789T"
+      },
+      "open_section": {
+        "section_label": "Open / RFI",
+        "anchor_profile": "A2 scoop-first core only",
+        "public_range_read": "UTG の公開 consensus は、AA23 系と AA2x + extra wheel、A234 / A235 / A245 のような strongest low-plus-high support を中心に始めます。A2 broadway は structure が非常にきれいな時だけ残し、one-way high と middle cards は外します.",
+        "range_groups": [
+          {
+            "label": "無条件で開く",
+            "tone": "attack",
+            "items": [
+              "AA23 ds",
+              "AA24-26 ds / best ss",
+              "A234 / A235 / A245",
+              "AK23 / AQ24 with suited ace or ds"
+            ]
+          },
+          {
+            "label": "条件付きで足す",
+            "tone": "conditional",
+            "items": [
+              "A2KQ ds",
+              "A2KJ ds",
+              "best A2QJ ds"
+            ]
+          },
+          {
+            "label": "UTG で外す",
+            "tone": "fold",
+            "items": [
+              "A299 / A2TT / bare A2 + middles",
+              "A3xx without extra wheel",
+              "2345 / 2346 no ace",
+              "AAKK / AKQJ high-only",
+              "6789 / 789T / JJT9 middles"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "開く主帯",
+            "tone": "attack",
+            "range_read": "AA23 系、AA2x + extra wheel、A234 / A235 / A245、AK23 / AQ24 の strongest suited two-way hands を open の主帯に置きます。",
+            "when": "raise されても playability が落ちにくく、low と high の両方に nut path が見える時。",
+            "examples": "AA23ds / AA24ds / A234 / A245 / AK23ss"
+          },
+          {
+            "label": "まだ fringe",
+            "tone": "conditional",
+            "range_read": "A2 broadway は structure が良いものだけ。suit と wheel backup が薄いものは UTG では widen に入れません。",
+            "when": "double-suited か suited ace があり、broadway side も dead card になっていない時。",
+            "examples": "A2KQds / A2KJds / A2QJds"
+          },
+          {
+            "label": "見送り",
+            "tone": "fold",
+            "range_read": "naked A2、A3-only tails、ace-less lows、high-only、middle cards は UTG open から外します。",
+            "when": "quarter-risk が高い、または当たっても half-only / second-best になりやすい時。",
+            "examples": "A299 / A2TT / A34Jr / 2346r / 6789ds"
+          }
+        ],
+        "table_columns": [
+          "帯",
+          "代表レンジ / 例",
+          "運用"
+        ],
+        "table_rows": [
+          [
+            "Core",
+            "AA23ds, AA24-26ds, A234, A235, A245, AK23ss, AQ24ss",
+            "UTG open の本体"
+          ],
+          [
+            "Conditional",
+            "A2KQds, A2KJds, best A2QJds",
+            "structure がかなり良い時だけ追加"
+          ],
+          [
+            "Fold",
+            "A299, A2TT, A3xx no backup, 2345 no ace, high-only, middles",
+            "half-only / quarter-risk を理由に外す"
+          ]
+        ],
+        "source_note": "OmahaPlanet の premium / marginal 分類、Steve Badger の five-card-hand 思考、Pokerology の powerhouse 例、PokerStars の middle-card / trap warnings を重ねた UTG floor です。",
+        "collected_rows": [
+          {
+            "source_ref": "omahaplanet_starting_hands",
+            "evidence_type": "direct_hand_class",
+            "range_read": "Premium は suited babies と AA2x + two babies。Marginal A2 + middles は quarter-risk 側へ落とす。",
+            "notes": "UTG core の一番外側を切る基準。"
+          },
+          {
+            "source_ref": "pokerstars_part2",
+            "evidence_type": "example_hand_boundary",
+            "range_read": "A245 は raised-pot friendly low hand、AKKQ は premium high-only、6789 は middle-card trap という整理。",
+            "notes": "UTG では middle-card hands を外し、A2 core を残す判断に使った。"
+          },
+          {
+            "source_ref": "steve_badger_secret",
+            "evidence_type": "five_card_hand_rule",
+            "range_read": "Ace-led five-card hands を主軸にし、ace-less pretty hand を大きく劣後させる。",
+            "notes": "UTG で no-ace / one-way hands を切る理由。"
+          },
+          {
+            "source_ref": "omahaindicator_manual_pdf",
+            "evidence_type": "pdf_grouping",
+            "range_read": "Group 1 は AA23 / AA24 / AA25 / AA26 系。Group 2 は AA2x / AA3x / A23x / A24x / A2xx / A345 / A3KK を含む。",
+            "notes": "AA23 系と A2 family ordering の補助証拠。"
+          }
+        ]
+      },
+      "versus_section": {
+        "section_label": "Cold call / facing open",
+        "anchor_profile": "out of scope for first seat",
+        "public_range_read": "UTG はこの 6-max position map の first seat なので、earlier-open に対する cold-call row は置きません。ここで架空の表を作らず、UTG は pure first-in 参照 seat のまま残します。",
+        "range_groups": [],
+        "action_bands": [],
+        "table_columns": [
+          "区分",
+          "内容",
+          "補足"
+        ],
+        "table_rows": [
+          [
+            "Cold call",
+            "n/a",
+            "この map は UTG を first-in 参照 seat として扱う"
+          ]
+        ],
+        "source_note": "公開ソースの cold-call guidance は後ろの seat から書かれるものが中心なので、UTG だけは honest に n/a としています。",
+        "collected_rows": []
+      },
+      "source_refs": [
+        "omahaplanet_starting_hands",
+        "omahaplanet_ace_two",
+        "pokerstars_part2",
+        "pokerstars_part3",
+        "steve_badger_secret",
+        "pokerology_starting_hands",
+        "omahaindicator_manual_pdf"
+      ]
+    },
+    "MP": {
+      "label": "MP / tighten but practical",
+      "role_label": "first practical cold-call seat",
+      "open_band": "tight core + best A2 broadway",
+      "versus_open_band": "UTG-facing tight call",
+      "position_summary": "UTG より 1 seat 後ろですが、まだ CO / BTN / blinds が残るので widen は小さめです。open は UTG core に best A2 broadway を足し、cold call はさらに締めます。",
+      "caution_note": "MP では open できる hand と cold-call できる hand を分けて読むのが大事です。公開ソースは '開けるけれど flat しすぎない' 方向でかなり一致しています。",
+      "overview": {
+        "seat_trigger": "UTG よりは楽ですが、後ろ 3 seat + blinds が squeeze できるので flat はまだ薄い席です。",
+        "open_identity": "UTG core を維持しつつ、A2KQ / A2KJ / A2QJ のような best A2 broadway を open 側に足します。",
+        "adds_here": "A2 broadway は open では入るが、cold call では strongest suited version に絞ります。",
+        "still_avoid": "A3 / 23 supported lows、A4 / A5 tails、non-ace lows、high-only、middle cards をまだ main band に入れません。"
+      },
+      "at_a_glance": {
+        "open_core": "UTG core + A2KQ ds / A2KJ ds / A2QJ ds",
+        "position_add": "best A345 / A23K strong suits only if table is passive",
+        "vs_open": "UTG open には HC1-HC4 core だけを主に flat",
+        "snap_fold": "A3xx tail / A299 / A2TT / 2345 no ace / AAKK high-only / middles"
+      },
+      "open_section": {
+        "section_label": "Open / RFI",
+        "anchor_profile": "UTG core plus best A2 broadway",
+        "public_range_read": "MP open は UTG core を壊さずに、best A2 broadway を少し足す帯です。公開ソースでは A2KQ / A2KJ / A2QJ のような 'A2 + high backup' は playability が高い一方、A3 / 23 supported lows はまだ CO 以降へ回す読みが自然です。",
+        "range_groups": [
+          {
+            "label": "無条件で開く",
+            "tone": "attack",
+            "items": [
+              "UTG core 全体",
+              "A2KQ ds",
+              "A2KJ ds",
+              "A2QJ ds"
+            ]
+          },
+          {
+            "label": "条件付きで足す",
+            "tone": "conditional",
+            "items": [
+              "best A345 strong suits",
+              "A23K with suited ace",
+              "AAKK ds exploit only"
+            ]
+          },
+          {
+            "label": "まだ外す",
+            "tone": "fold",
+            "items": [
+              "A3 / 23 tails without backup",
+              "A4 / A5 supported tails",
+              "2345 / 2346 no ace",
+              "most high-only hands",
+              "6789 / 789T middles"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "自然に widen する帯",
+            "tone": "attack",
+            "range_read": "UTG core に A2 broadway の best suited versions を足して、still-tight なまま少しだけ実戦的に広げます。",
+            "when": "A2 と high side が両方働き、raised pot でも scoop path が残る時。",
+            "examples": "A2KQds / A2KJds / A2QJds"
+          },
+          {
+            "label": "条件付き fringe",
+            "tone": "conditional",
+            "range_read": "A345 / A23K は suits と backup がかなり良い時だけ。CO 以降で standard になるものを MP では exploit only に止めます。",
+            "when": "後ろが受け身で、multiway 化しても second-best になりにくい時。",
+            "examples": "A345ss / A23Kss / AAKKds"
+          },
+          {
+            "label": "切る帯",
+            "tone": "fold",
+            "range_read": "A3 / 23 tails、A4 / A5 tails、ace-less lows、one-way high、middle cards は MP でもまだ早いです。",
+            "when": "後ろに position edge を持つ seat が多く、flat も squeeze も受けやすい時。",
+            "examples": "A34Tr / A56Kr weak / 2345r / AKQJ single-suited / 6789ds"
+          }
+        ],
+        "table_columns": [
+          "帯",
+          "代表レンジ / 例",
+          "運用"
+        ],
+        "table_rows": [
+          [
+            "Core",
+            "UTG core + A2KQds, A2KJds, A2QJds",
+            "MP open の本体"
+          ],
+          [
+            "Conditional",
+            "best A345ss, A23Kss, AAKKds",
+            "後ろが受け身の時だけ"
+          ],
+          [
+            "Fold",
+            "A3 / 23 tails, A4 / A5 tails, no-ace lows, high-only, middles",
+            "CO / BTN まで待つ"
+          ]
+        ],
+        "source_note": "OmahaPlanet の A2+backup / marginal A2、PokerStars の raised-pot criteria、Steve Badger の ace-first 方針を MP 用に 1 段だけ緩めた再構築です。",
+        "collected_rows": [
+          {
+            "source_ref": "omahaplanet_starting_hands",
+            "evidence_type": "direct_hand_class",
+            "range_read": "A2 + another small card with high backup、KKAx、late-only high-only の境界を明示。",
+            "notes": "MP では A2 broadway を足しても middle-card trash は入れない。"
+          },
+          {
+            "source_ref": "pokerstars_part2",
+            "evidence_type": "raised_pot_filter",
+            "range_read": "A245 は raised pot でも happy、AKQT は marginal high、middle cards are not playable。",
+            "notes": "A2 broadway と middles の境界を引くのに使った。"
+          },
+          {
+            "source_ref": "steve_badger_strategy",
+            "evidence_type": "scoop_first_rule",
+            "range_read": "Garbage hands を preflop で排除し、counterfeit と weak-half を避ける手選びを勧める。",
+            "notes": "MP widen を小さくする理由。"
+          }
+        ]
+      },
+      "versus_section": {
+        "section_label": "Cold call / facing UTG open",
+        "anchor_profile": "flat the scoop-first core only",
+        "public_range_read": "UTG open に対する MP cold call は open よりさらにタイトです。公開ソースの最大公約数は、AA23 系、A234 / A235 / A245、AK23 / AQ24 strong suited のような scoop-first core に絞り、high-only や trap A2 は flat しすぎないというものです。",
+        "range_groups": [
+          {
+            "label": "主にコール",
+            "tone": "attack",
+            "items": [
+              "AA23-26 ds / best ss",
+              "A234 / A235 / A245",
+              "AK23 / AQ24 strong suited"
+            ]
+          },
+          {
+            "label": "条件付きコール",
+            "tone": "conditional",
+            "items": [
+              "A2KQ ds",
+              "A2KJ ds",
+              "best A23K strong suits"
+            ]
+          },
+          {
+            "label": "MP flat から外す",
+            "tone": "fold",
+            "items": [
+              "A299 / A2TT trap",
+              "A3xx without backup",
+              "high-only hands",
+              "6789 / 789T middles"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "flat の本体",
+            "tone": "attack",
+            "range_read": "open してもよい hand の中でも、raised pot で scoop path が一番明確なものだけを残します。",
+            "when": "UTG range が強く、後ろの squeeze もまだ残るため、one-way hands を flat しない時。",
+            "examples": "AA23ds / A245 / AK23ss"
+          },
+          {
+            "label": "fringe call",
+            "tone": "conditional",
+            "range_read": "A2 broadway は strongest suited versions だけ。多くは fold 側に寄せ、flat を広げすぎません。",
+            "when": "後ろが受け身で、table texture が clear な時。",
+            "examples": "A2KQds / A2KJds"
+          },
+          {
+            "label": "flat しない帯",
+            "tone": "fold",
+            "range_read": "trap A2、A3 tails、high-only、middles は flat に向かず、たとえ open できても call では締めます。",
+            "when": "UTG open に対して dominated half を抱えやすい時。",
+            "examples": "A299 / A34Qr / AKQJds / 6789ds"
+          }
+        ],
+        "table_columns": [
+          "帯",
+          "代表レンジ / 例",
+          "運用"
+        ],
+        "table_rows": [
+          [
+            "Core call",
+            "AA23-26ds, A234, A235, A245, AK23ss, AQ24ss",
+            "UTG open に対する MP flat 本体"
+          ],
+          [
+            "Conditional",
+            "A2KQds, A2KJds, best A23Kss",
+            "後ろが受け身なら一部だけ"
+          ],
+          [
+            "Fold",
+            "A299, A2TT, A3xx no backup, high-only, middles",
+            "flat より fold"
+          ]
+        ],
+        "source_note": "Part 3 の trap hand / blind conservatism、OmahaPlanet の bare A2 warning、five-card-hand 理論を重ねて MP の flat を open より強く締めています。",
+        "collected_rows": [
+          {
+            "source_ref": "pokerstars_part3",
+            "evidence_type": "trap_and_position_filter",
+            "range_read": "A299 と bare AA are trap hands。強い hand だけを blind / OOP で残し、conservative に play する。",
+            "notes": "flat range を締める主根拠。"
+          },
+          {
+            "source_ref": "omahaplanet_ace_two",
+            "evidence_type": "quarter_risk_rule",
+            "range_read": "A2 on its own is not a through ticket; extra wheel, suited ace, or high pair should be present.",
+            "notes": "naked A2 を MP cold call から落とす理由。"
+          },
+          {
+            "source_ref": "steve_badger_secret",
+            "evidence_type": "five_card_hand_rule",
+            "range_read": "Ace-led five-card hands outperform pretty four-card traps and should dominate the continue range.",
+            "notes": "UTG open に flat できる hand を narrow core に限定する。"
+          }
+        ]
+      },
+      "source_refs": [
+        "omahaplanet_starting_hands",
+        "omahaplanet_ace_two",
+        "pokerstars_part2",
+        "pokerstars_part3",
+        "steve_badger_strategy",
+        "steve_badger_secret",
+        "pokerology_starting_hands",
+        "omahaindicator_manual_pdf"
+      ]
+    },
+    "CO": {
+      "label": "CO / first real widen",
+      "role_label": "late-position open seat",
+      "open_band": "core plus supported A3 / 23",
+      "versus_open_band": "tight in-position call",
+      "position_summary": "CO からようやく公開レンジの widen がはっきりします。A3 / 23 supported lows と KKAx low exception を open 側へ足せますが、call は still scoop-first に絞ります。",
+      "caution_note": "CO で広がるのは 'ace を捨てる' ことではなく、ace-low support や supported 23 を足せるという意味です。high-only は late でも末尾の例外帯です。",
+      "overview": {
+        "seat_trigger": "後ろが BTN と blinds だけになるので、open の realization がかなり良くなる席です。",
+        "open_identity": "MP core に A345 / A34K / A23K と KKA3 / KKA4 のような supported side branches を足します。",
+        "adds_here": "最良の A4 support と premium high-only は CO から候補に入りますが、main band ではなく conditional です。",
+        "still_avoid": "bare A2、A5 without help、ace-less trash、middle-card clusters を still fold 側に残します。"
+      },
+      "at_a_glance": {
+        "open_core": "MP core + A345 / A34K / A23K + KKA3 / KKA4",
+        "position_add": "best A45K / A46K and premium high-only ds become conditional adds",
+        "vs_open": "IP flat は HC1-HC4 core + best supported A3 / 23",
+        "snap_fold": "A5xx weak / A299 / most high-only calls / 6789 / 789T"
+      },
+      "open_section": {
+        "section_label": "Open / RFI",
+        "anchor_profile": "supported A3 / 23 start to enter",
+        "public_range_read": "CO open は、A2 core を維持したまま A345 / A34K / A23K のような supported A3 / 23 family と KKA3 / KKA4 を足す席です。最良の A4 support と premium high-only ds も候補に入りますが、public consensus ではまだ main band ではなく conditional add 扱いです。",
+        "range_groups": [
+          {
+            "label": "無条件で開く",
+            "tone": "attack",
+            "items": [
+              "MP core 全体",
+              "A345 / A34K / A23K",
+              "KKA3 / KKA4"
+            ]
+          },
+          {
+            "label": "条件付きで足す",
+            "tone": "conditional",
+            "items": [
+              "A45K / A46K strong suits",
+              "AAKK ds / AAJT ds",
+              "AKQJ ds"
+            ]
+          },
+          {
+            "label": "CO でも外す",
+            "tone": "fold",
+            "items": [
+              "bare A2 and A2 + middles",
+              "weak A5xx",
+              "2345 / 2346 rainbow",
+              "most one-way high flats",
+              "6789 / 789T middles"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "CO から入る本命帯",
+            "tone": "attack",
+            "range_read": "A345 / A34K / A23K と KKA3 / KKA4 を open 側に足し、A2 以外の supported low family も実戦的に参加できます。",
+            "when": "in-position realization が改善し、postflop で dominated half を回避しやすくなる時。",
+            "examples": "A345ss / A34Kss / A23Kss / KKA3"
+          },
+          {
+            "label": "late-position 例外",
+            "tone": "conditional",
+            "range_read": "最良の A4 support と premium high-only ds は CO から候補に入りますが、always-open ではありません。",
+            "when": "後ろがタイトで、cheap flop か heads-up に寄せやすい時。",
+            "examples": "A45Kss / A46Kss / AAKKds / AKQJds"
+          },
+          {
+            "label": "still no",
+            "tone": "fold",
+            "range_read": "bare A2、weak A5xx、rainbow 2345 / 2346、middle cards は CO でも main surface に入れません。",
+            "when": "当たっても nut になりにくく、quarter か dominated high を抱えやすい時。",
+            "examples": "A2T9 / A57Kr weak / 2345r / 6789ds"
+          }
+        ],
+        "table_columns": [
+          "帯",
+          "代表レンジ / 例",
+          "運用"
+        ],
+        "table_rows": [
+          [
+            "Core",
+            "MP core + A345, A34K, A23K, KKA3, KKA4",
+            "CO open の main band"
+          ],
+          [
+            "Conditional",
+            "A45Kss, A46Kss, AAKKds, AAJTds, AKQJds",
+            "late-position 例外帯"
+          ],
+          [
+            "Fold",
+            "bare A2, weak A5xx, 2345r, middles",
+            "still cut"
+          ]
+        ],
+        "source_note": "OmahaPlanet の non-ace hands / high-only caveat、Pokerology の 2345 と AKQJ の tier、Badger の ace-first / garbage filter を CO 向けに束ねています。",
+        "collected_rows": [
+          {
+            "source_ref": "omahaplanet_starting_hands",
+            "evidence_type": "direct_hand_class",
+            "range_read": "2345 / 2346 は best non-ace hands。High-only は late position and caution。",
+            "notes": "CO から supported no-ace / high-only を conditional add にする根拠。"
+          },
+          {
+            "source_ref": "pokerology_starting_hands",
+            "evidence_type": "tier_examples",
+            "range_read": "Powerhouse は AA23 / A234、Good は AKQJ と 2345、Caution は middling high or middling low structures。",
+            "notes": "CO widen の hand-family 順序を補強。"
+          },
+          {
+            "source_ref": "steve_badger_secret",
+            "evidence_type": "five_card_hand_rule",
+            "range_read": "Even late, five-card ace-led hands remain the default, while ace-less pretty hands stay behind them.",
+            "notes": "CO widen を 'ace を捨てる widening' にしないための根拠。"
+          }
+        ]
+      },
+      "versus_section": {
+        "section_label": "Cold call / facing UTG or MP open",
+        "anchor_profile": "tight IP cold-call band",
+        "public_range_read": "CO cold call は in-position ですが、public consensus は still tight です。A2 premium core と best supported A3 / 23 を flat の中心にし、high-only と trap A2 は mostly fold へ寄せます。",
+        "range_groups": [
+          {
+            "label": "主にコール",
+            "tone": "attack",
+            "items": [
+              "AA23-26 ds / best ss",
+              "A234 / A235 / A245",
+              "AK23 / AQ24 strong suited",
+              "best A345 / A23K"
+            ]
+          },
+          {
+            "label": "条件付きコール",
+            "tone": "conditional",
+            "items": [
+              "A2KQ ds",
+              "A2KJ ds",
+              "KKA3 / KKA4 versus later opens"
+            ]
+          },
+          {
+            "label": "CO flat から外す",
+            "tone": "fold",
+            "items": [
+              "most high-only hands",
+              "A299 / A2TT trap",
+              "weak A5xx",
+              "6789 / 789T middles"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "IP flat の本体",
+            "tone": "attack",
+            "range_read": "A2 premium core と supported A3 / 23 を残し、後ろが少ない in-position advantage を最大化します。",
+            "when": "open 側が強くても scoop path が残る時。",
+            "examples": "AA23ds / A245 / AK23ss / A345ss"
+          },
+          {
+            "label": "追加は少量",
+            "tone": "conditional",
+            "range_read": "A2 broadway と KKAx low exception は opener が later で range が軽い時だけ flat 候補になります。",
+            "when": "MP 以後の open で、postflop edge を取りやすい時。",
+            "examples": "A2KQds / A2KJds / KKA3"
+          },
+          {
+            "label": "IP でも fold",
+            "tone": "fold",
+            "range_read": "high-only cold call、trap A2、weak A5xx、middles は in-position でも flat しすぎません。",
+            "when": "当たっても half-only になりやすい時。",
+            "examples": "AAKKds, A299, A57Kr weak, 6789ds"
+          }
+        ],
+        "table_columns": [
+          "帯",
+          "代表レンジ / 例",
+          "運用"
+        ],
+        "table_rows": [
+          [
+            "Core call",
+            "AA23-26ds, A234, A235, A245, AK23ss, AQ24ss, best A345 / A23K",
+            "CO flat の本体"
+          ],
+          [
+            "Conditional",
+            "A2KQds, A2KJds, KKA3 / KKA4 versus later opens",
+            "open が lighter なら一部だけ"
+          ],
+          [
+            "Fold",
+            "high-only calls, A299, weak A5xx, middles",
+            "flat しすぎない"
+          ]
+        ],
+        "source_note": "Part 3 の trap filter と OmahaPlanet の bare A2 warning を維持しつつ、CO の position edge で best supported A3 / 23 を少しだけ足しています。",
+        "collected_rows": [
+          {
+            "source_ref": "pokerstars_part3",
+            "evidence_type": "trap_and_blind_filter",
+            "range_read": "Trap hands and conservative blind / OOP play strongly imply that cold calls must be tighter than opens.",
+            "notes": "CO flat を open より狭く維持する根拠。"
+          },
+          {
+            "source_ref": "omahaplanet_ace_two",
+            "evidence_type": "backup_requirement",
+            "range_read": "A2 needs extra wheel, suited ace, or high pair backup rather than auto-playing itself.",
+            "notes": "A299 / A2TT を call から落とす。"
+          },
+          {
+            "source_ref": "pokerology_starting_hands",
+            "evidence_type": "tier_examples",
+            "range_read": "2345 is good because of counterfeit protection, while middling hands need caution even when they look coordinated.",
+            "notes": "best A345 / 2345 only の考え方を補強。"
+          }
+        ]
+      },
+      "source_refs": [
+        "omahaplanet_starting_hands",
+        "omahaplanet_high_only",
+        "omahaplanet_ace_two",
+        "pokerstars_part2",
+        "pokerstars_part3",
+        "steve_badger_secret",
+        "pokerology_starting_hands",
+        "omahaindicator_manual_pdf"
+      ]
+    },
+    "BTN": {
+      "label": "BTN / widest public open",
+      "role_label": "widest open seat",
+      "open_band": "widest open / still scoop-first",
+      "versus_open_band": "widest practical cold call",
+      "position_summary": "BTN は最も広く open できる seat ですが、公開ソースの widen も 'なんでも open' ではなく、A3 / A4 / A5 support と best non-ace lows を少し足す形です。high-only はあくまで末尾の例外帯です。",
+      "caution_note": "BTN でも naked A2、middles、ace-less high trash は main surface に入りません。late position の強さは、one-way junk を play できることではなく、supported fringe を play できることです。",
+      "overview": {
+        "seat_trigger": "position edge が最大で、open も cold call も一番広がる seat です。",
+        "open_identity": "CO core に A45K / A46K / A56K と 2345 / 2346、そして best premium high-only ds を少量だけ足します。",
+        "adds_here": "BTN では supported A4 / A5 と best non-ace lows が初めて実戦的な open fringe になります。",
+        "still_avoid": "A2 trap、weak A5xx、high-only の flat、middle cards、ace-less trash は still fold 側です。"
+      },
+      "at_a_glance": {
+        "open_core": "CO core + A45K / A46K / A56K + 2345 / 2346",
+        "position_add": "AAKKds / AAJTds / AKKQds / AKQJds are late-position exceptions only",
+        "vs_open": "IP call は HC1-HC4 core + best supported A3 / A4 / 23",
+        "snap_fold": "A299 / weak A5xx / most high-only calls / 6789 / 789T / JJT9"
+      },
+      "open_section": {
+        "section_label": "Open / RFI",
+        "anchor_profile": "widest seat, but still two-way first",
+        "public_range_read": "BTN open は public source の中で最も広い席です。CO core に supported A4 / A5、2345 / 2346、そして premium high-only ds を少量だけ足せます。ただし widen の意味は 'one-way junk まで play する' ではなく、position で fringe two-way hands を扱えるようになることです。",
+        "range_groups": [
+          {
+            "label": "無条件で開く",
+            "tone": "attack",
+            "items": [
+              "CO core 全体",
+              "A45K / A46K / A56K strong suits",
+              "2345 / 2346"
+            ]
+          },
+          {
+            "label": "条件付きで足す",
+            "tone": "conditional",
+            "items": [
+              "AAKK ds / AAJT ds",
+              "AKKQ ds / AKQJ ds",
+              "best KKA3 / KKA4"
+            ]
+          },
+          {
+            "label": "BTN でも外す",
+            "tone": "fold",
+            "items": [
+              "A299 / A2TT trap",
+              "weak A5xx",
+              "middle-card clusters",
+              "ace-less high trash"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "BTN の本体",
+            "tone": "attack",
+            "range_read": "CO core に supported A4 / A5 と 2345 / 2346 を足し、position を使って two-way fringe を扱います。",
+            "when": "open 後の realization が高く、weak half を早めに捨てやすい時。",
+            "examples": "A45Kss / A46Kss / A56Kss / 2345 / 2346"
+          },
+          {
+            "label": "late-only 例外",
+            "tone": "conditional",
+            "range_read": "premium high-only ds は BTN で初めて practical になりますが、cheap-flop / no-low board を前提にした末尾の例外帯です。",
+            "when": "後ろが blinds だけで、heads-up か thin field に寄せやすい時。",
+            "examples": "AAKKds / AAJTds / AKKQds / AKQJds"
+          },
+          {
+            "label": "still no",
+            "tone": "fold",
+            "range_read": "naked A2、weak A5xx、middle cards、ace-less high junk は BTN でも main surface に入りません。",
+            "when": "勝っても half-only か second-best で止まりやすい時。",
+            "examples": "A299 / A58Tr / 6789ds / JJT9ss / KQJ9r"
+          }
+        ],
+        "table_columns": [
+          "帯",
+          "代表レンジ / 例",
+          "運用"
+        ],
+        "table_rows": [
+          [
+            "Core",
+            "CO core + A45K, A46K, A56K, 2345, 2346",
+            "BTN open の本体"
+          ],
+          [
+            "Conditional",
+            "AAKKds, AAJTds, AKKQds, AKQJds, best KKA3 / KKA4",
+            "late-only 例外"
+          ],
+          [
+            "Fold",
+            "A299, weak A5xx, middles, ace-less high junk",
+            "still cut"
+          ]
+        ],
+        "source_note": "OmahaPlanet の late-only high-only と non-ace lows、Pokerology の 2345 / AKQJ tier、Part 2 の high-only examples を BTN 用に統合した open band です。",
+        "collected_rows": [
+          {
+            "source_ref": "omahaplanet_high_only",
+            "evidence_type": "late_position_rule",
+            "range_read": "High-only hands belong mainly to button / cutoff and should see cheap flops; never go to war preflop with them.",
+            "notes": "premium high-only を BTN の conditional add に限定。"
+          },
+          {
+            "source_ref": "omahaplanet_starting_hands",
+            "evidence_type": "non_ace_hand_rule",
+            "range_read": "2345 / 2346 are the best non-ace hands, but they remain a special class rather than a default no-ace license.",
+            "notes": "BTN で only best non-ace lows を足す。"
+          },
+          {
+            "source_ref": "pokerology_starting_hands",
+            "evidence_type": "tier_examples",
+            "range_read": "2345 is a good hand with counterfeit protection, AKQJ is a good high-only hand, and middling coordinated hands still need caution.",
+            "notes": "BTN widen の順番を支える。"
+          }
+        ]
+      },
+      "versus_section": {
+        "section_label": "Cold call / facing earlier open",
+        "anchor_profile": "widest practical IP cold-call seat",
+        "public_range_read": "BTN は earlier open に対して最も practical に cold call しやすい seat です。それでも core は scoop-first で、A2 premium と best supported A3 / A4 / 23 が中心です。high-only flat と trap A2 は main surface に入れません。",
+        "range_groups": [
+          {
+            "label": "主にコール",
+            "tone": "attack",
+            "items": [
+              "AA23-26 ds / best ss",
+              "A234 / A235 / A245",
+              "AK23 / AQ24 strong suited",
+              "A345 / A34K / A23K"
+            ]
+          },
+          {
+            "label": "条件付きコール",
+            "tone": "conditional",
+            "items": [
+              "A45K / A46K strong suits",
+              "2345 / 2346",
+              "best A2KQ ds / A2KJ ds"
+            ]
+          },
+          {
+            "label": "BTN flat から外す",
+            "tone": "fold",
+            "items": [
+              "most high-only hands",
+              "A299 / A2TT trap",
+              "weak A5xx",
+              "6789 / 789T middles"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "IP flat の core",
+            "tone": "attack",
+            "range_read": "A2 premium core と best supported A3 / A4 / 23 を flat し、postflop で half-only を避けながら advantage を取ります。",
+            "when": "last position が保証され、open 側の c-bet / barrel に対して selectivity を保てる時。",
+            "examples": "AA23ds / A245 / AK23ss / A345ss / A34Kss"
+          },
+          {
+            "label": "BTN だけの fringe call",
+            "tone": "conditional",
+            "range_read": "supported A4 と 2345 / 2346 は BTN でだけ少量 call 候補になります。A2 broadway も strongest suited だけに止めます。",
+            "when": "open size が重すぎず、multiway でも dominated half を認識しやすい時。",
+            "examples": "A45Kss / 2345 / 2346 / A2KQds"
+          },
+          {
+            "label": "IP でも call しない",
+            "tone": "fold",
+            "range_read": "high-only flat、trap A2、weak A5xx、middle cards は BTN でも flat より fold 側です。",
+            "when": "open range と field が強く、half-only draw の価値が下がる時。",
+            "examples": "AAKKds / A299 / A58Tr weak / 6789ds"
+          }
+        ],
+        "table_columns": [
+          "帯",
+          "代表レンジ / 例",
+          "運用"
+        ],
+        "table_rows": [
+          [
+            "Core call",
+            "AA23-26ds, A234, A235, A245, AK23ss, AQ24ss, A345, A34K, A23K",
+            "BTN flat の本体"
+          ],
+          [
+            "Conditional",
+            "A45Kss, 2345, 2346, best A2KQds / A2KJds",
+            "BTN だけの fringe"
+          ],
+          [
+            "Fold",
+            "high-only calls, A299, weak A5xx, middles",
+            "flat を広げすぎない"
+          ]
+        ],
+        "source_note": "Part 3 の trap hand filter を維持しつつ、BTN だけ position edge で best supported A4 / non-ace low を少量 call 側に回しています。",
+        "collected_rows": [
+          {
+            "source_ref": "pokerstars_part3",
+            "evidence_type": "trap_and_blind_filter",
+            "range_read": "Trap A2 and conservative blind play imply that even BTN should not flat one-way traps too freely.",
+            "notes": "BTN cold call を 'widest but still disciplined' にする根拠。"
+          },
+          {
+            "source_ref": "omahaplanet_high_only",
+            "evidence_type": "cheap_flop_rule",
+            "range_read": "High-only wants cheap flops and fast folds, not routine cold calls into strength.",
+            "notes": "high-only flat を main surface から外す。"
+          },
+          {
+            "source_ref": "pokerology_starting_hands",
+            "evidence_type": "tier_examples",
+            "range_read": "Counterfeit-protected low hands are better flats than pretty middles or thin high-only hands.",
+            "notes": "2345 / A345 と middles の差を補強。"
+          }
+        ]
+      },
+      "source_refs": [
+        "omahaplanet_starting_hands",
+        "omahaplanet_high_only",
+        "omahaplanet_ace_two",
+        "pokerstars_part2",
+        "pokerstars_part3",
+        "pokerstars_raising",
+        "steve_badger_secret",
+        "pokerology_starting_hands",
+        "omahaindicator_manual_pdf"
+      ]
+    },
+    "SB": {
+      "label": "SB / OOP tighten again",
+      "role_label": "OOP blind seat",
+      "open_band": "BTN より 1 段タイト",
+      "versus_open_band": "almost no-call / mostly 3-bet-or-fold",
+      "position_summary": "SB は BTN に近い late seat ですが、postflop は最悪の OOP です。公開ソースの最大公約数は、open は BTN より 1 段タイト、cold call はかなり絞る、という読みになります。",
+      "caution_note": "SB は 'late position だから広げる' ではなく、OOP だから again tighten する席です。特に one-way hands と trap A2 の flat は leak になりやすいです。",
+      "overview": {
+        "seat_trigger": "後ろが BB だけでも、postflop OOP の不利が大きく、open と call の両方を締め直す席です。",
+        "open_identity": "A2 premium core と best A2 broadway までは open 側に残すが、A3 / 23 tails、A4 / A5 tails、high-only は基本 cut します。",
+        "adds_here": "BB がかなり受け身なら best A2KJ / A2QJ ds を加える程度で、BTN fringe をそのまま移植しません。",
+        "still_avoid": "cold call の high-only、naked A2、supported fringe の打ちすぎ、middle cards は leak です。"
+      },
+      "at_a_glance": {
+        "open_core": "AA23-26 ds / A234 / A235 / A245 / AK23 ss / AQ24 ss / best A2KQ ds",
+        "position_add": "best A2KJ ds / A2QJ ds only if BB is passive",
+        "vs_open": "cold call は AA23-26, A234 / A235 / A245, AK23 / AQ24 strong suited を中心に very tight",
+        "snap_fold": "A3 / 23 / A4 / A5 tails, most high-only, A299 / A2TT, middles"
+      },
+      "open_section": {
+        "section_label": "Open / RFI",
+        "anchor_profile": "late seat but OOP tighten again",
+        "public_range_read": "SB open は BTN より 1 段タイトです。A2 premium core と best A2 broadway までは残しますが、supported A3 / 23 tails、A4 / A5 tails、premium high-only は public-consensus main surface から外します。",
+        "range_groups": [
+          {
+            "label": "無条件で開く",
+            "tone": "attack",
+            "items": [
+              "AA23-26 ds / best ss",
+              "A234 / A235 / A245",
+              "AK23 / AQ24 strong suited",
+              "best A2KQ ds"
+            ]
+          },
+          {
+            "label": "条件付きで足す",
+            "tone": "conditional",
+            "items": [
+              "best A2KJ ds",
+              "best A2QJ ds",
+              "rare A345 strong suits exploit only"
+            ]
+          },
+          {
+            "label": "SB open から外す",
+            "tone": "fold",
+            "items": [
+              "A3 / 23 tails",
+              "A4 / A5 supported tails",
+              "2345 / 2346 no ace",
+              "premium high-only",
+              "6789 / 789T middles"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "SB の本体",
+            "tone": "attack",
+            "range_read": "A2 premium core と best A2 broadway で OOP でも strong enough な open を作ります。",
+            "when": "BB の defend があっても scoop path と visibility が十分残る時。",
+            "examples": "AA23ds / A245 / AK23ss / A2KQds"
+          },
+          {
+            "label": "BB 次第の追加",
+            "tone": "conditional",
+            "range_read": "A2KJ / A2QJ と very best A345 は BB が passive な時だけ少量足します。",
+            "when": "BB が 3-bet も defend も薄く、postflop の OOP penalty を下げられる時。",
+            "examples": "A2KJds / A2QJds / A345ss"
+          },
+          {
+            "label": "BTN から戻す帯",
+            "tone": "fold",
+            "range_read": "BTN で許容した supported A3 / A4 / A5 tails、non-ace lows、high-only を SB では again cut します。",
+            "when": "同じ hand でも OOP で EV が落ちる時。",
+            "examples": "A34Kss / A45Kss / 2345 / AAKKds / 6789ds"
+          }
+        ],
+        "table_columns": [
+          "帯",
+          "代表レンジ / 例",
+          "運用"
+        ],
+        "table_rows": [
+          [
+            "Core",
+            "AA23-26ds, A234, A235, A245, AK23ss, AQ24ss, best A2KQds",
+            "SB open の本体"
+          ],
+          [
+            "Conditional",
+            "best A2KJds, best A2QJds, rare A345ss",
+            "BB が受け身なら少量だけ"
+          ],
+          [
+            "Fold",
+            "A3 / A4 / A5 tails, 2345, high-only, middles",
+            "BTN fringe を戻す"
+          ]
+        ],
+        "source_note": "Part 3 の small blind conservatism と OmahaPlanet の late-only high-only caution を重ね、BTN の fringe を SB で切り戻しています。",
+        "collected_rows": [
+          {
+            "source_ref": "pokerstars_part3",
+            "evidence_type": "small_blind_conservatism",
+            "range_read": "Small blind should play conservatively and keep only good hands or marginal hands you can read clearly postflop.",
+            "notes": "SB open を BTN より 1 段締める主根拠。"
+          },
+          {
+            "source_ref": "omahaplanet_high_only",
+            "evidence_type": "late_position_rule",
+            "range_read": "High-only belongs mainly to button and cutoff, with blinds only to a lesser extent and cheaply.",
+            "notes": "SB では high-only を main band に入れない。"
+          },
+          {
+            "source_ref": "omahaplanet_ace_two",
+            "evidence_type": "backup_requirement",
+            "range_read": "A2 still needs backup and can be quartered badly when overplayed.",
+            "notes": "SB で naked A2 と fringe A2 tails を cut する。"
+          }
+        ]
+      },
+      "versus_section": {
+        "section_label": "Cold call / facing open",
+        "anchor_profile": "almost no-call public band",
+        "public_range_read": "SB cold call はこの surface で最もタイトです。多くの公開ソースは 'good hand only' か 'ほぼ 3-bet-or-fold' に寄せており、flat は AA23 系、A234 / A235 / A245、AK23 / AQ24 strong suited までを上限に置くのが安全です。",
+        "range_groups": [
+          {
+            "label": "主にコール",
+            "tone": "attack",
+            "items": [
+              "AA23-26 ds / best ss",
+              "A234 / A235 / A245",
+              "AK23 / AQ24 strong suited"
+            ]
+          },
+          {
+            "label": "条件付きコール",
+            "tone": "conditional",
+            "items": [
+              "best A2KQ ds"
+            ]
+          },
+          {
+            "label": "SB flat から外す",
+            "tone": "fold",
+            "items": [
+              "most SB calls",
+              "A299 / A2TT trap",
+              "supported A3 / A4 / A5 tails",
+              "high-only hands",
+              "6789 / 789T middles"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "残す flat",
+            "tone": "attack",
+            "range_read": "SB flat は AA23 系と strongest scoop-first core だけに寄せます。",
+            "when": "call しても half-only ではなく、postflop OOP でも plan が見える時。",
+            "examples": "AA23ds / A245 / AK23ss"
+          },
+          {
+            "label": "ごく少量の fringe",
+            "tone": "conditional",
+            "range_read": "best A2KQ ds だけは lineup 次第で残せますが、ここも 3-bet-or-fold 寄りに読むのが基本です。",
+            "when": "open 側が light で、BB の squeeze も low frequency な時。",
+            "examples": "A2KQds"
+          },
+          {
+            "label": "基本は call しない",
+            "tone": "fold",
+            "range_read": "trap A2、supported tails、high-only、middles は SB call から外します。open で残しても call では締めます。",
+            "when": "OOP で recognition が難しく、quarter / dominated half のコストが大きい時。",
+            "examples": "A299 / A34Kss / A45Kss / AAKKds / 6789ds"
+          }
+        ],
+        "table_columns": [
+          "帯",
+          "代表レンジ / 例",
+          "運用"
+        ],
+        "table_rows": [
+          [
+            "Core call",
+            "AA23-26ds, A234, A235, A245, AK23ss, AQ24ss",
+            "SB flat の上限帯"
+          ],
+          [
+            "Conditional",
+            "best A2KQds",
+            "lineup がかなり良い時だけ"
+          ],
+          [
+            "Fold",
+            "most calls, trap A2, supported tails, high-only, middles",
+            "3-bet-or-fold 寄り"
+          ]
+        ],
+        "source_note": "PokerStars の small blind conservatism と high-only / trap filters、OmahaPlanet の bare A2 warning を重ねると、SB cold call はほぼ no-call 寄りになります。",
+        "collected_rows": [
+          {
+            "source_ref": "pokerstars_part3",
+            "evidence_type": "small_blind_conservatism",
+            "range_read": "Small blind should play conservatively and keep only the good hands or the marginal hands you read clearly.",
+            "notes": "SB call を極端に締める直接根拠。"
+          },
+          {
+            "source_ref": "omahaplanet_high_only",
+            "evidence_type": "cheap_flop_rule",
+            "range_read": "High-only should not be used to go to war preflop or to call reraises.",
+            "notes": "SB cold call から high-only を外す。"
+          },
+          {
+            "source_ref": "omahaplanet_ace_two",
+            "evidence_type": "quarter_risk_rule",
+            "range_read": "A2 on its own is not a free pass and gets punished when overplayed without backup.",
+            "notes": "SB call で trap A2 を削る。"
+          }
+        ]
+      },
+      "source_refs": [
+        "omahaplanet_starting_hands",
+        "omahaplanet_high_only",
+        "omahaplanet_ace_two",
+        "pokerstars_part3",
+        "steve_badger_secret",
+        "pokerology_starting_hands",
+        "omahaindicator_manual_pdf"
+      ]
+    }
+  }
+}

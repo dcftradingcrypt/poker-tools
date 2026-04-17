@@ -1,0 +1,639 @@
+{
+  "dataset_id": "badugi_pre_draw_position_ranges_v3",
+  "version": 3,
+  "scope": {
+    "game": "fixed_limit_badugi",
+    "phase": "before_first_draw",
+    "primary_view": "first_in_open",
+    "position_buttons": [
+      "EP",
+      "MP",
+      "CO",
+      "BTN",
+      "SB"
+    ],
+    "position_button_meaning": "shorthanded public-chart positions: First Position, Hijack, Cutoff, Button, and Small Blind",
+    "excluded_from_position_buttons": [
+      "BB"
+    ],
+    "excluded_reason": "public first-in open material does not publish a fixed BB row; BB remains a defense-only seat"
+  },
+  "strength_primer": {
+    "hand_class_order": [
+      "any 4-card badugi beats any 3-card incomplete hand",
+      "any 3-card incomplete hand beats any 2-card incomplete hand",
+      "any 2-card incomplete hand beats any 1-card incomplete hand"
+    ],
+    "rank_order_rule": "within the same card-count class, lower high card is better, then lower next-highest card, and so on",
+    "normalization_rule": "two-card starts are stored as unordered start classes such as A2, 23, 24, 34, A5, 25, 35, 45"
+  },
+  "collection_notes": [
+    "CountingOuts Part 3 remains the only explicit public first-in open chart and is therefore the primary chart row for EP, MP, CO, BTN, and the dynamic SB rule.",
+    "Kevin Haney's opening, tri, and two-card articles are stored as cross-check notes and late-position addenda; they do not overwrite the published CountingOuts chart row.",
+    "Danzer, Ohel, the Japanese note, the WSOP primer, and the PDF are retained as secondary checks on thresholds, dealt-hand class strength, and blind-vs-blind widening.",
+    "The table shown in the UI is built from open-hand classes first. Practical or source-specific caveats are kept as a single source note under the chart instead of replacing the chart itself."
+  ],
+  "position_order": [
+    "EP",
+    "MP",
+    "CO",
+    "BTN",
+    "SB"
+  ],
+  "positions": {
+    "EP": {
+      "label": "First Position",
+      "seat_band": [
+        "short_handed_first_position"
+      ],
+      "first_in_open": {
+        "anchor_chart_pct": "14.3%",
+        "chart_source_ref": "countingouts_p3",
+        "position_read": "Merged public open union: if a hand class shows up here, it is part of the open surface rather than a cut line.",
+        "public_range_read": "4-high through J-high pat badugis plus breakable Q/K, 3-high through 7-high tris plus smooth 8-high tris, and no default two-card opens.",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_p3",
+            "evidence_type": "explicit_chart",
+            "open_pct": "14.3%",
+            "pat": "J-high or better badugi, plus breakable Q-high and K-high badugis",
+            "tri": "75X or better tri",
+            "two_card": "none"
+          },
+          {
+            "source_ref": "haney_opening",
+            "evidence_type": "direct_text",
+            "open_pct": "13-14%",
+            "pat": "Weak pat-jacks often fold unless the underlying three-card hand is strong",
+            "tri": "Any 7-tri and the smoother 8-tri that can reduce well",
+            "two_card": "not part of the default early open"
+          },
+          {
+            "source_ref": "haney_three_card",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "",
+            "tri": "A seven tri or better is playable from any position; select smooth 8-tri are also playable from the first two positions",
+            "two_card": ""
+          },
+          {
+            "source_ref": "haney_two_card",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "",
+            "tri": "",
+            "two_card": "Two-card draws should not be opened from early position"
+          },
+          {
+            "source_ref": "danzer_interview",
+            "evidence_type": "rule_of_thumb",
+            "open_pct": "",
+            "pat": "Pat badugis can raise, but full-ring early position should not raise bad kings",
+            "tri": "Early position wants three low cards, five or lower",
+            "two_card": "no early two-card loosening"
+          },
+          {
+            "source_ref": "pdf_badugi_guide",
+            "evidence_type": "supplemental_pdf",
+            "open_pct": "",
+            "pat": "",
+            "tri": "Play any 3 cards under a 7 from early position",
+            "two_card": "none"
+          },
+          {
+            "source_ref": "jp_note_kogoro",
+            "evidence_type": "secondary_note",
+            "open_pct": "",
+            "pat": "",
+            "tri": "Smoothness is the key tiebreaker for borderline tri hands",
+            "two_card": "Two-card opens from early position are not recommended"
+          }
+        ],
+        "open_table_rows": [
+          ["Pat badugis", "4-high through J-high; breakable Q-high and K-high at the edge"],
+          ["Three-card hands", "3-high through 7-high; smooth 8-high at the edge"],
+          ["Two-card hands", "None"]
+        ],
+        "source_note": "CountingOuts publishes J+ plus breakable Q/K and 75X+ tri. Haney and the tri article make the practical early row read more naturally as all 7-tri plus smooth 8-high tri, with no early two-card opens."
+      },
+      "source_refs": [
+        "countingouts_p3",
+        "haney_opening",
+        "haney_three_card",
+        "haney_two_card",
+        "danzer_interview",
+        "pdf_badugi_guide",
+        "jp_note_kogoro"
+      ]
+    },
+    "MP": {
+      "label": "Hijack",
+      "seat_band": [
+        "short_handed_hijack"
+      ],
+      "first_in_open": {
+        "anchor_chart_pct": "18.2%",
+        "chart_source_ref": "countingouts_p3",
+        "position_read": "Merged public open union: the middle-position row includes exact chart classes plus the public hijack widening that still recurs across sources.",
+        "public_range_read": "4-high through J-high badugis with breakable K at the edge, 3-high through 8-high tris, and 2-high through 5-high two-card classes with the weakest 5-highs at the edge.",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_p3",
+            "evidence_type": "explicit_chart",
+            "open_pct": "18.2%",
+            "pat": "Q-high or better badugi, plus breakable K-high badugis",
+            "tri": "A48 or better tri",
+            "two_card": "none in the explicit chart row"
+          },
+          {
+            "source_ref": "haney_opening",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "Hijack can open some jacks, though many players can still stay at tens or better in loose games",
+            "tri": "Open a few more 8-tri that still reduce to at least a 5-high tri",
+            "two_card": "Begin to open only the very best low two-card draws"
+          },
+          {
+            "source_ref": "haney_three_card",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "",
+            "tri": "Any 7-tri is playable and smoother 8-tri is the next practical layer",
+            "two_card": ""
+          },
+          {
+            "source_ref": "pdf_badugi_guide",
+            "evidence_type": "supplemental_pdf",
+            "open_pct": "",
+            "pat": "",
+            "tri": "Mid position still plays any 3 cards under a 7",
+            "two_card": "Adds any 2 cards under a 5"
+          }
+        ],
+        "open_table_rows": [
+          ["Pat badugis", "4-high through J-high; breakable K-high at the edge"],
+          ["Three-card hands", "3-high through 8-high, with rougher 8-high tri still near the edge"],
+          ["Two-card hands", "2-high through 5-high classes such as A2 / 23 / A3 / A4 / 24 / A5 / 25 / 35 / 45; the weakest 5-high starts sit at the edge"]
+        ],
+        "source_note": "CountingOuts publishes Q+ plus breakable K and A48+ tri. Haney's hijack text and the Japanese tier framing widen that into all 7-high tri, smooth 8-high tri, and premium 2-high through 5-high two-card classes."
+      },
+      "source_refs": [
+        "countingouts_p3",
+        "haney_opening",
+        "haney_three_card",
+        "pdf_badugi_guide"
+      ]
+    },
+    "CO": {
+      "label": "Cutoff",
+      "seat_band": [
+        "late_position_cutoff"
+      ],
+      "first_in_open": {
+        "anchor_chart_pct": "28.3%",
+        "chart_source_ref": "countingouts_p3",
+        "position_read": "Merged public open union: the cutoff row keeps the published shell, normal late-position adds, and a soft-lineup fringe from the tier notes.",
+        "public_range_read": "All badugis, all 3-high through 8-high tris, all 2-high through 5-high two-card classes, plus a soft-lineup fringe of some 9-high tris and 6-high through 8-high two-card classes.",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_p3",
+            "evidence_type": "explicit_chart",
+            "open_pct": "28.3%",
+            "pat": "All badugis",
+            "tri": "8 or better tri",
+            "two_card": "A2 and A3"
+          },
+          {
+            "source_ref": "haney_opening",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "Q-high or better badugi is the practical recommendation, though some weaker pats are close",
+            "tri": "Any 8-tri is generally worth opening",
+            "two_card": "A2 and A3 are standard; 23, A4, and 24 are judgment calls"
+          },
+          {
+            "source_ref": "haney_three_card",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "",
+            "tri": "Rougher 8-tri begins to enter from cutoff onward",
+            "two_card": ""
+          },
+          {
+            "source_ref": "haney_two_card",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "",
+            "tri": "",
+            "two_card": "Late-position opens are where two-card draws perform best"
+          },
+          {
+            "source_ref": "jp_note_kogoro",
+            "evidence_type": "secondary_note",
+            "open_pct": "",
+            "pat": "",
+            "tri": "Tier4 late-position fringe includes 9-high tri in soft lineups",
+            "two_card": "Tier4 late-position fringe includes 6-high, 7-high, and 8-high two-card hands"
+          }
+        ],
+        "open_table_rows": [
+          ["Pat badugis", "All badugis"],
+          ["Three-card hands", "3-high through 8-high; selected 9-high tri in soft or over-folding lineups"],
+          ["Two-card hands", "2-high through 5-high classes such as A2 / 23 / A3 / A4 / 24 / A5 / 25 / 35 / 45; add 6-high classes such as A6 / 26 / 36 / 46 / 56, plus selected 7-high and 8-high classes, only in soft or over-folding lineups"]
+        ],
+        "source_note": "CountingOuts already gives all badugis and all 8-tri here. Haney's late-position two-card adds cover the obvious low classes, while the Japanese Tier4 note pushes the cutoff fringe out toward some 9-high tri and the softer 6-high through 8-high two-card classes."
+      },
+      "source_refs": [
+        "countingouts_p3",
+        "haney_opening",
+        "haney_three_card",
+        "haney_two_card",
+        "jp_note_kogoro"
+      ]
+    },
+    "BTN": {
+      "label": "Button",
+      "seat_band": [
+        "button"
+      ],
+      "first_in_open": {
+        "anchor_chart_pct": "38.2%",
+        "chart_source_ref": "countingouts_p3",
+        "position_read": "Merged public open union: the button row shows the default steal surface plus the late-position Tier4 fringe that appears in the Japanese notes.",
+        "public_range_read": "All badugis, all 3-high through 9-high tris, all 2-high through 6-high two-card classes, plus a fringe of selected 7-high and 8-high two-card classes.",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_p3",
+            "evidence_type": "explicit_chart",
+            "open_pct": "38.2%",
+            "pat": "All badugis",
+            "tri": "9 or better tri",
+            "two_card": "A2, A3, 23, A4"
+          },
+          {
+            "source_ref": "haney_opening",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "Any badugi is playable from the button",
+            "tri": "Rough 9-tri becomes part of the normal steal surface, with the very worst rough 9s at the bottom edge",
+            "two_card": "Any A2 or A3, the vast majority of 23 / A4 / 24, plus 34 and A5 with good blockers"
+          },
+          {
+            "source_ref": "haney_three_card",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "",
+            "tri": "Rough 9-tri begins here",
+            "two_card": ""
+          },
+          {
+            "source_ref": "haney_two_card",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "",
+            "tri": "",
+            "two_card": "Two-card draws are naturally opened from late position"
+          },
+          {
+            "source_ref": "ohel_fundamentals",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "Button can open any badugi",
+            "tri": "",
+            "two_card": "Button steals still prefer the smoother low two-card starts"
+          },
+          {
+            "source_ref": "jp_note_kogoro",
+            "evidence_type": "secondary_note",
+            "open_pct": "",
+            "pat": "",
+            "tri": "Tier4 late-position starts remain playable from the button more often than from cutoff",
+            "two_card": "6-high, 7-high, and 8-high two-card hands belong to the button fringe; 6-high two-card hands can also overlimp behind multiple limpers"
+          }
+        ],
+        "open_table_rows": [
+          ["Pat badugis", "All badugis"],
+          ["Three-card hands", "3-high through 9-high; very rough 9-high tri at the outer edge"],
+          ["Two-card hands", "2-high through 6-high classes, including A2 / 23 / A3 / A4 / 24 / A5 / 25 / 35 / 45 / A6 / 26 / 36 / 46 / 56; selected 7-high and 8-high classes such as A7 / 27 / 37 / 47 / 57 / 67 and A8 / 28 / 38 / 48 / 58 / 68 / 78 only at the outer edge"]
+        ],
+        "source_note": "CountingOuts defines the exact button row at A2/A3/23/A4. Haney and Ohel widen that obvious low core, and the Japanese Tier4 note is what pushes the button fully out to the 6-high class band plus selected 7-high and 8-high two-card fringe."
+      },
+      "source_refs": [
+        "countingouts_p3",
+        "haney_opening",
+        "haney_three_card",
+        "haney_two_card",
+        "ohel_fundamentals",
+        "jp_note_kogoro"
+      ]
+    },
+    "SB": {
+      "label": "Small Blind",
+      "seat_band": [
+        "small_blind_vs_BB"
+      ],
+      "first_in_open": {
+        "anchor_chart_pct": "dynamic",
+        "chart_source_ref": "countingouts_p3",
+        "position_read": "Dynamic blind-vs-blind open union anchored to the button range.",
+        "public_range_read": "Use the button range versus strong BB; add 24/34/A5/25/35/45 against weaker BB.",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_p3",
+            "evidence_type": "explicit_rule",
+            "open_pct": "dynamic",
+            "pat": "Against tough players, use the button opening range",
+            "tri": "Against tough players, use the button opening range",
+            "two_card": "Against softer competition add 24, 34, A5, 25, 35, and 45"
+          },
+          {
+            "source_ref": "danzer_interview",
+            "evidence_type": "rule_of_thumb",
+            "open_pct": "",
+            "pat": "",
+            "tri": "Button, cutoff, and blinds can loosen into more one-card draws to a 6 or 7",
+            "two_card": "Blinds can widen to two cards 5 or lower"
+          },
+          {
+            "source_ref": "ohel_fundamentals",
+            "evidence_type": "direct_text",
+            "open_pct": "",
+            "pat": "",
+            "tri": "",
+            "two_card": "Small blind versus a button open should keep only the smoother low two-card starts"
+          },
+          {
+            "source_ref": "pdf_badugi_guide",
+            "evidence_type": "supplemental_pdf",
+            "open_pct": "",
+            "pat": "Any badugi in late position",
+            "tri": "Any 3 cards under an 8 in late position",
+            "two_card": "2 cards under a 5 in late position"
+          },
+          {
+            "source_ref": "jp_note_kogoro",
+            "evidence_type": "secondary_note",
+            "open_pct": "",
+            "pat": "",
+            "tri": "",
+            "two_card": "Blind-vs-blind stealing and defending are highly population dependent"
+          }
+        ],
+        "open_table_rows": [
+          ["Baseline", "Button chart row"],
+          ["Pat badugis", "All badugis"],
+          ["Three-card hands", "3-high through 9-high"],
+          ["Two-card hands", "A2 / A3 / 23 / A4 baseline; most 24 plus selected 34 / A5 against weaker BB; 25 / 35 / 45 only in the softest blind-vs-blind spots"]
+        ],
+        "source_note": "CountingOuts gives the exact blind-vs-blind add-on list. Danzer and the PDF both support wider blind seats built from low two-card starts and one-card draws to a 6 or 7, which lines up with the dynamic SB expansion."
+      },
+      "source_refs": [
+        "countingouts_p3",
+        "danzer_interview",
+        "ohel_fundamentals",
+        "pdf_badugi_guide",
+        "jp_note_kogoro"
+      ]
+    }
+  },
+  "source_index": {
+    "countingouts_p3": {
+      "title": "Mastering Badugi Part 3 – Strategy before the First Draw",
+      "weight": "primary",
+      "url": "https://www.countingouts.com/mastering-badugi-part-3-strategy-before-the-first-draw/"
+    },
+    "countingouts_p4": {
+      "title": "Mastering Badugi Part 4 – Three Betting Ranges",
+      "weight": "supporting",
+      "url": "https://www.countingouts.com/mastering-badugi-part-4-three-betting-ranges/"
+    },
+    "countingouts_p5": {
+      "title": "Mastering Badugi Part 5 – Middle Rounds (ABC Play)",
+      "weight": "supporting",
+      "url": "https://www.countingouts.com/mastering-badugi-part-5-middle-rounds-abc-play/"
+    },
+    "countingouts_p6": {
+      "title": "Mastering Badugi Part 6 – Middle Rounds (Making Moves)",
+      "weight": "supporting",
+      "url": "https://www.countingouts.com/mastering-badugi-part-6-middle-rounds-making-moves/"
+    },
+    "haney_opening": {
+      "title": "Poker Strategy With Kevin Haney: Badugi Opening Standards",
+      "weight": "primary",
+      "url": "https://www.cardplayer.com/poker-news/25291-poker-strategy-with-kevin-haney-badugi-opening-standards"
+    },
+    "haney_three_card": {
+      "title": "Badugi: Three-Card Badugis",
+      "weight": "primary",
+      "url": "https://www.cardplayer.com/cardplayer-poker-magazines/66435-global-poker-33-10/articles/23985-badugi-three-card-badugis"
+    },
+    "haney_two_card": {
+      "title": "Badugi: A Discussion On Two-Card Draws",
+      "weight": "primary",
+      "url": "https://www.cardplayer.com/cardplayer-poker-magazines/66437-timothy-adams-33-13/articles/24002-badugi-a-discussion-on-two-card-draws"
+    },
+    "ohel_fundamentals": {
+      "title": "Poker Strategy With WSOP Bracelet Winner Randy Ohel: Fundamentals Of Badugi",
+      "weight": "secondary",
+      "url": "https://www.cardplayer.com/poker-news/24769-poker-strategy-with-wsop-bracelet-winner-randy-ohel-fundamentals-of-badugi"
+    },
+    "danzer_interview": {
+      "title": "George Danzer Discusses Betting And Bluffing In Badugi",
+      "weight": "secondary",
+      "url": "https://www.pokernews.com/strategy/george-danzer-discusses-betting-and-bluffing-in-badugi-22109.htm"
+    },
+    "pokernews_wsop_badugi": {
+      "title": "WSOP Mixed Games Strategy: Badugi",
+      "weight": "secondary",
+      "url": "https://www.pokernews.com/strategy/wsop-mixed-games-strategy-badugi-30578.htm"
+    },
+    "jp_note_kogoro": {
+      "title": "Badugiの基本戦略｜こごろー",
+      "weight": "secondary",
+      "url": "https://note.com/556nip/n/n29dd9d5851dd"
+    },
+    "pdf_badugi_guide": {
+      "title": "Badugi Poker: Rules and Strategies Guide",
+      "weight": "supplemental_pdf",
+      "url": "https://www.scribd.com/document/18032831/Badugi-Poker-The-Definitive-Guide"
+    }
+  },
+  "source_extracts": {
+    "countingouts_p3": {
+      "scope": "explicit first-in open chart",
+      "position_notes": {
+        "EP": "14.3%: J-high or better badugi, breakable Q/K badugi, 75X+ tri",
+        "MP": "18.2%: Q-high or better badugi, breakable K badugi, A48+ tri",
+        "CO": "28.3%: all badugis, 8-tri or better, A2 and A3",
+        "BTN": "38.2%: all badugis, 9-tri or better, A2 / A3 / 23 / A4",
+        "SB": "Use BTN baseline versus strong BB; add 24 / 34 / A5 / 25 / 35 / 45 versus softer BB"
+      }
+    },
+    "countingouts_p4": {
+      "scope": "three-betting ranges, not a first-in open chart",
+      "global_notes": [
+        "Outside the big blind, continue ranges stay heavily re-raise or fold.",
+        "A2 and A3 versus a loose button are support evidence for where low two-card hands become playable, not direct first-in open instructions."
+      ],
+      "position_notes": {
+        "BTN": "Loose button opener context shows A2 and A3 need a weak enough opposing range before they become profitable continue hands.",
+        "SB": "Small blind continue strategy should avoid weak cold-calls that turn the hand face up."
+      }
+    },
+    "countingouts_p5": {
+      "scope": "middle-round ABC play, used as a strength sanity check",
+      "global_notes": [
+        "Strong tris carry large equity advantages and should be bet for value and protection.",
+        "Two-card draws need visible improvement early and often must be abandoned when they fail to improve."
+      ],
+      "position_notes": {
+        "EP": "Tight early pat ranges imply that chasing weak holdings into early strength is costly.",
+        "MP": "When behind, rough incomplete hands lose value quickly after the second draw.",
+        "CO": "Multi-way overlay can justify straightforward drawing, but it does not create new first-in opens by itself.",
+        "BTN": "Position and implied odds improve the value of strong incomplete hands, especially strong tris.",
+        "SB": "Out-of-position realization remains worse than in-position realization."
+      }
+    },
+    "countingouts_p6": {
+      "scope": "middle-round moves, used as support for tri value and disguised defense",
+      "global_notes": [
+        "Never snow premium tris; they have too much showdown value.",
+        "A35-type big blind disguises show how much raw value strong low tris retain against loose steal ranges."
+      ],
+      "position_notes": {
+        "BTN": "Button steal ranges contain enough weak tri and two-card hands that disguised strong tri defenses can induce mistakes.",
+        "SB": "Out-of-position moves work better when the underlying tri is already strong."
+      }
+    },
+    "haney_opening": {
+      "scope": "main practical opening article",
+      "position_notes": {
+        "EP": "Any 7-tri and smoother 8-tri; weak pat-jacks can fold unless the underside is strong",
+        "MP": "Hijack can add more 8-tri and only the very best low two-card starts",
+        "CO": "Q-high or better badugi recommended in practice; any 8-tri; A2/A3 standard; 23/A4/24 are judgment calls",
+        "BTN": "Any badugi; rough 9-tri; A2/A3 always; vast majority of 23/A4/24; 34 and A5 with good side cards"
+      }
+    },
+    "haney_three_card": {
+      "scope": "tri value and tri threshold article",
+      "position_notes": {
+        "EP": "7-tri or better is usually playable from any position",
+        "MP": "Smooth 8-tri is the next practical layer after all 7-tri",
+        "CO": "Rougher 8-tri starts to enter from cutoff onward",
+        "BTN": "Rough 9-tri begins at button depth"
+      }
+    },
+    "haney_two_card": {
+      "scope": "two-card draw article",
+      "global_notes": [
+        "Two-card draws perform poorly against pat hands and in multi-way pots.",
+        "Two-card opens belong mainly to late position or big blind defense."
+      ],
+      "position_notes": {
+        "EP": "Do not open two-card draws from early position",
+        "CO": "Late-position entry is where two-card hands begin to become practical",
+        "BTN": "Late position is the natural home for low two-card opens"
+      }
+    },
+    "ohel_fundamentals": {
+      "scope": "practical blind-defense interview",
+      "position_notes": {
+        "BTN": "Button can open any badugi",
+        "SB": "Small blind defending versus a button open should use only the smoother portion of low two-card starts; big blind can defend some two-card 5s because of price"
+      }
+    },
+    "danzer_interview": {
+      "scope": "memorization shorthand",
+      "position_notes": {
+        "EP": "Early position wants three low cards 5 or lower",
+        "SB": "Cutoff, button, and blind positions can widen to more low-card one-draw and two-card starts"
+      }
+    },
+    "pokernews_wsop_badugi": {
+      "scope": "basic class-strength primer",
+      "global_notes": [
+        "Any badugi beats any tri; any tri beats any two-card incomplete hand.",
+        "Only about six percent of dealt hands are badugis, while strong tris are central to practical strategy."
+      ]
+    },
+    "jp_note_kogoro": {
+      "scope": "Japanese practical notes",
+      "position_notes": {
+        "EP": "Do not join early pots with weak tri or two-card leaks; rough tri hands create many mistakes",
+        "CO": "Tier4 late-position fringe can reach some 9-high tri and 6-high / 7-high / 8-high two-card hands when the blinds are soft or over-folding",
+        "BTN": "Tier4 late-position fringe includes 6-high two-card hands such as 56, plus selected 7-high and 8-high two-card hands; 6-high two-card hands can also overlimp behind multiple limpers",
+        "SB": "Blind-vs-blind ranges are highly population dependent"
+      }
+    },
+    "pdf_badugi_guide": {
+      "scope": "older shorthand PDF support",
+      "position_notes": {
+        "EP": "Play any 3 cards under a 7",
+        "MP": "Play any 3 cards under a 7, plus any 2 cards under a 5",
+        "SB": "Late position and blind seats can widen toward 3 cards under an 8 and 2 cards under a 5"
+      }
+    }
+  },
+  "source_coverage": [
+    {
+      "source_ref": "countingouts_p3",
+      "used_for": "explicit first-in open anchors and percentages",
+      "positions": ["EP", "MP", "CO", "BTN", "SB"]
+    },
+    {
+      "source_ref": "countingouts_p4",
+      "used_for": "three-bet gap check and non-BB continue discipline",
+      "positions": ["BTN", "SB"]
+    },
+    {
+      "source_ref": "countingouts_p5",
+      "used_for": "tri versus pat and two-card chase sanity checks after the draw",
+      "positions": ["EP", "MP", "CO", "BTN", "SB"]
+    },
+    {
+      "source_ref": "countingouts_p6",
+      "used_for": "tri value, snow candidates, and disguised big-blind strong-tri context",
+      "positions": ["BTN", "SB"]
+    },
+    {
+      "source_ref": "haney_opening",
+      "used_for": "position-by-position practical opening adjustments",
+      "positions": ["EP", "MP", "CO", "BTN"]
+    },
+    {
+      "source_ref": "haney_three_card",
+      "used_for": "smooth versus rough tri thresholds",
+      "positions": ["EP", "MP", "CO", "BTN"]
+    },
+    {
+      "source_ref": "haney_two_card",
+      "used_for": "where two-card starts belong and where they do not",
+      "positions": ["EP", "CO", "BTN"]
+    },
+    {
+      "source_ref": "ohel_fundamentals",
+      "used_for": "button opener breadth and blind defense texture",
+      "positions": ["BTN", "SB"]
+    },
+    {
+      "source_ref": "danzer_interview",
+      "used_for": "memorization shorthand for early versus late low-card thresholds",
+      "positions": ["EP", "SB"]
+    },
+    {
+      "source_ref": "pokernews_wsop_badugi",
+      "used_for": "class-strength primer: badugi over tri over two-card and the value of strong tris",
+      "positions": ["EP", "MP", "CO", "BTN", "SB"]
+    },
+    {
+      "source_ref": "jp_note_kogoro",
+      "used_for": "Japanese practical trims for weak tri and speculative late steals",
+      "positions": ["EP", "CO", "BTN", "SB"]
+    },
+    {
+      "source_ref": "pdf_badugi_guide",
+      "used_for": "older shorthand thresholds that corroborate early and late expansion bands",
+      "positions": ["EP", "MP", "SB"]
+    }
+  ]
+}

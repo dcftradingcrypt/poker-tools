@@ -1,0 +1,6 @@
+interface:
+  display_name: "Repo Runtime"
+  short_description: "Executes the current user step directly in this repository under AGENTS.override.md."
+  default_prompt: "Execute the current user step directly in this repository under AGENTS.override.md. Use the minimal repo-grounded working set required to satisfy the step safely. Read CLAUDE.md only when objective clarification is needed. Treat AGENTS.md, README*, repo/doc/*, and similar materials as non-authoritative evidence unless the current step makes them the direct object of work. You may edit adjacent files, tests, config, helper scripts, and create new files or directories when necessary, but do not broaden into unrelated cleanup or speculative refactor. Do not modify CLAUDE.md, commit, or push unless explicitly requested. When exactly one true user-owned item blocks progress, return one exact inline user-owned step form from AGENTS.override.md; otherwise return an evidence-based execution report."
+policy:
+  allow_implicit_invocation: true

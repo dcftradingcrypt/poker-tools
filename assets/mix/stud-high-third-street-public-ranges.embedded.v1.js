@@ -1,0 +1,1399 @@
+window.__STUD_HIGH_THIRD_STREET_PUBLIC_RANGES_V1 = {
+  "dataset_id": "stud_high_third_street_position_ranges_v1",
+  "version": 1,
+  "scope": {
+    "game": "fixed_limit_seven_card_stud_high",
+    "phase": "third_street",
+    "position_buttons": [
+      "EP",
+      "MP",
+      "LP",
+      "BI"
+    ],
+    "position_button_meaning": "bring-in 相対で正規化した third-street の位置: early full-quality / middle transition / late steal / bring-in seat",
+    "reconstruction_method": "公開 HTML / PDF の practical source overlap だけを third-street complete / continue range へ再分解。solver chart ではない"
+  },
+  "collection_notes": [
+    "2026-04-18 に HTML 記事群と PDF を再確認し、Stud High third street を EP / MP / LP / BI へ再構築しました。",
+    "Stud High に NLHE のような固定 seat percent chart はありません。live / dead card、up card、bring-in 相対位置、先行アクションを前提にした practical range として表示します。",
+    "今回は PokerTips だけに寄せず、CountingOuts の Stud High taxonomy、CardPlayer Haney 2024 PDF 群、PokerNews Lou Krieger 記事、公式 rules PDF を重ねて hand class を再分解しました。",
+    "長い説明文の保存ではなく、Open core / この位置で追加 / Vs complete / Snap fold を seat ごとに front 表示しています。",
+    "PDF は 101 Casino の Stud High rules と CardPlayer の 2024 strategy PDFs を必ず保持し、HTML と併記しています。",
+    "LP と BI は pure steal / pure defense に寄りすぎると誤るため、public source が重なる backup 条件だけを前に出しています。"
+  ],
+  "global_source_refs": [
+    "official_101_stud_high_rules_pdf",
+    "pokertips_stud_high",
+    "countingouts_stud_high_basic"
+  ],
+  "position_order": [
+    "EP",
+    "MP",
+    "LP",
+    "BI"
+  ],
+  "positions": {
+    "EP": {
+      "label": "序盤 / フルクオリティ席",
+      "seat_band": [
+        "immediately_left_of_bring_in",
+        "several_live_up_cards_still_behind"
+      ],
+      "position_summary": "bring-in のすぐ左寄りで、まだ後ろに複数のドアカードが残る third street の最も厳しい席です。",
+      "caution_note": "この席は「見た目がきれい」よりも「今 ahead か、clean に outdraw できるか」が優先です。dead card を踏んだ draw や bad kicker pair は早い段階で切ります。",
+      "overview": {
+        "seat_trigger": "後ろに live な high card と action が残るので、全3枚の協調が必要です。",
+        "open_identity": "rolled-up、live big pair、premium 3-high-card straight-flush、best concealed pair、live 3-flush / 3-straight が軸です。",
+        "adds_here": "完全 live の small pair + big overcard、straight-flush kicker pair、完全 live の AKJ 系 unopened を条件付きで足します。",
+        "still_avoid": "dead 3-flush、gap の大きい 3-straight、bad kicker small pair、completion + raise に向かう naked broadway。"
+      },
+      "open_complete": {
+        "section_label": "オープン / コンプリート",
+        "anchor_profile": "最初から強い made hand か、live な premium draw で入る席",
+        "public_range_read": "EP では「start with the best hand more often than not」がそのまま当てはまります。rolled-up、big pair、premium 3-straight-flush、そして live な concealed pair / 3-flush / 3-straight が中核で、dead card を踏んだ飾り hand は切ります。",
+        "range_groups": [
+          {
+            "label": "EP core",
+            "tone": "attack",
+            "items": [
+              "rolled-up trips",
+              "TT+ の live big pair",
+              "AKQss / QJTss",
+              "live concealed pair",
+              "live no-gap 3-straight",
+              "high-card backup 付き 3-flush"
+            ]
+          },
+          {
+            "label": "live 条件で追加",
+            "tone": "conditional",
+            "items": [
+              "A4/4・A5/5 のような small pair + big overcard",
+              "89/8ss のような medium pair + straight-flush kicker",
+              "AK/J up のような完全 live three big cards unopened",
+              "K6/6・Q7/7 の live buried pair"
+            ]
+          },
+          {
+            "label": "EP で落とす",
+            "tone": "fold",
+            "items": [
+              "bad kicker の 22-99",
+              "dead suit の弱い 3-flush",
+              "outs が多く死んだ 3-straight",
+              "9QA / K97 の steal 専用 hand",
+              "completion + raise を受ける rainbow broadway"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "積極的にコンプリート",
+            "tone": "attack",
+            "range_read": "rolled-up、live big pairs、premium 3-high-card straight-flush、live concealed pair、live no-gap 3-straight。",
+            "when": "後ろに cards が多く残るので、最初から大きな high を作れる class を中心に開きます。",
+            "examples": "AAA / KKx / (A♠K♠)Q♠ / (Q♥J♥)T♥ / buried QQ"
+          },
+          {
+            "label": "条件付きで開く",
+            "tone": "conditional",
+            "range_read": "small pair + ace/king kicker、medium pair + straight-flush kicker、完全 live の three big cards。",
+            "when": "paired hand の kicker が probable pair を追い越せるか、あるいは straight/flush の backup がある時だけです。",
+            "examples": "(A♠4♥)4♣ / (8♠9♠)8♣ / A♦K♣ down with J♣ up"
+          },
+          {
+            "label": "ここはフォールド",
+            "tone": "fold",
+            "range_read": "bad kicker small/medium pair、dead draw、steal 前提の three big cards、completion + raise に弱い broadway。",
+            "when": "序盤で後ろの field をまだ閉じられないため、ただ「可能性がある」だけの hand は採用しません。",
+            "examples": "(Q♣5♥)Q♠ / (7♦3♦)2♦ with dead diamonds / 9QA"
+          }
+        ],
+        "table_columns": [
+          "ハンド帯",
+          "主扱い",
+          "条件 / 代表例"
+        ],
+        "table_rows": [
+          [
+            "rolled-up trips",
+            "常にコンプリート / 再加重にも耐える",
+            "AAA-KKK。Lou Krieger 系では river までの主力 class として扱う。"
+          ],
+          [
+            "live big pair (TT+)",
+            "コンプリート / isolate",
+            "AA-KK-QQ-JJ-TT。big pair は heads-up 志向なので open / raise 寄り。"
+          ],
+          [
+            "buried big pair",
+            "コンプリート",
+            "buried QQ+。side card が live なら honest strength にも残しやすい。"
+          ],
+          [
+            "small pair + big overcard",
+            "完全 live の時だけ open",
+            "(A4)4, (A5)5, K66。pair 以外の勝ち筋が必要。"
+          ],
+          [
+            "medium pair + straight-flush kicker",
+            "条件付き open",
+            "(89)8s, (T9)9s。rank / suit が dead なら EP では落とす。"
+          ],
+          [
+            "premium 3-flush / live 3-straight",
+            "live なら open",
+            "AKQss, QJTss, 678, 789。高い backup か no-gap が欲しい。"
+          ],
+          [
+            "three big cards unopened",
+            "EP ではかなり限定",
+            "AKJ / AQJ / KQJ は完全 live の unopened だけ。completion + raise には向かわない。"
+          ],
+          [
+            "bad kicker pair / dead draw",
+            "フォールド",
+            "Q5Q, dead 3-flush, gap の大きい 3-straight は EP で不採用。"
+          ]
+        ],
+        "source_note": "CountingOuts の starter taxonomy、PokerTips の position rule、Lou Krieger の starting-hand 原則、そして Haney の 2024 年 pair / flush-draw 記事は、EP を「全3枚の協調が必要な seat」として一致させています。",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_stud_high_basic",
+            "evidence_type": "starting_hand_hierarchy",
+            "range_read": "Rolled-up trips, premium three-high-card straight-flush hands, and big pairs are the top Stud High starters.",
+            "notes": "Stud High の 3rd street class を最初に固定する基礎ソース。"
+          },
+          {
+            "source_ref": "pokertips_stud_high",
+            "evidence_type": "position_gate",
+            "range_read": "In early positions all three of your cards matter; high pair, concealed pair, three to a flush, or three consecutive cards are the good starts.",
+            "notes": "EP では up card だけで入らないという境界を与える。"
+          },
+          {
+            "source_ref": "pokernews_lou_13",
+            "evidence_type": "cohesion_rule",
+            "range_read": "Those first three cards need to work together or contain a big pair to justify continuing.",
+            "notes": "EP の「working together」基準を補強する。"
+          },
+          {
+            "source_ref": "cardplayer_small_pairs_pdf",
+            "evidence_type": "pair_plus_overcard_upgrade",
+            "range_read": "A hand such as (A♠ 4♥) 4♣ should often be completed even from early position when live.",
+            "notes": "small pair でも ace kicker なら EP の条件付きオープンに残る。"
+          },
+          {
+            "source_ref": "cardplayer_medium_pairs_pdf",
+            "evidence_type": "live_requirement",
+            "range_read": "In early position with many higher cards behind, a medium pair with suited connected kicker needs to be very live in order to open.",
+            "notes": "89/8ss 型を無条件採用しない理由。"
+          },
+          {
+            "source_ref": "cardplayer_flush_draws_pdf",
+            "evidence_type": "live_draw_boundary",
+            "range_read": "Three flushes range from ram-and-jam to pure muck depending on live suits, big cards, and straight possibilities.",
+            "notes": "3-flush を seat 固定ではなく live 条件で扱う根拠。"
+          }
+        ]
+      },
+      "versus_complete": {
+        "section_label": "コンプリートに対する継続",
+        "anchor_profile": "real strength には clean に outdraw できる hand だけ残す",
+        "public_range_read": "EP から他人の complete に向かう時は、単なる「pair だから」では続きません。rolled-up、overpair、kicker が probable pair を追い越す buried pair、premium live draw、そして相手が steal 寄りな時の medium pair + straight-flush kicker が継続帯です。",
+        "range_groups": [
+          {
+            "label": "押し返す / 3ベット",
+            "tone": "attack",
+            "items": [
+              "rolled-up trips",
+              "AA / KK / QQ の live pair",
+              "pair が相手 up card より上の buried pair",
+              "A4/4・A5/5 など pair+big overcard",
+              "best live 3-flush / 3-straight"
+            ]
+          },
+          {
+            "label": "選んで継続",
+            "tone": "conditional",
+            "items": [
+              "89/8ss のような medium pair + straight-flush kicker",
+              "AKJ / QJT の完全 live three big cards vs single complete",
+              "buried pair + overcard that outranks the represented pair"
+            ]
+          },
+          {
+            "label": "素直に降りる",
+            "tone": "fold",
+            "items": [
+              "tight early A up への大半の pair",
+              "bad kicker の QQ/99",
+              "dead draw",
+              "completion + raise を受けた rainbow three big cards"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "3ベット / 主導権維持",
+            "tone": "attack",
+            "range_read": "rolled-up、overpair、pair+big overcard、best live draw で押し返します。",
+            "when": "相手が representing する pair に対して、今 ahead か clean outs で逆転できる時です。",
+            "examples": "AAA / buried KK / (A♠4♥)4♣ / live (A♠K♠)Q♠"
+          },
+          {
+            "label": "1回は続ける",
+            "tone": "conditional",
+            "range_read": "live three big cards と medium pair + straight-flush kicker は、single complete までなら残せます。",
+            "when": "相手が steal を含みうる位置で、さらに raise が返ってきていない時に限ります。",
+            "examples": "(8♠9♠)8♣ vs Q up steal / A♦K♣ down with J♣ up"
+          },
+          {
+            "label": "ここで終了",
+            "tone": "fold",
+            "range_read": "tight early ace にぶつかる bad kicker pair、dead draw、completion + raise を受けた naked broadway は切ります。",
+            "when": "probable pair に対して second-best hand と second-best draw を同時に抱える構造を避けます。",
+            "examples": "(Q♣5♥)Q♠ vs early A up / dead 3-flush / AKJ rainbow vs completion+raise"
+          }
+        ],
+        "table_columns": [
+          "継続ハンド帯",
+          "主扱い",
+          "条件 / 代表例"
+        ],
+        "table_rows": [
+          [
+            "rolled-up / overpair",
+            "3ベット / 継続",
+            "AAA、buried KK+。real strength なので主導権を戻す。"
+          ],
+          [
+            "buried pair + higher side card",
+            "継続 or 3ベット",
+            "JAJ vs Q up のように probable pair を side card が越える時。"
+          ],
+          [
+            "small pair + big overcard",
+            "live なら攻撃的に継続",
+            "(A4)4, (A5)5。pair だけでなく two-pair / trips 側でも戦える。"
+          ],
+          [
+            "medium pair + straight-flush kicker",
+            "steal 寄り line にだけ継続",
+            "(89)8s は late Q / K steal には返せるが、tight early line には絞る。"
+          ],
+          [
+            "premium 3-flush / 3-straight",
+            "live なら継続",
+            "overcard backup や no-gap 条件を満たす時だけ残す。"
+          ],
+          [
+            "three big cards",
+            "single complete まで / heat には fold",
+            "AKJ / KQJ は steal には残るが completion + raise で終了。"
+          ],
+          [
+            "pure blocker / dead draw / bad kicker pair",
+            "フォールド",
+            "blocker だけ、dead draw、Q5Q のような bad kicker pair は defense 不可。"
+          ]
+        ],
+        "source_note": "Stud High の公開ソースが繰り返し言うのは、「高確率で higher pair に当たっているなら、kicker か straight-flush backup が必要」という一点です。EP の continue row はそこに集約されます。",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_stud_high_basic",
+            "evidence_type": "fold_vs_ace_rule",
+            "range_read": "When a straightforward early-position ace completes, fold the vast majority of your pairs; hands such as (Q♣5♥)Q♠ are not good enough.",
+            "notes": "EP continue の最重要 cut line。"
+          },
+          {
+            "source_ref": "countingouts_stud_high_basic",
+            "evidence_type": "pair_plus_draw_exception",
+            "range_read": "Pairs become playable against likely big pairs when they carry either a straight-flush kicker or a kicker higher than the opponent’s pair.",
+            "notes": "pair+backup だけを残す理由。"
+          },
+          {
+            "source_ref": "pokertips_stud_high",
+            "evidence_type": "three_high_fold_rule",
+            "range_read": "Three high cards are completes in unopened pots but generally folds when facing both a completion and a raise.",
+            "notes": "naked broadway を継続帯に入れない。"
+          },
+          {
+            "source_ref": "countingouts_small_pairs",
+            "evidence_type": "rereraise_example",
+            "range_read": "With (A♠4♥)4♣ against a king-up opener and live cards, the correct default is to reraise.",
+            "notes": "pair+overcard を attack bucket に入れる具体例。"
+          },
+          {
+            "source_ref": "countingouts_medium_pairs",
+            "evidence_type": "steal_counter",
+            "range_read": "Against a likely late-position queen steal, a live (8♠9♠)8♣ should often reraise unless the eights and spades are dead.",
+            "notes": "medium pair + straight-flush kicker の対 steal 継続。"
+          },
+          {
+            "source_ref": "cardplayer_ace_up_pdf",
+            "evidence_type": "mixed_reraise_boundary",
+            "range_read": "Pure steals are allowed to fold to honest reraises, while live aces, buried bigger pairs, and strong three-flushes stay aggressive.",
+            "notes": "attack / fold を二分する Haney の mixed response rule。"
+          }
+        ]
+      },
+      "source_refs": [
+        "pokernews_lou_13",
+        "pokernews_lou_14",
+        "cardplayer_small_pairs_pdf",
+        "cardplayer_medium_pairs_pdf",
+        "cardplayer_flush_draws_pdf"
+      ],
+      "at_a_glance": {
+        "open_core": "rolled-up / live big pair / premium 3-straight-flush / live concealed pair / live 3-flush・3-straight",
+        "position_add": "live small pair + big overcard / straight-flush kicker / 完全 live の AKJ 系 unopened",
+        "vs_complete": "overpair・rolled-up・pair+overcard・premium live draw で継続",
+        "snap_fold": "bad kicker pair / dead draw / tight early A に当たる薄い hand / naked broadway vs completion+raise"
+      }
+    },
+    "MP": {
+      "label": "中盤 / 遷移席",
+      "seat_band": [
+        "some_folds_already_happened",
+        "one_or_two_serious_upcards_still_behind"
+      ],
+      "position_summary": "何人かはすでに降りているが、まだ純スチール席ではない middle transition の third street です。",
+      "caution_note": "ここから widen できるのは「後ろが少し減ったぶん回収できる hand」だけです。pure blocker や dead draw を LP のつもりで混ぜる席ではありません。",
+      "overview": {
+        "seat_trigger": "field が少し狭まり、EP より complete の収益性が上がる一方、まだ honest strength も十分残る位置です。",
+        "open_identity": "EP core を維持しつつ、live small/medium pair + backup、strong three big cards、より広い live 3-flush / 3-straight を足します。",
+        "adds_here": "A4/4・A5/5、89/8ss、KQJ・AKJ・9QA の unopened、one-gap を含む live 3-straight を条件付きで追加します。",
+        "still_avoid": "dead middling broadway、backup のない underpair、steal 以外で成立しない ace blocker。"
+      },
+      "open_complete": {
+        "section_label": "オープン / コンプリート",
+        "anchor_profile": "EP core を持ち込みながら、backup 付きの middle classes を足す席",
+        "public_range_read": "MP では still-premium が土台ですが、live な small/medium pair + big overcard or straight-flush kicker、そして strong three big cards が明確に増えます。field が少し減ったぶん、EP ではギリギリだった classes が利益化しやすくなります。",
+        "range_groups": [
+          {
+            "label": "MP の主力",
+            "tone": "attack",
+            "items": [
+              "EP core 全体",
+              "A4/4・A5/5",
+              "89/8ss のような medium pair + straight-flush kicker",
+              "live KQJ / AKJ / QJT",
+              "strong 3-flush / 3-straight"
+            ]
+          },
+          {
+            "label": "条件付き追加",
+            "tone": "conditional",
+            "items": [
+              "9QA の unopened steal 寄り open",
+              "one-gap 3-straight + two-flush",
+              "buried 66/77 + king/queen kicker",
+              "やや dead でも LP ほどでない pair complete"
+            ]
+          },
+          {
+            "label": "まだ落とす",
+            "tone": "fold",
+            "items": [
+              "dead middling broadway",
+              "weak 3-flush with no overcards",
+              "underpair with bad kicker",
+              "ace blocker only"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "積極的にオープン",
+            "tone": "attack",
+            "range_read": "EP core に加え、live な pair+backup と strong three big cards を open 帯へ引き上げます。",
+            "when": "fold がいくつか入った middle seat では、backup 付きの borderline hand が十分利益化します。",
+            "examples": "(A♠4♥)4♣ / (8♠9♠)8♣ / K♠Q♦ down with J♣ up"
+          },
+          {
+            "label": "条件付きで widen",
+            "tone": "conditional",
+            "range_read": "9QA・K97 のような steal 寄り class、one-gap straight draw、やや dead な buried pair は board 次第で追加。",
+            "when": "behind の high cards が capped され、持ち込める fold equity がまだある時です。",
+            "examples": "9QA / 678 two-flush / buried 77 with Q kicker"
+          },
+          {
+            "label": "MP でもまだ fold",
+            "tone": "fold",
+            "range_read": "backup のない underpair、dead draw、pure blocker、completion + reraise に弱い broadway。",
+            "when": "「後ろが少し減った」だけで、hand の核が弱いものまでは補いきれません。",
+            "examples": "(7♦3♦)2♦ with dead suit / 55 with bad kicker / A blocker only"
+          }
+        ],
+        "table_columns": [
+          "ハンド帯",
+          "主扱い",
+          "条件 / 代表例"
+        ],
+        "table_rows": [
+          [
+            "EP premium core",
+            "そのまま open",
+            "rolled-up、big pair、premium 3-flush / 3-straight は全部持ち込む。"
+          ],
+          [
+            "small pair + big overcard",
+            "標準 open に昇格",
+            "(A4)4, (A5)5, K66。MP では EP より明確に入る。"
+          ],
+          [
+            "medium pair + straight-flush kicker",
+            "open 頻度アップ",
+            "(89)8s, (T9)9s。behind の threat が減るぶん利益化しやすい。"
+          ],
+          [
+            "three big cards unopened",
+            "steal / open 候補",
+            "AKJ, AQJ, KQJ, 9QA。unopened なら MP から実戦的。"
+          ],
+          [
+            "3-flush / 3-straight with backup",
+            "条件付き open",
+            "K-high/Q-high 3-flush、678 two-flush、one-gap でも live なら候補。"
+          ],
+          [
+            "buried 66/77 + big kicker",
+            "条件付き open",
+            "buried 66 with K kicker、buried 77 with Q kicker。cards が live な時。"
+          ],
+          [
+            "ace blocker only / weak underpair",
+            "フォールド",
+            "A blocker だけ、backup のない 55 / 66 は MP でも広げない。"
+          ]
+        ],
+        "source_note": "CountingOuts の three-big-cards 節と small/medium pair 連載、PokerTips の position rule、Haney の 2024 年連載を重ねると、MP は「backup 付きの borderline class を足す seat」と整理できます。",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_stud_high_basic",
+            "evidence_type": "three_big_cards_rule",
+            "range_read": "Three big cards such as 9-Q-A are mostly ante steals, but can also challenge tight aggressive steals or attack limpers.",
+            "notes": "MP 以降で three big cards を追加する根拠。"
+          },
+          {
+            "source_ref": "countingouts_small_pairs",
+            "evidence_type": "playable_opened_pots_rule",
+            "range_read": "Small pairs are playable when the kicker is an overcard to the pair the opponent is representing.",
+            "notes": "pair+overcard を MP add に固定する。"
+          },
+          {
+            "source_ref": "countingouts_medium_pairs",
+            "evidence_type": "general_playing_guidelines",
+            "range_read": "If folded to late position with only the bring-in left, medium pair plus straight-flush kicker is an automatic complete; earlier seats need more liveness.",
+            "notes": "MP が LP より still tighter である理由。"
+          },
+          {
+            "source_ref": "pokertips_stud_high",
+            "evidence_type": "position_rule",
+            "range_read": "Later unopened positions can rely a bit more on the up card, but all three cards matter once real strength appears.",
+            "notes": "MP の widen も unconditional ではない。"
+          },
+          {
+            "source_ref": "cardplayer_small_pairs_pdf",
+            "evidence_type": "early_to_middle_upgrade",
+            "range_read": "Small pairs with an ace kicker often complete even from early when live, making them clear MP opens.",
+            "notes": "A4/4 系を MP core に含める。"
+          },
+          {
+            "source_ref": "cardplayer_medium_pairs_pdf",
+            "evidence_type": "live_enough_question",
+            "range_read": "The key third-street question is always whether the hand is live enough for this particular situation.",
+            "notes": "MP で one-gap / medium pair を board 条件付きに留める。"
+          }
+        ]
+      },
+      "versus_complete": {
+        "section_label": "コンプリートに対する継続",
+        "anchor_profile": "steal は叩くが honest strength には深入りしない",
+        "public_range_read": "MP の defense / reraise row は、相手が steal 寄りに widen している line をどれだけ叩けるかで構成します。pair+overcard、medium pair + straight-flush kicker、live three big cards、premium draws は残し、tight early strength にぶつかる underpair や dead draw は落とします。",
+        "range_groups": [
+          {
+            "label": "押し返す",
+            "tone": "attack",
+            "items": [
+              "A4/4・A5/5",
+              "89/8ss・T9/9ss",
+              "pair が相手 up card より上の buried pair",
+              "live QJT / TJQ vs small upcard complete",
+              "premium 3-flush / 3-straight"
+            ]
+          },
+          {
+            "label": "選んで継続",
+            "tone": "conditional",
+            "items": [
+              "live three big cards vs single complete",
+              "buried pair + overcard that outranks probable pair",
+              "some one-gap 3-straight + two-flush"
+            ]
+          },
+          {
+            "label": "ここでフォールド",
+            "tone": "fold",
+            "items": [
+              "backup のない underpair",
+              "dead draw",
+              "tight early A / K line にぶつかる bad kicker pair",
+              "ace blocker only"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "対 steal の 3ベット",
+            "tone": "attack",
+            "range_read": "pair+overcard、medium pair + straight-flush kicker、live three big cards は steal complete に対して攻め返します。",
+            "when": "相手の up card が small / medium で steal が十分ある時、こちらの equity realization と fold equity が両立します。",
+            "examples": "(A♠4♥)4♣ vs K up / (8♠9♠)8♣ vs Q up / (T♥J♥)Q♣ vs 7 up"
+          },
+          {
+            "label": "1回は残す",
+            "tone": "conditional",
+            "range_read": "live buried pair と strong three big cards は single complete までなら継続可能です。",
+            "when": "ただし kicker が probable pair を追い越せること、あるいは draw が十分 live なことが前提です。",
+            "examples": "buried 77 with K kicker / AKJ live"
+          },
+          {
+            "label": "深追いしない",
+            "tone": "fold",
+            "range_read": "tight early ace、dead draw、underpair with bad kicker、ace blocker only は MP では防衛対象にしません。",
+            "when": "相手が real strength を示している時に「second-best hand + second-best draw」を抱え続けないためです。",
+            "examples": "(Q♣5♥)Q♠ vs early A / dead 3-flush / (4A)Q pure blocker"
+          }
+        ],
+        "table_columns": [
+          "継続ハンド帯",
+          "主扱い",
+          "条件 / 代表例"
+        ],
+        "table_rows": [
+          [
+            "rolled-up / overpair / buried better pair",
+            "3ベット / 継続",
+            "real made hand は MP でもそのまま attack。"
+          ],
+          [
+            "small pair + big overcard",
+            "対 K/Q steal に攻撃的",
+            "(A4)4, (A5)5。represented pair を side card が追い越せる時。"
+          ],
+          [
+            "medium pair + straight-flush kicker",
+            "steal complete に返す",
+            "(89)8s, (T9)9s は late queen / king steal に好相性。"
+          ],
+          [
+            "live three big cards",
+            "single complete まで継続",
+            "AKJ / KQJ / QJT。cards が live で、steal 含みの line だけ。"
+          ],
+          [
+            "3-flush / 3-straight with overcards",
+            "live なら継続",
+            "draw 単体ではなく overcard / pair backup を伴う時。"
+          ],
+          [
+            "tight A/K line への bad kicker pair",
+            "フォールド",
+            "Q5Q, 995, weak underpair は honest strength に深入りしない。"
+          ],
+          [
+            "pure blocker / dead draw",
+            "フォールド",
+            "Ace blocker only や dead 3-flush は continue row から外す。"
+          ]
+        ],
+        "source_note": "CountingOuts の pair articles は MP の attack row を具体例付きで与え、Haney の ace-up piece は「backup のない pure aggression を混ぜすぎない」境界を与えます。",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_small_pairs",
+            "evidence_type": "clear_reraise_example",
+            "range_read": "With (A♠4♥)4♣ against a queen- or king-up opener and live cards, reraising is standard.",
+            "notes": "MP defense の最もわかりやすい public example。"
+          },
+          {
+            "source_ref": "countingouts_medium_pairs",
+            "evidence_type": "queen_steal_counter",
+            "range_read": "Against a likely late-position queen steal, a live medium pair with suited connected kicker should often reraise.",
+            "notes": "89/8ss 型の対 steal 継続。"
+          },
+          {
+            "source_ref": "countingouts_stud_high_basic",
+            "evidence_type": "three_straight_reraise_example",
+            "range_read": "If you hold (T-J)Q, you have an easy reraise against a player who completed with a seven up.",
+            "notes": "three big cards / straight class を defend row に入れる根拠。"
+          },
+          {
+            "source_ref": "cardplayer_ace_up_pdf",
+            "evidence_type": "mixed_response_rule",
+            "range_read": "Buried pairs higher than the opponent’s up card can do a good amount of reraising, while weaker holdings and pure steals may fold.",
+            "notes": "MP の attack / fold 分岐を補強。"
+          },
+          {
+            "source_ref": "countingouts_ace_blocker",
+            "evidence_type": "pure_blocker_warning",
+            "range_read": "Ace blocker alone trims the continuation range only modestly and leaves poor equity; it plays better with pairs, three flushes, or three straights.",
+            "notes": "pure blocker を fold 帯へ送る。"
+          }
+        ]
+      },
+      "source_refs": [
+        "countingouts_small_pairs",
+        "countingouts_medium_pairs",
+        "cardplayer_small_pairs_pdf",
+        "cardplayer_medium_pairs_pdf",
+        "cardplayer_ace_up_pdf"
+      ],
+      "at_a_glance": {
+        "open_core": "EP core を維持しつつ、pair+overcard・pair+straight-flush kicker・strong three big cards を追加",
+        "position_add": "A4/4・A5/5・89/8ss・KQJ/AKJ・one-gap + two-flush を MP で足す",
+        "vs_complete": "wide complete には pair+backup・live broadway・premium draw で押し返す",
+        "snap_fold": "underpair with bad kicker / dead draw / tight early A・K line / ace blocker only"
+      }
+    },
+    "LP": {
+      "label": "後半 / スチール席",
+      "seat_band": [
+        "folded_around_late",
+        "only_bring_in_or_one_capped_board_left"
+      ],
+      "position_summary": "fold が回ってきて、bring-in か capped された 1 人程度しか残っていない late steal の third street です。",
+      "caution_note": "LP でも「ace blocker を持っているだけ」は広げすぎです。公開ソースで widen されているのは、high upcard pressure に real backup が付いた hand までです。",
+      "overview": {
+        "seat_trigger": "late では up card pressure と dead money 回収がはっきり効き始めます。",
+        "open_identity": "EP / MP core に加え、three big cards、last-to-act の medium pair complete、high upcard steal hand が主役になります。",
+        "adds_here": "9QA・KQJ・AKJ、K up での steal 専用 hand、mostly dead でも only-bring-in なら open できる medium pair + straight-flush kicker。",
+        "still_avoid": "pure ace blocker、dead steal hand、completion + reraise に耐えない naked broadway、dead suit の pretty hand。"
+      },
+      "open_complete": {
+        "section_label": "オープン / コンプリート",
+        "anchor_profile": "up card pressure と dead money 回収を組み込む late seat",
+        "public_range_read": "LP では three big cards と high-upcard steals がようやく本格的な open class になります。そこに last-to-act の medium pair completes、still-live な 3-flush / 3-straight を重ねて、dead money 回収と showdown equity の両方で組み立てます。",
+        "range_groups": [
+          {
+            "label": "LP の主力オープン",
+            "tone": "attack",
+            "items": [
+              "EP / MP core",
+              "AKJ / KQJ / QJT / 9QA",
+              "only bring-in left の 89/8ss",
+              "K up / A up の steal 専用 hand with backup",
+              "live 3-flush / 3-straight"
+            ]
+          },
+          {
+            "label": "LP で追加",
+            "tone": "conditional",
+            "items": [
+              "K♣ up with 9♦7♦ style steal-only hand",
+              "mostly dead でも last-to-act の medium pair complete",
+              "weaker 3-flush if steal chance + overcard backup",
+              "borderline buried pair if folds are in"
+            ]
+          },
+          {
+            "label": "それでも fold",
+            "tone": "fold",
+            "items": [
+              "pure ace blocker",
+              "dead broadway",
+              "dead suit の pretty flush draw",
+              "completion + reraise に弱い 3 big cards",
+              "steal chance のない junk"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "dead money を取りにいく",
+            "tone": "attack",
+            "range_read": "three big cards、high-upcard pressure、last-to-act medium pair complete を軸に aggressively open します。",
+            "when": "残りが bring-in か capped board だけなら、LP は raw card quality より dead money 回収が大きくなります。",
+            "examples": "9QA / K♣ up with 9♦7♦ / (8♠9♠)8♣"
+          },
+          {
+            "label": "条件付きでさらに widen",
+            "tone": "conditional",
+            "range_read": "backup 付き steal hand、やや dead でも heads-up になりやすい pair / draw は追加候補です。",
+            "when": "bring-in 以外が降り、相手の visible strength が capped されている時に限ります。",
+            "examples": "K97 / weak 3-flush with live overcards / buried 66 with K kicker"
+          },
+          {
+            "label": "late でも不採用",
+            "tone": "fold",
+            "range_read": "pure blocker、dead draw、steal 前提なのに callers が残る broadway、backup のない junk。",
+            "when": "LP の widen は up card pressure と fold equity を前提にしており、それが消えるなら hand quality が不足します。",
+            "examples": "(4A)Q pure blocker / dead 3-flush / K97 when called in two spots"
+          }
+        ],
+        "table_columns": [
+          "ハンド帯",
+          "主扱い",
+          "条件 / 代表例"
+        ],
+        "table_rows": [
+          [
+            "EP / MP premium core",
+            "そのまま open",
+            "strong made hand と strong live draw は LP でも当然残る。"
+          ],
+          [
+            "three big cards",
+            "標準 steal open",
+            "AKJ, AQJ, KQJ, QJT, 9QA。LP で dead money 回収の主力。"
+          ],
+          [
+            "high up-card steal hand",
+            "open / complete",
+            "K up の 97 hidden、A up bluff-complete。up card pressure を前提に使う。"
+          ],
+          [
+            "medium pair + suited connected kicker",
+            "only bring-in left なら自動 open 寄り",
+            "(89)8s, (T9)9s。Haney / CountingOuts 系の late clear add。"
+          ],
+          [
+            "weaker 3-flush / 3-straight with live overcards",
+            "条件付きで追加",
+            "K/Q/A headed 3-flush、one-gap straight draw でも live なら参加。"
+          ],
+          [
+            "buried 66/77 + overcard",
+            "heads-up 見込みで追加",
+            "buried 66 with K kicker、buried 77 with Q kicker。"
+          ],
+          [
+            "pure ace blocker / dead steal hand",
+            "フォールド",
+            "A blocker だけ、dead K97、caller が残る naked broadway は不採用。"
+          ]
+        ],
+        "source_note": "PokerTips の K-up steal 例、Lou Krieger の ace-up late steal 原則、CountingOuts の three big cards 節、Haney の medium-pair guidelines を重ねると、LP は「高い up card の圧力 + 最低限の backup」を取る席だと整理できます。",
+        "collected_rows": [
+          {
+            "source_ref": "pokertips_stud_high",
+            "evidence_type": "late_steal_example",
+            "range_read": "With K up against an 8 up and a 3 up bring-in after folds, even a weak hidden hand such as 9♦7♦ can justify a raise.",
+            "notes": "LP の steal-only bucket を公開例で固定。"
+          },
+          {
+            "source_ref": "pokernews_lou_14",
+            "evidence_type": "ace_up_steal_rule",
+            "range_read": "When it folds around and you show an ace with only smallish and mid-range cards behind, completing the bet stands a good chance of winning outright.",
+            "notes": "late high-upcard pressure の一般則。"
+          },
+          {
+            "source_ref": "countingouts_stud_high_basic",
+            "evidence_type": "three_big_cards_bucket",
+            "range_read": "Three big cards are mostly reserved for ante stealing, challenging a steal raise, or attacking a limper.",
+            "notes": "LP で three big cards が増える根拠。"
+          },
+          {
+            "source_ref": "countingouts_medium_pairs",
+            "evidence_type": "automatic_complete_last_to_act",
+            "range_read": "If folded to you in late position with only the bring-in left, medium pair with suited connected kicker is an automatic complete even if mostly dead.",
+            "notes": "LP の pair widen を定義する public line。"
+          },
+          {
+            "source_ref": "cardplayer_medium_pairs_pdf",
+            "evidence_type": "automatic_complete_example",
+            "range_read": "Late position with only the bring-in left turns (8♠9♠)8♣ into an automatic complete, whereas early position demands much more liveness.",
+            "notes": "LP が EP / MP と別 seat であることを明文化。"
+          },
+          {
+            "source_ref": "countingouts_ace_blocker",
+            "evidence_type": "do_not_overdo_blocker",
+            "range_read": "Ace blocker alone does not remove enough continues and performs poorly when called; it is better paired with real equity holdings.",
+            "notes": "pure blocker を widen から外す。"
+          }
+        ]
+      },
+      "versus_complete": {
+        "section_label": "コンプリートに対する継続",
+        "anchor_profile": "late では steal をしっかり叩くが、pure blocker は使いすぎない",
+        "public_range_read": "LP の continue row は、steal complete に対して live pair+backup、live three big cards、premium 3-flush / 3-straight をぶつける構造です。一方で ace blocker only や dead steal hand は public source でも防衛過剰だとされています。",
+        "range_groups": [
+          {
+            "label": "対 steal の押し返し",
+            "tone": "attack",
+            "items": [
+              "A4/4・A5/5",
+              "89/8ss・T9/9ss",
+              "buried pair higher than up card",
+              "live AKJ / KQJ / QJT vs small or medium upcard",
+              "premium 3-flush / 3-straight"
+            ]
+          },
+          {
+            "label": "選んで継続",
+            "tone": "conditional",
+            "items": [
+              "live three big cards vs single late complete",
+              "high-upcard steal hand with backup",
+              "some weaker pair/draw when heads-up and live"
+            ]
+          },
+          {
+            "label": "LP でも切る",
+            "tone": "fold",
+            "items": [
+              "pure ace blocker",
+              "dead steal hand",
+              "naked broadway vs complete + reraise",
+              "bad kicker underpair",
+              "dead pretty draw"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "steal 返しの 3ベット",
+            "tone": "attack",
+            "range_read": "live pair+backup、buried bigger pair、live three big cards、premium draw を積極的に返します。",
+            "when": "相手の complete が dead-money pickup 寄りであるほど、LP は defense より attack が利きます。",
+            "examples": "(A♠4♥)4♣ / (8♠9♠)8♣ / (T♥J♥)Q♣ / buried KK"
+          },
+          {
+            "label": "backup 付きなら続ける",
+            "tone": "conditional",
+            "range_read": "high-upcard steal hand と weaker pair / draw は heads-up かつ live な時だけ残します。",
+            "when": "late でも backup が薄い hand は pure bluff-catch になりやすいので、相手の widenness と visible dead cards を要求します。",
+            "examples": "K97 with live king outs / weak 3-flush with overcards"
+          },
+          {
+            "label": "ここは素直に降りる",
+            "tone": "fold",
+            "range_read": "pure ace blocker、dead draw、callers が増えた broadway、bad kicker pair は切ります。",
+            "when": "blocker 効果だけでは remove できる continue が少なく、called 時の equity も不足するためです。",
+            "examples": "(4A)Q / dead K97 / QQ5 vs honest ace line"
+          }
+        ],
+        "table_columns": [
+          "継続ハンド帯",
+          "主扱い",
+          "条件 / 代表例"
+        ],
+        "table_rows": [
+          [
+            "pair + overcard / buried bigger pair",
+            "対 steal の主力 3ベット",
+            "(A4)4, K66, buried QQ+。late complete を punish する中心。"
+          ],
+          [
+            "medium pair + straight-flush kicker",
+            "steal 返しの継続",
+            "(89)8s, (T9)9s。single late complete なら高頻度で残る。"
+          ],
+          [
+            "live three big cards",
+            "single late complete まで継続",
+            "AKJ, KQJ, QJT。small / medium up card の steal line に向ける。"
+          ],
+          [
+            "premium 3-flush / 3-straight",
+            "live なら返す",
+            "K/Q/A high の 3-flush や no-gap 3-straight を heads-up 寄りで使う。"
+          ],
+          [
+            "steal-only high up-card hand",
+            "heads-up 限定で一部継続",
+            "K97 型は live かつ capped line のみ。multiway なら切る。"
+          ],
+          [
+            "naked broadway vs complete + reraise",
+            "フォールド",
+            "late でも heat が増えた瞬間に naked broadway は終了。"
+          ],
+          [
+            "pure blocker / dead draw",
+            "フォールド",
+            "Ace blocker only と dead steal hand は public source でも defense 過剰。"
+          ]
+        ],
+        "source_note": "LP の public overlap は、「steal には積極的に返すが、返す hand は必ず real backup を持つ」という一点にまとまります。",
+        "collected_rows": [
+          {
+            "source_ref": "countingouts_ace_blocker",
+            "evidence_type": "ace_blocker_warning",
+            "range_read": "The dead ace only modestly reduces the ace-up continue range, and ace blocker alone has poor equity when called.",
+            "notes": "pure blocker を fold 帯へ送る主根拠。"
+          },
+          {
+            "source_ref": "cardplayer_ace_up_pdf",
+            "evidence_type": "backup_needed_for_three_bet",
+            "range_read": "Buried pairs above the opponent’s up card, live aces, and live three-flushes make natural reraises; weaker pure steals can fold.",
+            "notes": "LP の attack / fold 分岐を Haney が具体化している。"
+          },
+          {
+            "source_ref": "countingouts_small_pairs",
+            "evidence_type": "third_street_aggression_rule",
+            "range_read": "Small pairs with big kickers should often be played aggressively to steal antes, limit the field, and defend against steal attempts.",
+            "notes": "LP defense row に aggressive pair+backup を入れる。"
+          },
+          {
+            "source_ref": "countingouts_medium_pairs",
+            "evidence_type": "third_street_aggression_rule",
+            "range_read": "Medium pairs with straight-flush kickers are often aggressive third-street continue hands against late stealers.",
+            "notes": "89/8ss 型の LP 返し。"
+          },
+          {
+            "source_ref": "countingouts_stud_high_basic",
+            "evidence_type": "three_big_cards_counter",
+            "range_read": "Three big cards can be used to challenge a steal raise or attack a limper.",
+            "notes": "three big cards の対 steal 継続を支える。"
+          },
+          {
+            "source_ref": "pokertips_stud_high",
+            "evidence_type": "heavy_action_fold_rule",
+            "range_read": "Once the hand turns into completion plus raise, even decent three-high-card starts are usually folds.",
+            "notes": "lateでも naked broadway は heat に耐えない。"
+          }
+        ]
+      },
+      "source_refs": [
+        "countingouts_ace_blocker",
+        "pokertips_stud_high",
+        "cardplayer_medium_pairs_pdf",
+        "cardplayer_ace_up_pdf",
+        "cardplayer_flush_draws_pdf"
+      ],
+      "at_a_glance": {
+        "open_core": "EP/MP core + three big cards steal + last-to-act medium pair complete + high-upcard pressure hand",
+        "position_add": "K97 型の steal-only hand、mostly dead でも only-bring-in なら開ける pair/draw を LP で追加",
+        "vs_complete": "steal には pair+backup・buried bigger pair・live broadway・premium draw で返す",
+        "snap_fold": "pure ace blocker / dead steal hand / naked broadway vs heat / bad kicker pair"
+      }
+    },
+    "BI": {
+      "label": "Bring-In / 強制ベット席",
+      "seat_band": [
+        "forced_bring_in_already_posted",
+        "return_complete_or_defend_only"
+      ],
+      "position_summary": "すでに bring-in を強制投入している seat です。voluntary first-in ではなく、action が戻った時の return-complete と defend を扱います。",
+      "caution_note": "この seat の最大リークは「すでに入れた chips がもったいない」から defend しすぎることです。posted dead money を理由に pretty hand を守らず、hidden strength と live backup に絞ります。",
+      "overview": {
+        "seat_trigger": "low upcard が見えており、board 上は弱く見えます。ゆえに継続するなら hidden strength か live draw の質が必要です。",
+        "open_identity": "action が戻って complete するのは、buried pair、rolled-up、pair+overcard、premium 3-flush / 3-straight のような hidden value hand です。",
+        "adds_here": "heads-up 価格と live cards が揃う時だけ、small/medium pair + backup と premium draw を defend row に入れます。",
+        "still_avoid": "bring-in を posted しただけの junk defense、dead draw、bad kicker pair、見た目だけ綺麗な suited trash。"
+      },
+      "open_complete": {
+        "section_label": "bring-in からの return-complete",
+        "anchor_profile": "forced money を回収するのではなく、hidden strength で再主導権を取る席",
+        "public_range_read": "BI seat が action 戻りで complete するのは、hidden pair や premium live draw がある時だけです。low upcard が見えて board では弱く見えるぶん、継続する hand は show-down equity か disguised improvement 余地が必要です。",
+        "range_groups": [
+          {
+            "label": "return-complete の主力",
+            "tone": "attack",
+            "items": [
+              "rolled-up trips",
+              "buried big pair",
+              "A4/4・A5/5 のような pair+big overcard",
+              "89/8ss のような pair+straight-flush kicker",
+              "premium live 3-flush / 3-straight"
+            ]
+          },
+          {
+            "label": "heads-up 条件で追加",
+            "tone": "conditional",
+            "items": [
+              "buried 66/77 + high kicker",
+              "live weaker 3-flush with overcards",
+              "one-gap 3-straight + two-flush",
+              "live three big cards only if no extra action"
+            ]
+          },
+          {
+            "label": "bring-in で落とす",
+            "tone": "fold",
+            "items": [
+              "junk posted defense",
+              "dead draw",
+              "bad kicker underpair",
+              "pure blocker / pure pretty hand",
+              "multiway になりやすい弱手"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "戻って complete",
+            "tone": "attack",
+            "range_read": "hidden pair と premium live draw を軸に、return-complete で主導権を取り返します。",
+            "when": "bring-in seat は visible board で弱く見えるため、継続するなら disguised strength を持つ hand に限定します。",
+            "examples": "buried KK / (A♠4♥)4♣ / (8♠9♠)8♣ / live QJT two-flush"
+          },
+          {
+            "label": "heads-up 条件で残す",
+            "tone": "conditional",
+            "range_read": "small/medium pair + backup と live draw は、heads-up になりやすく cards も live な時だけ残します。",
+            "when": "posted dead money を守るためではなく、equity realization がまだあるから残す、という考え方です。",
+            "examples": "buried 77 with Q kicker / weaker 3-flush with overcards"
+          },
+          {
+            "label": "posted chips に引きずられない",
+            "tone": "fold",
+            "range_read": "junk defense、dead draw、pure pretty hand は bring-in を捨ててでも降ります。",
+            "when": "bring-in seat は損切りの discipline が最も必要な位置です。",
+            "examples": "(7♦3♦)2♦ dead / 55 bad kicker / random suited trash"
+          }
+        ],
+        "table_columns": [
+          "return-complete帯",
+          "主扱い",
+          "条件 / 代表例"
+        ],
+        "table_rows": [
+          [
+            "rolled-up / buried big pair",
+            "戻って complete",
+            "AAA、buried KK+。bring-in seat の hidden value core。"
+          ],
+          [
+            "small pair + big overcard",
+            "return-complete",
+            "(A4)4, (A5)5, K66。posted money ではなく hand quality で残す。"
+          ],
+          [
+            "medium pair + straight-flush kicker",
+            "return-complete",
+            "(89)8s, (T9)9s。heads-up 見込みなら BI でも主力。"
+          ],
+          [
+            "premium live 3-flush / 3-straight",
+            "live なら complete",
+            "QJT two-flush、AKQss、no-gap 3-straight。"
+          ],
+          [
+            "buried 66/77 + overcard",
+            "heads-up 条件で追加",
+            "buried 66 with K kicker、buried 77 with Q kicker。"
+          ],
+          [
+            "three big cards",
+            "extra action が無い時だけ限定",
+            "AKJ / KQJ は no extra action の capped return spot に留める。"
+          ],
+          [
+            "junk because already posted",
+            "フォールド",
+            "posted bring-in を理由に suited trash や weak pair を守らない。"
+          ]
+        ],
+        "source_note": "official rules PDF は bring-in / completion の構造を確定し、PokerTips・CountingOuts・Haney の pair articles が「posted money に引かれず、live backup のある hidden hand だけ戻す」という practical shell を与えます。",
+        "collected_rows": [
+          {
+            "source_ref": "official_101_stud_high_rules_pdf",
+            "evidence_type": "bring_in_completion_rule",
+            "range_read": "The low card by suit is forced to open the bet, and completing the opening forced bet does not count as a raise.",
+            "notes": "BI seat を独立行として切る formal basis。"
+          },
+          {
+            "source_ref": "pokernews_rules_2025",
+            "evidence_type": "bring_in_structure",
+            "range_read": "The bring-in is a compulsory low-card opening and the next player may complete the bet to the small limit.",
+            "notes": "return-complete seat の rules 補強。"
+          },
+          {
+            "source_ref": "countingouts_stud_high_basic",
+            "evidence_type": "play_live_hands_rule",
+            "range_read": "Play live hands, start with the best hand, or at least believe you have the best draw.",
+            "notes": "bring-in defense を posted money ではなく hand quality で切る。"
+          },
+          {
+            "source_ref": "countingouts_small_pairs",
+            "evidence_type": "pair_plus_kicker_rule",
+            "range_read": "Small pairs are playable when they are live and carry a kicker larger than the pair being represented.",
+            "notes": "BI でも pair+backup だけ残す。"
+          },
+          {
+            "source_ref": "countingouts_medium_pairs",
+            "evidence_type": "late_complete_vs_early_rule",
+            "range_read": "Pair+straight-flush kicker opens widen only as position improves; otherwise the hand must be very live.",
+            "notes": "BI でも medium pair を無条件 defense にしない。"
+          },
+          {
+            "source_ref": "pokertips_stud_high",
+            "evidence_type": "position_all_three_cards_rule",
+            "range_read": "When real action exists, all three cards matter.",
+            "notes": "bring-in posted だからといって hidden cards が弱い hand は defendしない。"
+          }
+        ]
+      },
+      "versus_complete": {
+        "section_label": "bring-in defense / コール継続",
+        "anchor_profile": "pot odds だけでなく hidden value と live cards で守る",
+        "public_range_read": "BI defense では、live buried pair、pair+overcard、pair+straight-flush kicker、premium 3-flush / 3-straight が中心で、junk defense は切ります。pot odds が良くても、dead draw や bad kicker pair はその後の street で reverse implied odds を抱えやすいからです。",
+        "range_groups": [
+          {
+            "label": "defend / 押し返し",
+            "tone": "attack",
+            "items": [
+              "rolled-up / buried overpair",
+              "A4/4・A5/5",
+              "89/8ss・T9/9ss",
+              "premium live 3-flush / 3-straight",
+              "buried pair higher than opener upcard"
+            ]
+          },
+          {
+            "label": "heads-up ならコール継続",
+            "tone": "conditional",
+            "items": [
+              "live buried 66/77 + high kicker",
+              "weaker but live 3-flush with overcards",
+              "one-gap 3-straight + two-flush",
+              "some live three big cards vs capped late complete"
+            ]
+          },
+          {
+            "label": "bring-in defense で捨てる",
+            "tone": "fold",
+            "items": [
+              "junk because already posted",
+              "dead draw",
+              "underpair with bad kicker",
+              "pure blocker",
+              "multiway honest strength への broadway float"
+            ]
+          }
+        ],
+        "action_bands": [
+          {
+            "label": "守る時も強めに",
+            "tone": "attack",
+            "range_read": "buried pair と premium live draw は defend だけでなく complete / reraise の候補です。",
+            "when": "visible board が弱いぶん、strong hidden hand を passive に止める必要はありません。",
+            "examples": "(A♠4♥)4♣ / (8♠9♠)8♣ / buried QQ / live QJT"
+          },
+          {
+            "label": "heads-up 前提のコール",
+            "tone": "conditional",
+            "range_read": "live weaker pair / draw は heads-up か near heads-up の price spot だけ残します。",
+            "when": "played pot を閉じられず multiway になるほど、bring-in defense の薄い hand は急激に悪化します。",
+            "examples": "buried 77 with Q kicker / weaker 3-flush with A/K overcard"
+          },
+          {
+            "label": "dead money をあきらめる",
+            "tone": "fold",
+            "range_read": "dead draw、bad kicker pair、pure blocker、multiway に巻き込まれる broadway は fold です。",
+            "when": "bring-in defense で chips を守りにいく発想そのものが leak になりやすい seat です。",
+            "examples": "55 bad kicker / dead 3-flush / (4A)Q / random pretty broadway"
+          }
+        ],
+        "table_columns": [
+          "bring-in defense帯",
+          "主扱い",
+          "条件 / 代表例"
+        ],
+        "table_rows": [
+          [
+            "buried overpair / rolled-up",
+            "defend ではなく attack",
+            "hidden big hand は complete / reraise 寄り。"
+          ],
+          [
+            "small pair + big overcard",
+            "live なら defend / reraise",
+            "(A4)4, (A5)5。best-pair / two-pair route がある時だけ。"
+          ],
+          [
+            "medium pair + straight-flush kicker",
+            "heads-up 中心で defend",
+            "(89)8s, (T9)9s。multiway 化するなら急に悪化する。"
+          ],
+          [
+            "premium draw with overcards",
+            "live なら defend",
+            "QJT two-flush、K-high 3-flush。draw 単体ではなく overcard backup が必要。"
+          ],
+          [
+            "buried 66/77 + kicker",
+            "price + heads-up 条件でコール継続",
+            "near heads-up で live なら 1 回は残せる。"
+          ],
+          [
+            "three big cards",
+            "capped late complete にだけ限定",
+            "AKJ / KQJ は honest line や extra action には向かわない。"
+          ],
+          [
+            "junk / pure blocker / dead draw",
+            "フォールド",
+            "already posted を理由に守る hand をまとめて cut する。"
+          ]
+        ],
+        "source_note": "bring-in seat は public source でも一番「守りすぎるな」と読める場所です。rules PDF で seat の意味を固定し、practical source で defense bucket を削っています。",
+        "collected_rows": [
+          {
+            "source_ref": "official_101_stud_high_rules_pdf",
+            "evidence_type": "bring_in_identity",
+            "range_read": "The bring-in seat is structurally distinct because the forced open does not count as a raise and action returns later.",
+            "notes": "BI seat を separate row として扱う根拠。"
+          },
+          {
+            "source_ref": "countingouts_stud_high_basic",
+            "evidence_type": "best_hand_or_best_draw",
+            "range_read": "If you do not have the best hand, you should believe you have the best draw.",
+            "notes": "pot odds だけ defense を否定する基本原則。"
+          },
+          {
+            "source_ref": "countingouts_small_pairs",
+            "evidence_type": "opened_pot_boundary",
+            "range_read": "Small pairs without the right overcard or backup keep putting themselves into second-best-hand and second-best-draw situations.",
+            "notes": "BI defense で bad kicker pair を切る。"
+          },
+          {
+            "source_ref": "countingouts_medium_pairs",
+            "evidence_type": "live_enough_boundary",
+            "range_read": "Medium pairs with straight-flush kickers still require enough liveness for the exact situation faced.",
+            "notes": "pair+backup でも live 条件が必要。"
+          },
+          {
+            "source_ref": "countingouts_ace_blocker",
+            "evidence_type": "blocker_not_enough",
+            "range_read": "Ace blocker alone is not enough to justify heat once you are called.",
+            "notes": "pure blocker defense を消す。"
+          },
+          {
+            "source_ref": "pokertips_stud_high",
+            "evidence_type": "heavy_action_fold_rule",
+            "range_read": "Once real third-street strength develops, all three cards matter and cosmetic starts should give up.",
+            "notes": "bring-in posted でも pretty hand の float を否定。"
+          }
+        ]
+      },
+      "source_refs": [
+        "official_101_stud_high_rules_pdf",
+        "pokernews_rules_2025",
+        "countingouts_stud_high_basic",
+        "countingouts_small_pairs",
+        "countingouts_medium_pairs"
+      ],
+      "at_a_glance": {
+        "open_core": "return-complete は hidden pair・pair+overcard・pair+straight-flush kicker・premium live draw に限定",
+        "position_add": "heads-up price + live 条件なら buried 66/77 や weaker live draw を追加",
+        "vs_complete": "BI defense も buried pair / pair+backup / premium draw が中心で、passive junk defense はしない",
+        "snap_fold": "posted money を理由に守る junk / dead draw / bad kicker pair / pure blocker"
+      }
+    }
+  },
+  "source_index": {
+    "official_101_stud_high_rules_pdf": {
+      "title": "101 Casino: 7 Card Stud High Only rules PDF",
+      "short_label": "101 Casino Rules",
+      "url": "https://oag.ca.gov/sites/all/files/agweb/pdfs/gambling/101casino.pdf",
+      "source_type": "PDF",
+      "weight": "rules_pdf"
+    },
+    "pokernews_rules_2025": {
+      "title": "PokerNews: 7-Card Stud Rules",
+      "short_label": "PokerNews Rules",
+      "url": "https://www.pokernews.com/poker-rules/seven-card-stud.htm",
+      "source_type": "HTML",
+      "weight": "supporting_rules"
+    },
+    "pokertips_stud_high": {
+      "title": "PokerTips: 7 Card Stud Poker Strategy",
+      "short_label": "PokerTips Stud",
+      "url": "https://pokertips.org/en/strategy/7-card-stud/",
+      "source_type": "HTML",
+      "weight": "primary_strategy"
+    },
+    "pokernews_lou_13": {
+      "title": "PokerNews: Talking HORSE with Lou Krieger, Vol. 13: Starting Hands in Seven-Card Stud",
+      "short_label": "Lou 13",
+      "url": "https://www.pokernews.com/strategy/talking-horse-with-lou-krieger-vol-13-stud-starting-hands-6977.htm",
+      "source_type": "HTML",
+      "weight": "supporting_strategy"
+    },
+    "pokernews_lou_14": {
+      "title": "PokerNews: Talking HORSE with Lou Krieger, Vol. 14: More Stud Starting Hands",
+      "short_label": "Lou 14",
+      "url": "https://www.pokernews.com/strategy/talking-horse-lou-krieger-vol-14-more-stud-starting-hands-6996.htm",
+      "source_type": "HTML",
+      "weight": "supporting_strategy"
+    },
+    "countingouts_stud_high_basic": {
+      "title": "CountingOuts: Seven Card Stud Rules and Basic Strategy",
+      "short_label": "CountingOuts Basic",
+      "url": "https://www.countingouts.com/seven-card-stud-rules-and-basic-strategy/",
+      "source_type": "HTML",
+      "weight": "primary_strategy"
+    },
+    "countingouts_small_pairs": {
+      "title": "CountingOuts: Playing Small Pairs with Big Kickers in Seven Card Stud",
+      "short_label": "CountingOuts Small Pairs",
+      "url": "https://www.countingouts.com/seven-card-stud-small-pairs/",
+      "source_type": "HTML",
+      "weight": "primary_strategy"
+    },
+    "countingouts_medium_pairs": {
+      "title": "CountingOuts: Playing Medium Pairs with Straight Flush Kickers in Seven Card Stud",
+      "short_label": "CountingOuts Medium Pairs",
+      "url": "https://www.countingouts.com/seven-card-stud-medium-pairs/",
+      "source_type": "HTML",
+      "weight": "primary_strategy"
+    },
+    "countingouts_ace_blocker": {
+      "title": "CountingOuts: Seven Card Stud - 3rd Street Ace Blocker Play",
+      "short_label": "CountingOuts Ace Blocker",
+      "url": "https://www.countingouts.com/seven-card-stud-3rd-street-ace-blocker-play/",
+      "source_type": "HTML",
+      "weight": "supporting_strategy"
+    },
+    "cardplayer_small_pairs_pdf": {
+      "title": "CardPlayer PDF: Seven Card Stud - Playing Small Pairs With A Big Kicker",
+      "short_label": "CP Small Pairs PDF",
+      "url": "https://media.cardplayer.com/assets/magazines/000/066/536/pdf/37_06_web.pdf",
+      "source_type": "PDF",
+      "weight": "primary_strategy"
+    },
+    "cardplayer_medium_pairs_pdf": {
+      "title": "CardPlayer PDF: Seven Card Stud - Playing Medium Pairs With Suited, Connected Kickers",
+      "short_label": "CP Medium Pairs PDF",
+      "url": "https://media.cardplayer.com/assets/magazines/000/066/538/pdf/37_08_web.pdf",
+      "source_type": "PDF",
+      "weight": "primary_strategy"
+    },
+    "cardplayer_flush_draws_pdf": {
+      "title": "CardPlayer PDF: Seven Card Stud - Playing Flush Draws",
+      "short_label": "CP Flush Draws PDF",
+      "url": "https://media.cardplayer.com/assets/magazines/000/066/542/pdf/37_12_web.pdf",
+      "source_type": "PDF",
+      "weight": "primary_strategy"
+    },
+    "cardplayer_ace_up_pdf": {
+      "title": "CardPlayer PDF: Getting Reraised In Stud With An Ace Up",
+      "short_label": "CP Ace-Up PDF",
+      "url": "https://media.cardplayer.com/assets/magazines/000/066/532/pdf/37_02_web.pdf",
+      "source_type": "PDF",
+      "weight": "primary_strategy"
+    }
+  },
+  "verification": {
+    "checked_on": "2026-04-18",
+    "method": "公開 HTML / PDF の再確認後、third-street complete / continue hand class を bring-in 相対位置へ正規化",
+    "confirmed_source_refs": [
+      "official_101_stud_high_rules_pdf",
+      "pokernews_rules_2025",
+      "pokertips_stud_high",
+      "pokernews_lou_13",
+      "pokernews_lou_14",
+      "countingouts_stud_high_basic",
+      "countingouts_small_pairs",
+      "countingouts_medium_pairs",
+      "countingouts_ace_blocker",
+      "cardplayer_small_pairs_pdf",
+      "cardplayer_medium_pairs_pdf",
+      "cardplayer_flush_draws_pdf",
+      "cardplayer_ace_up_pdf"
+    ]
+  }
+};

@@ -45,6 +45,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pack", default=str(REPO_ROOT / "out/_private/pushfold_real_data/pack.json"))
     parser.add_argument("--regimes-root", default=str(REPO_ROOT / "out/_private/pushfold_real_data_regimes"))
     parser.add_argument("--index", default=str(REPO_ROOT / "index.html"))
+    parser.add_argument("--safety-asset", default=str(bridge_server.DEFAULT_SAFETY_ASSET_PATH))
+    parser.add_argument("--mix-display-index", default=str(bridge_server.DEFAULT_MIX_DISPLAY_INDEX_PATH))
+    parser.add_argument("--mix-ui-catalog", default=str(bridge_server.DEFAULT_MIX_UI_CATALOG_PATH))
     parser.add_argument("--pushfold-regime", default="antes0")
     return parser
 
@@ -76,11 +79,27 @@ def build_static_server(host: str, port: int) -> ThreadingHTTPServer:
     return ThreadingHTTPServer((host, port), handler)
 
 
-def build_bridge_server(host: str, port: int, pack_path: str, regimes_root: str, index_path: str) -> ThreadingHTTPServer:
+def build_bridge_server(
+    host: str,
+    port: int,
+    pack_path: str,
+    regimes_root: str,
+    index_path: str,
+    safety_asset_path: str,
+    mix_display_index_path: str,
+    mix_ui_catalog_path: str,
+) -> ThreadingHTTPServer:
     app_state = bridge_server.build_app_state(pack_path, regimes_root)
+    runtime_safety = bridge_server.build_runtime_safety_state(safety_asset_path)
+    mix_display_index = bridge_server.build_mix_display_state(mix_display_index_path)
+    mix_ui_catalog, mix_ui_bundles = bridge_server.build_mix_ui_state(mix_ui_catalog_path)
     server = ThreadingHTTPServer((host, port), bridge_server.PrivatePackUiHandler)
     server.app = {  # type: ignore[attr-defined]
         "index": index_path,
+        "runtimeSafety": runtime_safety,
+        "mixDisplayIndex": mix_display_index,
+        "mixUiCatalog": mix_ui_catalog,
+        "mixUiBundles": mix_ui_bundles,
         **app_state,
     }
     return server
@@ -94,10 +113,20 @@ def stop_server(server: ThreadingHTTPServer) -> None:
 def main() -> int:
     args = build_parser().parse_args()
     static_server = build_static_server(args.host, args.static_port)
-    bridge_http_server = build_bridge_server(args.host, args.bridge_port, args.pack, args.regimes_root, args.index)
+    bridge_http_server = build_bridge_server(
+        args.host,
+        args.bridge_port,
+        args.pack,
+        args.regimes_root,
+        args.index,
+        args.safety_asset,
+        args.mix_display_index,
+        args.mix_ui_catalog,
+    )
     app_state = bridge_http_server.app  # type: ignore[attr-defined]
     selected_regime_entry = app_state.get("regimes", {}).get(args.pushfold_regime, {})
     selected_family = str(selected_regime_entry.get("semantics", {}).get("familyId", "")).strip()
+    ui_revision = str(int(Path(args.index).stat().st_mtime))
     static_thread = Thread(target=serve_forever, args=(static_server,), daemon=True)
     bridge_thread = Thread(target=serve_forever, args=(bridge_http_server,), daemon=True)
     stop_requested = False
@@ -117,15 +146,19 @@ def main() -> int:
     pushfold_query = urlencode({
         "tab": "pushfold-tab",
         "pushfoldBridgeBase": bridge_root,
+        "mixBridgeBase": bridge_root,
         "pushfoldFamily": selected_family,
         "pushfoldRegime": args.pushfold_regime,
+        "uiRev": ui_revision,
     })
     ui_url = f"{static_root}/?{pushfold_query}"
     non_target_query = urlencode({
         "tab": "evcalc-tab",
         "pushfoldBridgeBase": bridge_root,
+        "mixBridgeBase": bridge_root,
         "pushfoldFamily": selected_family,
         "pushfoldRegime": args.pushfold_regime,
+        "uiRev": ui_revision,
     })
     ui_non_target_url = f"{static_root}/?{non_target_query}"
     health_query = urlencode({"regime": args.pushfold_regime})
@@ -137,7 +170,7 @@ def main() -> int:
         print(f"ui_url {ui_url}", flush=True)
         print(f"ui_non_target_url {ui_non_target_url}", flush=True)
         print(
-            f"pushfold_runtime_query {json.dumps({'pushfoldBridgeBase': bridge_root, 'pushfoldFamily': selected_family, 'pushfoldRegime': args.pushfold_regime}, ensure_ascii=False)}",
+            f"pushfold_runtime_query {json.dumps({'pushfoldBridgeBase': bridge_root, 'mixBridgeBase': bridge_root, 'pushfoldFamily': selected_family, 'pushfoldRegime': args.pushfold_regime}, ensure_ascii=False)}",
             flush=True,
         )
         print(f"bridge_health_url {bridge_health_url}", flush=True)
