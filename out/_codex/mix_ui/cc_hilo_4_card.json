@@ -1,0 +1,478 @@
+{
+  "bundleVersion": "1.0",
+  "bundleType": "mix_ui_family_bundle",
+  "familyId": "cc_hilo / 4-card",
+  "displayClass": "grounded_exact_display",
+  "toolStatus": "tool_ready_exact_preflop_slice",
+  "uiScopeLabel": "O8 / preflop only / first-in open / LJ-HJ-CO-BU",
+  "uiWarning": "Opening-chart slice only. No defend tree, no postflop, and no exact stack model is present in source.",
+  "detailArtifact": "out/_codex/cc_hilo_4card_variant_coverage.md",
+  "sourcePackPath": "out/_private/mix_game_candidate_staging/cc_hilo_4_card/o8_charts_6max_opening_ranges/pack.json",
+  "selectorSchema": [
+    {
+      "key": "position",
+      "label": "Open position",
+      "values": [
+        "BU",
+        "CO",
+        "HJ",
+        "LJ"
+      ]
+    },
+    {
+      "key": "stack_or_spr",
+      "label": "Stack note",
+      "values": [
+        "not_specified_in_source"
+      ]
+    },
+    {
+      "key": "facing_action",
+      "label": "Preflop spot",
+      "values": [
+        "first_entry_open"
+      ]
+    },
+    {
+      "key": "chart_tab",
+      "label": "Chart family",
+      "values": [
+        "2-3",
+        "A-2",
+        "A-3",
+        "A-4",
+        "A-5"
+      ]
+    },
+    {
+      "key": "low_qualifier",
+      "label": "Low rule",
+      "values": [
+        "eight_or_better"
+      ]
+    }
+  ],
+  "spotCount": 20,
+  "spots": [
+    {
+      "spotId": "a2_lj",
+      "spotLabel": "position=LJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-2 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "LJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-2",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 10,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-2 :: A2BB / value ALL",
+        "A-2 :: DS Unpaired / value ALL",
+        "A-2 :: Suited Ace Unpaired / value ALL",
+        "A-2 :: Other Suit Unpaired / value ALL",
+        "A-2 :: No Suits Unpaired / value No A247, A248, A257-A289"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a2_hj",
+      "spotLabel": "position=HJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-2 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "HJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-2",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 10,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-2 :: A2BB / value ALL",
+        "A-2 :: DS Unpaired / value ALL",
+        "A-2 :: Suited Ace Unpaired / value ALL",
+        "A-2 :: Other Suit Unpaired / value ALL",
+        "A-2 :: No Suits Unpaired / value No A2 w/68-79"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a2_co",
+      "spotLabel": "position=CO / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-2 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "CO",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-2",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 10,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-2 :: A2BB / value ALL",
+        "A-2 :: DS Unpaired / value ALL",
+        "A-2 :: Suited Ace Unpaired / value ALL",
+        "A-2 :: Other Suit Unpaired / value ALL",
+        "A-2 :: No Suits Unpaired / value ALL"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a2_bu",
+      "spotLabel": "position=BU / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-2 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "BU",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-2",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 10,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-2 :: A2BB / value ALL",
+        "A-2 :: DS Unpaired / value ALL",
+        "A-2 :: Suited Ace Unpaired / value ALL",
+        "A-2 :: Other Suit Unpaired / value ALL",
+        "A-2 :: No Suits Unpaired / value ALL"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a3_lj",
+      "spotLabel": "position=LJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-3 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "LJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-3",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 10,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-3 :: A3BB / value ALL",
+        "A-3 :: DS Unpaired / value ALL",
+        "A-3 :: Suited Ace Unpaired / value ALL",
+        "A-3 :: Other Suit Unpaired / value No A(3X)X; XX = 6-9",
+        "A-3 :: No Suits Unpaired / value A34T+, A35Q+, A36K"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a3_hj",
+      "spotLabel": "position=HJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-3 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "HJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-3",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 10,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-3 :: A3BB / value ALL",
+        "A-3 :: DS Unpaired / value ALL",
+        "A-3 :: Suited Ace Unpaired / value ALL",
+        "A-3 :: Other Suit Unpaired / value ALL",
+        "A-3 :: No Suits Unpaired / value A345, A35T+, A36T+"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a3_co",
+      "spotLabel": "position=CO / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-3 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "CO",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-3",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 10,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-3 :: A3BB / value ALL",
+        "A-3 :: DS Unpaired / value ALL",
+        "A-3 :: Suited Ace Unpaired / value ALL",
+        "A-3 :: Other Suit Unpaired / value ALL",
+        "A-3 :: No Suits Unpaired / value No A3XX; XX = 6-9"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a3_bu",
+      "spotLabel": "position=BU / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-3 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "BU",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-3",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 10,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-3 :: A3BB / value ALL",
+        "A-3 :: DS Unpaired / value ALL",
+        "A-3 :: Suited Ace Unpaired / value ALL",
+        "A-3 :: Other Suit Unpaired / value ALL",
+        "A-3 :: No Suits Unpaired / value ALL"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a4_lj",
+      "spotLabel": "position=LJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-4 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "LJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-4",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 12,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-4 :: (A4)BB or DS / value ALL",
+        "A-4 :: A(4B)B / value QJ, KJ, KQ",
+        "A-4 :: A4BB / value NONE",
+        "A-4 :: DS Unpaired / value No (A4)(XX); XX=7-9",
+        "A-4 :: Suited Ace Unpaired / value (A4)5B, (A4)6B"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a4_hj",
+      "spotLabel": "position=HJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-4 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "HJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-4",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 12,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-4 :: (A4)BB or DS / value ALL",
+        "A-4 :: A(4B)B / value ALL",
+        "A-4 :: A4BB / value NONE",
+        "A-4 :: DS Unpaired / value ALL",
+        "A-4 :: Suited Ace Unpaired / value No (A4)XX; XX=6-9"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a4_co",
+      "spotLabel": "position=CO / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-4 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "CO",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-4",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 12,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-4 :: (A4)BB or DS / value ALL",
+        "A-4 :: A(4B)B / value ALL",
+        "A-4 :: A4BB / value ALL",
+        "A-4 :: DS Unpaired / value ALL",
+        "A-4 :: Suited Ace Unpaired / value ALL"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a4_bu",
+      "spotLabel": "position=BU / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-4 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "BU",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-4",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 12,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-4 :: (A4)BB or DS / value ALL",
+        "A-4 :: A(4B)B / value ALL",
+        "A-4 :: A4BB / value ALL",
+        "A-4 :: DS Unpaired / value ALL",
+        "A-4 :: Suited Ace Unpaired / value ALL"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a5_lj",
+      "spotLabel": "position=LJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-5 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "LJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-5",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 12,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-5 :: (A5)BB or DS / value ALL DS, (A5)KQ",
+        "A-5 :: A(5B)B / value NONE",
+        "A-5 :: A5BB / value NONE",
+        "A-5 :: DS Unpaired / value (A5)(X w/ J,Q,K)",
+        "A-5 :: Suited Ace Unpaired / value (A5)6K"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a5_hj",
+      "spotLabel": "position=HJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-5 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "HJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-5",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 12,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-5 :: (A5)BB or DS / value ALL",
+        "A-5 :: A(5B)B / value KQ",
+        "A-5 :: A5BB / value NONE",
+        "A-5 :: DS Unpaired / value ALL",
+        "A-5 :: Suited Ace Unpaired / value (A5)6Q+, (A5)7J+"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a5_co",
+      "spotLabel": "position=CO / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-5 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "CO",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-5",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 12,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-5 :: (A5)BB or DS / value ALL",
+        "A-5 :: A(5B)B / value ALL",
+        "A-5 :: A5BB / value KQ",
+        "A-5 :: DS Unpaired / value ALL",
+        "A-5 :: Suited Ace Unpaired / value ALL (A5)XX Except 68-89"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "a5_bu",
+      "spotLabel": "position=BU / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=A-5 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "BU",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "A-5",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 12,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "A-5 :: (A5)BB or DS / value ALL",
+        "A-5 :: A(5B)B / value ALL",
+        "A-5 :: A5BB / value ALL",
+        "A-5 :: DS Unpaired / value ALL",
+        "A-5 :: Suited Ace Unpaired / value ALL"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "23_lj",
+      "spotLabel": "position=LJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=2-3 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "LJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "2-3",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 21,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "2-3 :: (2P)(3P) / value JJ+",
+        "2-3 :: 2(3P)P / value QQ+",
+        "2-3 :: (23)PP / value KK",
+        "2-3 :: 23PP / value KK",
+        "2-3 :: 23BB DS / value NONE"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "23_hj",
+      "spotLabel": "position=HJ / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=2-3 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "HJ",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "2-3",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 21,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "2-3 :: (2P)(3P) / value 44,55,TT+",
+        "2-3 :: 2(3P)P / value QQ+",
+        "2-3 :: (23)PP / value QQ+",
+        "2-3 :: 23PP / value KK",
+        "2-3 :: 23BB DS / value ALL"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "23_co",
+      "spotLabel": "position=CO / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=2-3 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "CO",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "2-3",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 21,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "2-3 :: (2P)(3P) / value ALL",
+        "2-3 :: 2(3P)P / value 44,55,TT+",
+        "2-3 :: (23)PP / value 44, JJ+",
+        "2-3 :: 23PP / value QQ+",
+        "2-3 :: 23BB DS / value ALL"
+      ],
+      "sourcePathInArchive": ""
+    },
+    {
+      "spotId": "23_bu",
+      "spotLabel": "position=BU / stack_or_spr=not_specified_in_source / facing_action=first_entry_open / chart_tab=2-3 / low_qualifier=eight_or_better",
+      "selectors": {
+        "position": "BU",
+        "stack_or_spr": "not_specified_in_source",
+        "facing_action": "first_entry_open",
+        "chart_tab": "2-3",
+        "low_qualifier": "eight_or_better"
+      },
+      "entryCount": 21,
+      "sourceEntryCount": null,
+      "previewEntries": [
+        "2-3 :: (2P)(3P) / value ALL",
+        "2-3 :: 2(3P)P / value ALL",
+        "2-3 :: (23)PP / value ALL",
+        "2-3 :: 23PP / value 44-66, TT+",
+        "2-3 :: 23BB DS / value ALL"
+      ],
+      "sourcePathInArchive": ""
+    }
+  ]
+}

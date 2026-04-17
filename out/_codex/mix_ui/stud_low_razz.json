@@ -1,0 +1,90 @@
+{
+  "bundleVersion": "1.0",
+  "bundleType": "mix_ui_family_bundle",
+  "familyId": "stud_low_razz",
+  "displayClass": "grounded_practical_coverage",
+  "detailArtifact": "out/_codex/stud_low_razz_variant_coverage.md",
+  "sourcePackPath": "out/_private/mix_game_candidate_staging/stud_low_razz/pokertips_razz_strategy/pack.json",
+  "selectorSchema": [
+    {
+      "key": "street",
+      "label": "Street",
+      "values": [
+        "3rd"
+      ]
+    },
+    {
+      "key": "decision_node",
+      "label": "Decision Node",
+      "values": [
+        "position_starting_hands_and_outs"
+      ]
+    },
+    {
+      "key": "acting_order",
+      "label": "Acting Order",
+      "values": [
+        "position_relative_to_bring_in_discussed"
+      ]
+    },
+    {
+      "key": "context",
+      "label": "Context",
+      "values": [
+        "section::position_starting_hands_and_outs"
+      ]
+    },
+    {
+      "key": "facing_action",
+      "label": "Facing Action",
+      "values": [
+        "third_street_starting_hand_guidance"
+      ]
+    }
+  ],
+  "spotCount": 1,
+  "spots": [
+    {
+      "spotId": "position_starting_hands_and_outs",
+      "spotLabel": "street=3rd / decision_node=position_starting_hands_and_outs / acting_order=position_relative_to_bring_in_discussed / context=section::position_starting_hands_and_outs / facing_action=third_street_starting_hand_guidance",
+      "selectors": {
+        "street": "3rd",
+        "decision_node": "position_starting_hands_and_outs",
+        "acting_order": "position_relative_to_bring_in_discussed",
+        "context": "section::position_starting_hands_and_outs",
+        "facing_action": "third_street_starting_hand_guidance"
+      },
+      "heuristicCount": 4,
+      "heuristics": [
+        {
+          "scenarioLabel": "Open wider when action folds around toward the right of the bring-in",
+          "recommendedAction": "tighten_immediately_left_loosen_when_folds_reach_you",
+          "appliesWhen": "Comparing seats immediately left of the bring-in against later seats after folds",
+          "adjustWhen": "Immediately left of the bring-in needs a materially stronger start",
+          "rationale": "The source explicitly maps Razz starting-hand quality to how many players remain between you and the bring-in."
+        },
+        {
+          "scenarioLabel": "Five-high or better razz starts are premium; six-high is still comfortably playable",
+          "recommendedAction": "raise_or_reraise_with_five_high_or_better",
+          "appliesWhen": "Unpaired Razz start whose highest card is five or lower",
+          "adjustWhen": "Six-high starts are usually still playable even from early position",
+          "rationale": "The source gives explicit practical thresholds at five-high, six-high, and seven-high."
+        },
+        {
+          "scenarioLabel": "Use visible low-card blockers before continuing with 4-5 down, 7 up style starts",
+          "recommendedAction": "play_only_when_low_outs_are_mostly_live",
+          "appliesWhen": "Early-position hand similar to 4-5 down with 7 up",
+          "adjustWhen": "Two exposed blockers makes the spot questionable",
+          "rationale": "The source gives concrete blocker thresholds instead of a vague 'be careful with dead cards' warning."
+        },
+        {
+          "scenarioLabel": "Visible opponent cards matter at least as much as your own cards",
+          "recommendedAction": "audit_upcards_before_continuing",
+          "appliesWhen": "Any Razz continuation or opening decision where live low cards determine hand quality",
+          "adjustWhen": "Do not evaluate your hand in isolation from opponents' up cards",
+          "rationale": "The source frames visible-card tracking as the difference between losing and winning Razz players."
+        }
+      ]
+    }
+  ]
+}

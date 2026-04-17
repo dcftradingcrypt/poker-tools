@@ -1,0 +1,617 @@
+{
+  "bundleVersion": "1.0",
+  "bundleType": "mix_ui_family_bundle",
+  "familyId": "cc_high / 4-card",
+  "displayClass": "grounded_exact_display",
+  "toolStatus": "tool_ready_exact_preflop_slice",
+  "uiScopeLabel": "PLO hi / preflop decision nodes / HU SB vs BB / 100bb / with limp",
+  "uiWarning": "Not a flat range table. This UI shows hero response nodes from the retained HU-100bb-with-limp source tree only.",
+  "detailArtifact": "out/_codex/cc_high_4card_variant_coverage.md",
+  "sourcePackPath": "out/_private/mix_game_candidate_staging/cc_high_4_card/preflopadvisor_hu100bb_with_limp/pack.json",
+  "selectorSchema": [
+    {
+      "key": "position",
+      "label": "Hero seat",
+      "values": [
+        "BB",
+        "SB"
+      ]
+    },
+    {
+      "key": "stack_or_spr",
+      "label": "Effective stack",
+      "values": [
+        "100bb"
+      ]
+    },
+    {
+      "key": "facing_action",
+      "label": "Prior preflop action path",
+      "values": [
+        "SB:Call",
+        "SB:Call > BB:Raise100",
+        "SB:Call > BB:Raise100 > SB:Raise100",
+        "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100",
+        "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100",
+        "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:AllIn",
+        "SB:Raise100",
+        "SB:Raise100 > BB:Raise100",
+        "SB:Raise100 > BB:Raise100 > SB:Raise100",
+        "SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100",
+        "SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:AllIn",
+        "root"
+      ]
+    },
+    {
+      "key": "action",
+      "label": "Hero action node",
+      "values": [
+        "AllIn",
+        "Call",
+        "Fold",
+        "Raise100"
+      ]
+    }
+  ],
+  "spotCount": 31,
+  "spots": [
+    {
+      "spotId": "0",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=root / action=Fold",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "root",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "TTTT / EV -1000.0 msb / freq 100%",
+        "TT(5T) / EV -1000.0 msb / freq 100%",
+        "TT(4T) / EV -1000.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/0.rng"
+    },
+    {
+      "spotId": "1.1",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Call / action=Call",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "7QKK / EV 1040.2 msb / freq 100%",
+        "8QQK / EV 1021.1 msb / freq 100%",
+        "6JKK / EV 1004.5 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.1.rng"
+    },
+    {
+      "spotId": "1.40100.0",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 / action=Fold",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "479K / EV -2000.0 msb / freq 100%",
+        "489Q / EV -2000.0 msb / freq 100%",
+        "2Q(78) / EV -2000.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.0.rng"
+    },
+    {
+      "spotId": "1.40100.1",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 / action=Call",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(6JKA) / EV 762.9 msb / freq 100%",
+        "KK(TK) / EV 625.5 msb / freq 100%",
+        "KK(QK) / EV 614.1 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.1.rng"
+    },
+    {
+      "spotId": "1.40100.40100.0",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 / action=Fold",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "45(JQ) / EV -6000.0 msb / freq 100%",
+        "4T(6K) / EV -6000.0 msb / freq 100%",
+        "6J(8K) / EV -6000.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.0.rng"
+    },
+    {
+      "spotId": "1.40100.40100.1",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 / action=Call",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(45)(45) / EV 2782.0 msb / freq 100%",
+        "(57)(57) / EV 1834.8 msb / freq 100%",
+        "TJ(TJ) / EV 1729.1 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.1.rng"
+    },
+    {
+      "spotId": "1.40100.40100.40100.0",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 / action=Fold",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "22TA / EV -18000.0 msb / freq 34%",
+        "88JA / EV -18000.0 msb / freq 30%",
+        "77TA / EV -18000.0 msb / freq 29%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.40100.0.rng"
+    },
+    {
+      "spotId": "1.40100.40100.40100.1",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 / action=Call",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(36)(36) / EV -5301.9 msb / freq 45%",
+        "(57)(57) / EV -4357.6 msb / freq 44%",
+        "(34)(34) / EV -5291.6 msb / freq 42%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.40100.1.rng"
+    },
+    {
+      "spotId": "1.40100.40100.40100.40100.0",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100 / action=Fold",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "7K(KA) / EV -54000.0 msb / freq 100%",
+        "TA(TK) / EV -54000.0 msb / freq 100%",
+        "KA(7K) / EV -54000.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.40100.40100.0.rng"
+    },
+    {
+      "spotId": "1.40100.40100.40100.40100.3.0",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:AllIn / action=Fold",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:AllIn",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "TQ(58) / EV -162000.0 msb / freq 0%",
+        "46(39) / EV -162000.0 msb / freq 0%",
+        "47(67) / EV -162000.0 msb / freq 0%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.40100.40100.3.0.rng"
+    },
+    {
+      "spotId": "1.40100.40100.40100.40100.3.1",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:AllIn / action=Call",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:AllIn",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(4A)(5A) / EV 52090.0 msb / freq 40%",
+        "(5A)(5A) / EV 51829.0 msb / freq 39%",
+        "(4A)(QA) / EV 50199.3 msb / freq 37%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.40100.40100.3.1.rng"
+    },
+    {
+      "spotId": "1.40100.40100.40100.40100.3",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100 / action=AllIn",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100",
+        "action": "AllIn"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(QA)(QA) / EV 60769.8 msb / freq 100%",
+        "(7A)(7A) / EV 51443.6 msb / freq 100%",
+        "(KA)(KA) / EV 50881.6 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.40100.40100.3.rng"
+    },
+    {
+      "spotId": "1.40100.40100.40100.40100",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 / action=Raise100",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100",
+        "action": "Raise100"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(4A)(5A) / EV 52491.4 msb / freq 40%",
+        "(5A)(5A) / EV 52299.2 msb / freq 39%",
+        "(4A)(QA) / EV 50992.9 msb / freq 37%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.40100.40100.rng"
+    },
+    {
+      "spotId": "1.40100.40100.40100",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 > SB:Raise100 / action=Raise100",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100 > SB:Raise100",
+        "action": "Raise100"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(QA)(QA) / EV 33798.9 msb / freq 100%",
+        "(TA)(JA) / EV 32272.3 msb / freq 100%",
+        "(JA)(QA) / EV 31413.6 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.40100.rng"
+    },
+    {
+      "spotId": "1.40100.40100",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Call > BB:Raise100 / action=Raise100",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call > BB:Raise100",
+        "action": "Raise100"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(JA)(JA) / EV 18112.9 msb / freq 51%",
+        "(36)(36) / EV 3298.8 msb / freq 45%",
+        "(57)(57) / EV 4067.0 msb / freq 44%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.40100.rng"
+    },
+    {
+      "spotId": "1.40100",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Call / action=Raise100",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Call",
+        "action": "Raise100"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(TA)(TA) / EV 7001.8 msb / freq 100%",
+        "(KA)(KA) / EV 6822.9 msb / freq 100%",
+        "(QA)(QA) / EV 6662.4 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.40100.rng"
+    },
+    {
+      "spotId": "1",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=root / action=Call",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "root",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(6JKA) / EV 754.3 msb / freq 100%",
+        "KK(QK) / EV 719.1 msb / freq 100%",
+        "KK(TK) / EV 631.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/1.rng"
+    },
+    {
+      "spotId": "40100.0",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Raise100 / action=Fold",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "5K(37) / EV -2000.0 msb / freq 100%",
+        "255A / EV -2000.0 msb / freq 100%",
+        "9Q(45) / EV -2000.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.0.rng"
+    },
+    {
+      "spotId": "40100.1",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Raise100 / action=Call",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "TJKK / EV 2379.6 msb / freq 100%",
+        "TKKA / EV 1978.1 msb / freq 100%",
+        "QKKA / EV 1970.6 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.1.rng"
+    },
+    {
+      "spotId": "40100.40100.0",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 / action=Fold",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "59QK / EV -6000.0 msb / freq 100%",
+        "26(9J) / EV -6000.0 msb / freq 100%",
+        "48JQ / EV -6000.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.0.rng"
+    },
+    {
+      "spotId": "40100.40100.1",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 / action=Call",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "KK(QA) / EV 9225.5 msb / freq 100%",
+        "KK(8A) / EV 7829.4 msb / freq 100%",
+        "KK(9A) / EV 7718.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.1.rng"
+    },
+    {
+      "spotId": "40100.40100.40100.0",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 > SB:Raise100 / action=Fold",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100 > SB:Raise100",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "5K(4K) / EV -18000.0 msb / freq 100%",
+        "TQ(TK) / EV -18000.0 msb / freq 100%",
+        "JK(JQ) / EV -18000.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.40100.0.rng"
+    },
+    {
+      "spotId": "40100.40100.40100.1",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 > SB:Raise100 / action=Call",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100 > SB:Raise100",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(56)(56) / EV -3226.4 msb / freq 100%",
+        "(45)(45) / EV -3595.0 msb / freq 100%",
+        "(9T)(7K) / EV -4790.2 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.40100.1.rng"
+    },
+    {
+      "spotId": "40100.40100.40100.40100.0",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100 / action=Fold",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "QA(3Q) / EV -54000.0 msb / freq 100%",
+        "QA(9Q) / EV -54000.0 msb / freq 100%",
+        "JA(JK) / EV -54000.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.40100.40100.0.rng"
+    },
+    {
+      "spotId": "40100.40100.40100.40100.3.0",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:AllIn / action=Fold",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:AllIn",
+        "action": "Fold"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "TK(7J) / EV -162000.0 msb / freq 0%",
+        "4K(39) / EV -162000.0 msb / freq 0%",
+        "24(9Q) / EV -162000.0 msb / freq 0%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.40100.40100.3.0.rng"
+    },
+    {
+      "spotId": "40100.40100.40100.40100.3.1",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:AllIn / action=Call",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:AllIn",
+        "action": "Call"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(JA)(JA) / EV 59677.9 msb / freq 100%",
+        "(9A)(9A) / EV 57087.9 msb / freq 100%",
+        "(QA)(QA) / EV 56784.0 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.40100.40100.3.1.rng"
+    },
+    {
+      "spotId": "40100.40100.40100.40100.3",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100 / action=AllIn",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100",
+        "action": "AllIn"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "AA(QA) / EV 60607.8 msb / freq 100%",
+        "AA(JA) / EV 60524.4 msb / freq 100%",
+        "KAAA / EV 49658.9 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.40100.40100.3.rng"
+    },
+    {
+      "spotId": "40100.40100.40100.40100",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 > SB:Raise100 / action=Raise100",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100 > SB:Raise100",
+        "action": "Raise100"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(JA)(JA) / EV 59027.8 msb / freq 100%",
+        "(9A)(9A) / EV 56694.2 msb / freq 100%",
+        "(QA)(QA) / EV 56516.8 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.40100.40100.rng"
+    },
+    {
+      "spotId": "40100.40100.40100",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=SB:Raise100 > BB:Raise100 / action=Raise100",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100 > BB:Raise100",
+        "action": "Raise100"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "9A(TA) / EV 24740.2 msb / freq 100%",
+        "8A(JA) / EV 23979.9 msb / freq 100%",
+        "9A(8A) / EV 23236.2 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.40100.rng"
+    },
+    {
+      "spotId": "40100.40100",
+      "spotLabel": "position=BB / stack_or_spr=100bb / facing_action=SB:Raise100 / action=Raise100",
+      "selectors": {
+        "position": "BB",
+        "stack_or_spr": "100bb",
+        "facing_action": "SB:Raise100",
+        "action": "Raise100"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "(TA)(TA) / EV 15384.8 msb / freq 100%",
+        "(QA)(QA) / EV 14851.1 msb / freq 100%",
+        "(JA)(JA) / EV 14592.4 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.40100.rng"
+    },
+    {
+      "spotId": "40100",
+      "spotLabel": "position=SB / stack_or_spr=100bb / facing_action=root / action=Raise100",
+      "selectors": {
+        "position": "SB",
+        "stack_or_spr": "100bb",
+        "facing_action": "root",
+        "action": "Raise100"
+      },
+      "entryCount": 3,
+      "sourceEntryCount": 16432,
+      "previewEntries": [
+        "9A(TA) / EV 6465.0 msb / freq 100%",
+        "8A(JA) / EV 6071.8 msb / freq 100%",
+        "8A(9A) / EV 6051.8 msb / freq 100%"
+      ],
+      "sourcePathInArchive": "ranges/HU-100bb-with-limp/40100.rng"
+    }
+  ]
+}

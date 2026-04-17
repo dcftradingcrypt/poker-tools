@@ -1,0 +1,105 @@
+{
+  "catalogVersion": "1.0",
+  "catalogType": "poker_mix_ui_catalog",
+  "note": "AoF-only cc_high / 2-card is intentionally excluded; exact preflop source families are separated from reference-only practical families.",
+  "families": [
+    {
+      "familyId": "cc_high / 4-card",
+      "displayClass": "grounded_exact_display",
+      "toolStatus": "tool_ready_exact_preflop_slice",
+      "scopeLabel": "PLO hi / preflop decision nodes / HU SB vs BB / 100bb / with limp",
+      "bundleArtifact": "out/_codex/mix_ui/cc_high_4_card.json",
+      "spotCount": 31,
+      "selectorKeys": [
+        "position",
+        "stack_or_spr",
+        "facing_action",
+        "action"
+      ],
+      "sourcePackPath": "out/_private/mix_game_candidate_staging/cc_high_4_card/preflopadvisor_hu100bb_with_limp/pack.json",
+      "detailArtifact": "out/_codex/cc_high_4card_variant_coverage.md"
+    },
+    {
+      "familyId": "cc_hilo / 4-card",
+      "displayClass": "grounded_exact_display",
+      "toolStatus": "tool_ready_exact_preflop_slice",
+      "scopeLabel": "O8 / preflop only / first-in open / LJ-HJ-CO-BU",
+      "bundleArtifact": "out/_codex/mix_ui/cc_hilo_4_card.json",
+      "spotCount": 20,
+      "selectorKeys": [
+        "position",
+        "stack_or_spr",
+        "facing_action",
+        "chart_tab",
+        "low_qualifier"
+      ],
+      "sourcePackPath": "out/_private/mix_game_candidate_staging/cc_hilo_4_card/o8_charts_6max_opening_ranges/pack.json",
+      "detailArtifact": "out/_codex/cc_hilo_4card_variant_coverage.md"
+    },
+    {
+      "familyId": "stud_high",
+      "displayClass": "grounded_practical_coverage",
+      "toolStatus": "reference_only",
+      "scopeLabel": "reference only / article-derived practical coverage",
+      "bundleArtifact": "out/_codex/mix_ui/stud_high.json",
+      "spotCount": 2,
+      "selectorKeys": [
+        "street",
+        "decision_node",
+        "acting_order",
+        "context"
+      ],
+      "sourcePackPath": "out/_private/mix_game_candidate_staging/stud_high/pokertips_7_card_stud_strategy/pack.json",
+      "detailArtifact": "out/_codex/stud_high_variant_coverage.md"
+    },
+    {
+      "familyId": "stud_low_razz",
+      "displayClass": "grounded_practical_coverage",
+      "toolStatus": "reference_only",
+      "scopeLabel": "reference only / article-derived practical coverage",
+      "bundleArtifact": "out/_codex/mix_ui/stud_low_razz.json",
+      "spotCount": 1,
+      "selectorKeys": [
+        "street",
+        "decision_node",
+        "acting_order",
+        "context",
+        "facing_action"
+      ],
+      "sourcePackPath": "out/_private/mix_game_candidate_staging/stud_low_razz/pokertips_razz_strategy/pack.json",
+      "detailArtifact": "out/_codex/stud_low_razz_variant_coverage.md"
+    },
+    {
+      "familyId": "stud_hilo",
+      "displayClass": "grounded_practical_coverage",
+      "toolStatus": "reference_only",
+      "scopeLabel": "reference only / article-derived practical coverage",
+      "bundleArtifact": "out/_codex/mix_ui/stud_hilo.json",
+      "spotCount": 2,
+      "selectorKeys": [
+        "street",
+        "decision_node",
+        "acting_order",
+        "context",
+        "facing_action"
+      ],
+      "sourcePackPath": "out/_private/mix_game_candidate_staging/stud_hilo/pokertips_7_card_stud_hi_lo_strategy/pack.json",
+      "detailArtifact": "out/_codex/stud_hilo_variant_coverage.md"
+    },
+    {
+      "familyId": "draw_triple_low",
+      "displayClass": "grounded_practical_coverage",
+      "toolStatus": "reference_only",
+      "scopeLabel": "reference only / article-derived practical coverage",
+      "bundleArtifact": "out/_codex/mix_ui/draw_triple_low.json",
+      "spotCount": 2,
+      "selectorKeys": [
+        "draw_round",
+        "decision_node",
+        "facing_action"
+      ],
+      "sourcePackPath": "out/_private/mix_game_candidate_staging/draw_triple_low/pokertips_2_7_triple_draw_strategy/pack.json",
+      "detailArtifact": "out/_codex/draw_triple_low_variant_coverage.md"
+    }
+  ]
+}

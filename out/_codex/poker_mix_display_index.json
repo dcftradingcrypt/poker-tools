@@ -1,0 +1,358 @@
+{
+  "indexVersion": "1.0",
+  "indexType": "poker_mix_grounded_display_index",
+  "currentBoundary": {
+    "groundedFamilies": [
+      "cc_high / 4-card",
+      "cc_hilo / 4-card",
+      "stud_high",
+      "stud_low_razz",
+      "stud_hilo",
+      "draw_triple_low"
+    ],
+    "blockedFamilies": []
+  },
+  "displayClasses": [
+    "grounded_exact_display",
+    "grounded_practical_coverage"
+  ],
+  "families": [
+    {
+      "familyId": "cc_high / 4-card",
+      "status": "grounded",
+      "displayClass": "grounded_exact_display",
+      "sourceClass": "retained_exact_commit_archive",
+      "nativeDecisionShape": "preflop first-entry or defend decision nodes keyed by seat, stack or SPR, betting model, and facing action",
+      "repoReadyScope": "tool-ready exact preflop response-node slice: PLO hi HU SB vs BB / 100bb / with-limp / 31 source-backed nodes",
+      "detailArtifact": "out/_codex/cc_high_4card_variant_coverage.md",
+      "supportingArtifacts": [
+        "out/_codex/cc_high_4card_preflopadvisor_candidate.md",
+        "out/_codex/cc_high_4card_promotion_decision_packet.md"
+      ],
+      "stagedArtifacts": [
+        "out/_private/mix_game_candidate_staging/cc_high_4_card/preflopadvisor_hu100bb_with_limp/pack.json",
+        "out/_private/mix_game_candidate_staging/cc_high_4_card/preflopadvisor_hu100bb_with_limp/manifest.json"
+      ],
+      "preview": {
+        "heading": "Representative grounded spot preview",
+        "copy": "grounded exact family の source-native decision node / chart row から、実際の hand token と source value を抜き出して表示しています。",
+        "rows": [
+          {
+            "eyebrow": "Position SB / Stack 100bb",
+            "title": "Facing root / Action Fold",
+            "body": "TTTT / => EV -1000.0 msb / @ 100% | TT(5T) / => EV -1000.0 msb / @ 100% | TT(4T) / => EV -1000.0 msb / @ 100%",
+            "note": "16432 source rows / ranges/HU-100bb-with-limp/0.rng",
+            "bodyClassName": "mix-preview-body mix-preview-body-code"
+          },
+          {
+            "eyebrow": "Position BB / Stack 100bb",
+            "title": "Facing SB:Call / Action Call",
+            "body": "7QKK / => EV 1040.2 msb / @ 100% | 8QQK / => EV 1021.1 msb / @ 100% | 6JKK / => EV 1004.5 msb / @ 100%",
+            "note": "16432 source rows / ranges/HU-100bb-with-limp/1.1.rng",
+            "bodyClassName": "mix-preview-body mix-preview-body-code"
+          },
+          {
+            "eyebrow": "Position SB / Stack 100bb",
+            "title": "Facing SB:Call > BB:Raise100 / Action Fold",
+            "body": "479K / => EV -2000.0 msb / @ 100% | 489Q / => EV -2000.0 msb / @ 100% | 2Q(78) / => EV -2000.0 msb / @ 100%",
+            "note": "16432 source rows / ranges/HU-100bb-with-limp/1.40100.0.rng",
+            "bodyClassName": "mix-preview-body mix-preview-body-code"
+          },
+          {
+            "eyebrow": "Position SB / Stack 100bb",
+            "title": "Facing SB:Call > BB:Raise100 / Action Call",
+            "body": "(6JKA) / => EV 762.9 msb / @ 100% | KK(TK) / => EV 625.5 msb / @ 100% | KK(QK) / => EV 614.1 msb / @ 100%",
+            "note": "16432 source rows / ranges/HU-100bb-with-limp/1.40100.1.rng",
+            "bodyClassName": "mix-preview-body mix-preview-body-code"
+          }
+        ]
+      }
+    },
+    {
+      "familyId": "cc_hilo / 4-card",
+      "status": "grounded",
+      "displayClass": "grounded_exact_display",
+      "sourceClass": "retained_exact_commit_chart_html",
+      "nativeDecisionShape": "preflop split-pot first-entry decision nodes keyed by seat, split rule, low qualifier, and facing action",
+      "repoReadyScope": "tool-ready exact preflop chart slice: O8 first-in open chart / LJ-HJ-CO-BU / 20 chart spots",
+      "detailArtifact": "out/_codex/cc_hilo_4card_variant_coverage.md",
+      "supportingArtifacts": [
+        "out/_codex/cc_hilo_4card_candidate.md",
+        "out/_codex/cc_hilo_4card_promotion_decision_packet.md"
+      ],
+      "stagedArtifacts": [
+        "out/_private/mix_game_candidate_staging/cc_hilo_4_card/o8_charts_6max_opening_ranges/pack.json",
+        "out/_private/mix_game_candidate_staging/cc_hilo_4_card/o8_charts_6max_opening_ranges/manifest.json"
+      ],
+      "preview": {
+        "heading": "Representative grounded spot preview",
+        "copy": "grounded exact family の source-native decision node / chart row から、実際の hand token と source value を抜き出して表示しています。",
+        "rows": [
+          {
+            "eyebrow": "Position LJ / Low qualifier eight_or_better",
+            "title": "Tab A-2 / Facing first_entry_open",
+            "body": "A-2 :: A2BB / => ALL | A-2 :: DS Unpaired / => ALL | A-2 :: Suited Ace Unpaired / => ALL",
+            "note": "10 chart rows",
+            "bodyClassName": "mix-preview-body mix-preview-body-code"
+          },
+          {
+            "eyebrow": "Position HJ / Low qualifier eight_or_better",
+            "title": "Tab A-2 / Facing first_entry_open",
+            "body": "A-2 :: A2BB / => ALL | A-2 :: DS Unpaired / => ALL | A-2 :: Suited Ace Unpaired / => ALL",
+            "note": "10 chart rows",
+            "bodyClassName": "mix-preview-body mix-preview-body-code"
+          },
+          {
+            "eyebrow": "Position CO / Low qualifier eight_or_better",
+            "title": "Tab A-2 / Facing first_entry_open",
+            "body": "A-2 :: A2BB / => ALL | A-2 :: DS Unpaired / => ALL | A-2 :: Suited Ace Unpaired / => ALL",
+            "note": "10 chart rows",
+            "bodyClassName": "mix-preview-body mix-preview-body-code"
+          },
+          {
+            "eyebrow": "Position BU / Low qualifier eight_or_better",
+            "title": "Tab A-2 / Facing first_entry_open",
+            "body": "A-2 :: A2BB / => ALL | A-2 :: DS Unpaired / => ALL | A-2 :: Suited Ace Unpaired / => ALL",
+            "note": "10 chart rows",
+            "bodyClassName": "mix-preview-body mix-preview-body-code"
+          }
+        ]
+      }
+    },
+    {
+      "familyId": "stud_high",
+      "status": "grounded",
+      "displayClass": "grounded_practical_coverage",
+      "sourceClass": "retained_strategy_article",
+      "nativeDecisionShape": "practical third-street bring-in to completion or defend heuristics",
+      "repoReadyScope": "reference-only practical coverage: stud-high third-street heuristics over 2 nodes",
+      "detailArtifact": "out/_codex/stud_high_variant_coverage.md",
+      "supportingArtifacts": [
+        "out/_codex/stud_high_candidate.md"
+      ],
+      "stagedArtifacts": [
+        "out/_private/mix_game_candidate_staging/stud_high/pokertips_7_card_stud_strategy/pack.json",
+        "out/_private/mix_game_candidate_staging/stud_high/pokertips_7_card_stud_strategy/manifest.json"
+      ],
+      "preview": {
+        "heading": "Practical heuristic preview",
+        "copy": "practical family では article-derived heuristic を scenario と推奨アクション単位で表示しています。",
+        "rows": [
+          {
+            "eyebrow": "3rd / section::starting_hands / qualitative_exposed_cards_and_outs_discussion",
+            "title": "Early positions need full three-card quality; late unopened spots can lean more on the up card",
+            "body": "Action: tighten_early_opening_requirements / The source makes position the first filter for whether a stud-high starter is playable or merely cosmetic.",
+            "note": "Applies: Third-street stud-high starting hands before the bring-in is heavily contested / Adjust: In early positions all three cards matter and the opening bar should be tighter",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::starting_hands / qualitative_exposed_cards_and_outs_discussion",
+            "title": "Rolled-up third street start",
+            "body": "Action: raise_and_reraise_aggressively / The source calls rolled-up the best starting hand in Stud and explicitly recommends piling money in.",
+            "note": "Applies: Your first three cards are three-of-a-kind on third street",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::starting_hands / qualitative_exposed_cards_and_outs_discussion",
+            "title": "Good stud draw starters stay playable only while their outs are live",
+            "body": "Action: play_good_pairs_flushes_or_connectors_when_outs_are_live / The source explicitly ties these starters to how many suit or straight outs are visible in other players' up cards.",
+            "note": "Applies: High pair, concealed pair, three-flush, or three-straight style starter / Adjust: Downgrade or fold flush and straight draws when multiple relevant outs are already exposed",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::starting_hands / qualitative_exposed_cards_and_outs_discussion",
+            "title": "Three broadway-style high cards are playable unopened but fold to heavy third-street strength",
+            "body": "Action: complete_unopened_fold_vs_completion_and_raise / The source gives an explicit three-high-card example with opposite advice depending on prior third-street aggression.",
+            "note": "Applies: Three high cards such as A-K down with J up in an unopened pot / Adjust: Fold when facing both a completion and a raise",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::bluffing / fourth_street_coordination_discussed_qualitatively",
+            "title": "Continue a third-street representation bluff mainly in heads-up pots when villain bricks fourth street",
+            "body": "Action: continue_bluff_on_fourth_street_when_villain_bricks / The source explicitly anchors bluff continuation to player count and how well the new up card connects with the opponent's visible structure.",
+            "note": "Applies: You completed or raised on third street to represent strength / Adjust: Give up more often once two or more players continue unless your own hand improves considerably",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::bluffing / fourth_street_coordination_discussed_qualitatively",
+            "title": "As the heads-up aggressor, pressure visible brick cards",
+            "body": "Action: bet_again_when_opponent_catches_uncoordinated_upcard / The source closes by stating that heads-up aggressors can often win simply by betting when the opponent's new up card appears to miss.",
+            "note": "Applies: Heads-up stud pot after you showed aggression earlier in the hand / Adjust: Do not auto-fire when the new up card obviously strengthens their visible pair, draw, or made-hand line",
+            "bodyClassName": "mix-preview-body"
+          }
+        ]
+      }
+    },
+    {
+      "familyId": "stud_low_razz",
+      "status": "grounded",
+      "displayClass": "grounded_practical_coverage",
+      "sourceClass": "retained_strategy_article",
+      "nativeDecisionShape": "practical third-street low-door completion or defend heuristics",
+      "repoReadyScope": "reference-only practical coverage: razz third-street heuristics over 1 node",
+      "detailArtifact": "out/_codex/stud_low_razz_variant_coverage.md",
+      "supportingArtifacts": [
+        "out/_codex/stud_low_razz_candidate.md"
+      ],
+      "stagedArtifacts": [
+        "out/_private/mix_game_candidate_staging/stud_low_razz/pokertips_razz_strategy/pack.json",
+        "out/_private/mix_game_candidate_staging/stud_low_razz/pokertips_razz_strategy/manifest.json"
+      ],
+      "preview": {
+        "heading": "Practical heuristic preview",
+        "copy": "practical family では article-derived heuristic を scenario と推奨アクション単位で表示しています。",
+        "rows": [
+          {
+            "eyebrow": "3rd / section::position_starting_hands_and_outs / qualitative_up_cards_and_outs_discussion",
+            "title": "Open wider when action folds around toward the right of the bring-in",
+            "body": "Action: tighten_immediately_left_loosen_when_folds_reach_you / The source explicitly maps Razz starting-hand quality to how many players remain between you and the bring-in.",
+            "note": "Applies: Comparing seats immediately left of the bring-in against later seats after folds / Adjust: Immediately left of the bring-in needs a materially stronger start",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::position_starting_hands_and_outs / qualitative_up_cards_and_outs_discussion",
+            "title": "Five-high or better razz starts are premium; six-high is still comfortably playable",
+            "body": "Action: raise_or_reraise_with_five_high_or_better / The source gives explicit practical thresholds at five-high, six-high, and seven-high.",
+            "note": "Applies: Unpaired Razz start whose highest card is five or lower / Adjust: Six-high starts are usually still playable even from early position",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::position_starting_hands_and_outs / qualitative_up_cards_and_outs_discussion",
+            "title": "Use visible low-card blockers before continuing with 4-5 down, 7 up style starts",
+            "body": "Action: play_only_when_low_outs_are_mostly_live / The source gives concrete blocker thresholds instead of a vague 'be careful with dead cards' warning.",
+            "note": "Applies: Early-position hand similar to 4-5 down with 7 up / Adjust: Two exposed blockers makes the spot questionable",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::position_starting_hands_and_outs / qualitative_up_cards_and_outs_discussion",
+            "title": "Visible opponent cards matter at least as much as your own cards",
+            "body": "Action: audit_upcards_before_continuing / The source frames visible-card tracking as the difference between losing and winning Razz players.",
+            "note": "Applies: Any Razz continuation or opening decision where live low cards determine hand quality / Adjust: Do not evaluate your hand in isolation from opponents' up cards",
+            "bodyClassName": "mix-preview-body"
+          }
+        ]
+      }
+    },
+    {
+      "familyId": "stud_hilo",
+      "status": "grounded",
+      "displayClass": "grounded_practical_coverage",
+      "sourceClass": "retained_strategy_article",
+      "nativeDecisionShape": "practical third-street split-pot completion or defend heuristics",
+      "repoReadyScope": "reference-only practical coverage: stud8 third-street heuristics over 2 nodes",
+      "detailArtifact": "out/_codex/stud_hilo_variant_coverage.md",
+      "supportingArtifacts": [
+        "out/_codex/stud_hilo_candidate.md"
+      ],
+      "stagedArtifacts": [
+        "out/_private/mix_game_candidate_staging/stud_hilo/pokertips_7_card_stud_hi_lo_strategy/pack.json",
+        "out/_private/mix_game_candidate_staging/stud_hilo/pokertips_7_card_stud_hi_lo_strategy/manifest.json"
+      ],
+      "preview": {
+        "heading": "Practical heuristic preview",
+        "copy": "practical family では article-derived heuristic を scenario と推奨アクション単位で表示しています。",
+        "rows": [
+          {
+            "eyebrow": "3rd / section::starting_hands / qualitative_exposed_cards_discussion",
+            "title": "Avoid 9-T-J style starts that are trapped between the high and low halves",
+            "body": "Action: downgrade_or_fold_middle_card_starts_without_strong_backup / The source explicitly calls these cards 'no man's land' because they miss both halves of the game too often.",
+            "note": "Applies: Third-street Stud Hi/Lo starts built around Nines, Tens, or many Jacks / Adjust: Treat these cards as low-disqualified and usually too weak to own the high half by themselves",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::starting_hands / qualitative_exposed_cards_discussion",
+            "title": "Ace-plus-wheel starts are premium split-pot starters",
+            "body": "Action: play_aggressively_with_ace_low_three_card_starts / The source gives A-5 down with 3 up as a very good example because it can win both halves.",
+            "note": "Applies: Start contains an Ace plus supporting wheel cards, such as A-5 down with 3 up / Adjust: Value rises when the hand also carries concealed high backup like an Ace or flush potential",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::three_to_a_low / qualitative_outs_and_remaining_players_discussion",
+            "title": "Do not auto-play every three-to-a-low start; run the checklist first",
+            "body": "Action: evaluate_low_quality_players_and_dead_outs_before_continue / The source explicitly turns this family into a three-question decision process rather than an automatic continue.",
+            "note": "Applies: Holding three to a low on third street in Stud Hi/Lo / Adjust: Ask how low the draw is",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::three_to_a_low / qualitative_outs_and_remaining_players_discussion",
+            "title": "Weak eight-low draws should usually fold when real low competition or dead outs are visible",
+            "body": "Action: fold_weak_eight_low_draws_when_low_competition_exists / The source gives a concrete weak eight-low example and tells you to pivot based on whether the low side is contested.",
+            "note": "Applies: Weak three-to-a-low hand like 8-6 down with 4 up / Adjust: Fold more often when low cards such as A, 2, 3, or 5 are showing in other hands",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "3rd / section::three_to_a_low / qualitative_outs_and_remaining_players_discussion",
+            "title": "Once you likely own the low half, pressure high-only opponents aggressively",
+            "body": "Action: bet_and_raise_made_lows_aggressively / The source repeatedly recommends pushing money in when you are freerolling the low half and others are contesting only the high side.",
+            "note": "Applies: You have a made low and are likely the only qualifying low at showdown / Adjust: Avoid being the high-only caller against an aggressive made-low player unless you are very sure of the high half",
+            "bodyClassName": "mix-preview-body"
+          }
+        ]
+      }
+    },
+    {
+      "familyId": "draw_triple_low",
+      "status": "grounded",
+      "displayClass": "grounded_practical_coverage",
+      "sourceClass": "retained_strategy_article",
+      "nativeDecisionShape": "practical round-aware triple-draw open or defend heuristics",
+      "repoReadyScope": "reference-only practical coverage: triple-draw heuristics over 2 nodes",
+      "detailArtifact": "out/_codex/draw_triple_low_variant_coverage.md",
+      "supportingArtifacts": [
+        "out/_codex/draw_triple_low_candidate.md"
+      ],
+      "stagedArtifacts": [
+        "out/_private/mix_game_candidate_staging/draw_triple_low/pokertips_2_7_triple_draw_strategy/pack.json",
+        "out/_private/mix_game_candidate_staging/draw_triple_low/pokertips_2_7_triple_draw_strategy/manifest.json"
+      ],
+      "preview": {
+        "heading": "Practical heuristic preview",
+        "copy": "practical family では article-derived heuristic を scenario と推奨アクション単位で表示しています。",
+        "rows": [
+          {
+            "eyebrow": "opening_round_pre_first_draw_guidance / deuce_to_seven",
+            "title": "Early position wants a pat seven-or-eight or a hand that is one card away from strong",
+            "body": "Action: open_early_only_with_pat_or_near_pat_strength / The source explicitly says early position should start from a pat seven/eight or a hand that is one card away from strong.",
+            "note": "Applies: Opening round in early position before the first draw in 2-7 Triple Draw / Adjust: Treat discard-two opens as rare exceptions rather than default continues",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "opening_round_pre_first_draw_guidance / deuce_to_seven",
+            "title": "Early-position discard-two raises are limited to wheel-heavy starts such as 234 through 238",
+            "body": "Action: raise_only_whitelisted_discard_two_starts_from_early_position / The source gives an explicit early-position whitelist instead of a vague preference for smooth discard-two hands.",
+            "note": "Applies: You would need to discard two cards from early position on the opening round / Adjust: Hands outside 234, 235, 236, 237, or 238 should generally not be raised from early position",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "opening_round_pre_first_draw_guidance / deuce_to_seven",
+            "title": "When folded to the button, late-position pressure can override raw card quality",
+            "body": "Action: raise_very_wide_when_folded_to_button / The source states that button opens can be raised regardless of cards because the blinds fold often enough.",
+            "note": "Applies: Action folds to you on the button in a late-position opening spot / Adjust: Expect blinds to fold often enough that immediate fold equity is part of the line",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "opening_round_pre_first_draw_guidance / deuce_to_seven",
+            "title": "With position, decide whether a nine low stands pat by watching how many cards villain draws",
+            "body": "Action: stand_pat_vs_multi_card_draw_break_nine_vs_one_card_draw / The source uses a nine-low example to show that draw-count visibility should directly change the keep-or-break decision.",
+            "note": "Applies: You hold a rough pat nine such as 9-7-5-3-2 and act after seeing the opponent draw / Adjust: Consider standing pat when the opponent draws two or more cards",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "post_second_draw_or_third_draw_guidance / deuce_to_seven",
+            "title": "Out of position in one-card versus one-card final-round spots, polarize between strong hands and total misses",
+            "body": "Action: bet_strong_hands_and_garbage_check_call_middle_showdown_value / The source gives an explicit final-round polar strategy instead of a generic reminder to bluff sometimes.",
+            "note": "Applies: Heads-up or near-heads-up third-draw spot out of position / Adjust: Bet total garbage that cannot win at showdown",
+            "bodyClassName": "mix-preview-body"
+          },
+          {
+            "eyebrow": "post_second_draw_or_third_draw_guidance / deuce_to_seven",
+            "title": "Against super-passive opponents, widen the bluff bucket and shrink the check-call bucket",
+            "body": "Action: increase_bluff_frequency_reduce_passive_bluff_catches / The source explicitly carves out a passive-opponent adjustment rather than leaving the final-round plan static.",
+            "note": "Applies: Final betting round in one-card versus one-card spots against a very passive opponent / Adjust: If villain rarely bets without a monster, convert more weak showdown hands into bluffs",
+            "bodyClassName": "mix-preview-body"
+          }
+        ]
+      }
+    }
+  ]
+}

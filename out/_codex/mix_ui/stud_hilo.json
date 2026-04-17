@@ -1,0 +1,115 @@
+{
+  "bundleVersion": "1.0",
+  "bundleType": "mix_ui_family_bundle",
+  "familyId": "stud_hilo",
+  "displayClass": "grounded_practical_coverage",
+  "detailArtifact": "out/_codex/stud_hilo_variant_coverage.md",
+  "sourcePackPath": "out/_private/mix_game_candidate_staging/stud_hilo/pokertips_7_card_stud_hi_lo_strategy/pack.json",
+  "selectorSchema": [
+    {
+      "key": "street",
+      "label": "Street",
+      "values": [
+        "3rd"
+      ]
+    },
+    {
+      "key": "decision_node",
+      "label": "Decision Node",
+      "values": [
+        "starting_hands",
+        "three_to_a_low"
+      ]
+    },
+    {
+      "key": "acting_order",
+      "label": "Acting Order",
+      "values": [
+        "low_draw_evaluation_discussed",
+        "starting_hand_selection_discussed"
+      ]
+    },
+    {
+      "key": "context",
+      "label": "Context",
+      "values": [
+        "section::starting_hands",
+        "section::three_to_a_low"
+      ]
+    },
+    {
+      "key": "facing_action",
+      "label": "Facing Action",
+      "values": [
+        "third_street_low_draw_guidance",
+        "third_street_starting_hand_guidance"
+      ]
+    }
+  ],
+  "spotCount": 2,
+  "spots": [
+    {
+      "spotId": "starting_hands",
+      "spotLabel": "street=3rd / decision_node=starting_hands / acting_order=starting_hand_selection_discussed / context=section::starting_hands / facing_action=third_street_starting_hand_guidance",
+      "selectors": {
+        "street": "3rd",
+        "decision_node": "starting_hands",
+        "acting_order": "starting_hand_selection_discussed",
+        "context": "section::starting_hands",
+        "facing_action": "third_street_starting_hand_guidance"
+      },
+      "heuristicCount": 2,
+      "heuristics": [
+        {
+          "scenarioLabel": "Avoid 9-T-J style starts that are trapped between the high and low halves",
+          "recommendedAction": "downgrade_or_fold_middle_card_starts_without_strong_backup",
+          "appliesWhen": "Third-street Stud Hi/Lo starts built around Nines, Tens, or many Jacks",
+          "adjustWhen": "Treat these cards as low-disqualified and usually too weak to own the high half by themselves",
+          "rationale": "The source explicitly calls these cards 'no man's land' because they miss both halves of the game too often."
+        },
+        {
+          "scenarioLabel": "Ace-plus-wheel starts are premium split-pot starters",
+          "recommendedAction": "play_aggressively_with_ace_low_three_card_starts",
+          "appliesWhen": "Start contains an Ace plus supporting wheel cards, such as A-5 down with 3 up",
+          "adjustWhen": "Value rises when the hand also carries concealed high backup like an Ace or flush potential",
+          "rationale": "The source gives A-5 down with 3 up as a very good example because it can win both halves."
+        }
+      ]
+    },
+    {
+      "spotId": "three_to_a_low",
+      "spotLabel": "street=3rd / decision_node=three_to_a_low / acting_order=low_draw_evaluation_discussed / context=section::three_to_a_low / facing_action=third_street_low_draw_guidance",
+      "selectors": {
+        "street": "3rd",
+        "decision_node": "three_to_a_low",
+        "acting_order": "low_draw_evaluation_discussed",
+        "context": "section::three_to_a_low",
+        "facing_action": "third_street_low_draw_guidance"
+      },
+      "heuristicCount": 3,
+      "heuristics": [
+        {
+          "scenarioLabel": "Do not auto-play every three-to-a-low start; run the checklist first",
+          "recommendedAction": "evaluate_low_quality_players_and_dead_outs_before_continue",
+          "appliesWhen": "Holding three to a low on third street in Stud Hi/Lo",
+          "adjustWhen": "Ask how low the draw is",
+          "rationale": "The source explicitly turns this family into a three-question decision process rather than an automatic continue."
+        },
+        {
+          "scenarioLabel": "Weak eight-low draws should usually fold when real low competition or dead outs are visible",
+          "recommendedAction": "fold_weak_eight_low_draws_when_low_competition_exists",
+          "appliesWhen": "Weak three-to-a-low hand like 8-6 down with 4 up",
+          "adjustWhen": "Fold more often when low cards such as A, 2, 3, or 5 are showing in other hands",
+          "rationale": "The source gives a concrete weak eight-low example and tells you to pivot based on whether the low side is contested."
+        },
+        {
+          "scenarioLabel": "Once you likely own the low half, pressure high-only opponents aggressively",
+          "recommendedAction": "bet_and_raise_made_lows_aggressively",
+          "appliesWhen": "You have a made low and are likely the only qualifying low at showdown",
+          "adjustWhen": "Avoid being the high-only caller against an aggressive made-low player unless you are very sure of the high half",
+          "rationale": "The source repeatedly recommends pushing money in when you are freerolling the low half and others are contesting only the high side."
+        }
+      ]
+    }
+  ]
+}

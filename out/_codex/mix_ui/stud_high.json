@@ -1,0 +1,112 @@
+{
+  "bundleVersion": "1.0",
+  "bundleType": "mix_ui_family_bundle",
+  "familyId": "stud_high",
+  "displayClass": "grounded_practical_coverage",
+  "detailArtifact": "out/_codex/stud_high_variant_coverage.md",
+  "sourcePackPath": "out/_private/mix_game_candidate_staging/stud_high/pokertips_7_card_stud_strategy/pack.json",
+  "selectorSchema": [
+    {
+      "key": "street",
+      "label": "Street",
+      "values": [
+        "3rd"
+      ]
+    },
+    {
+      "key": "decision_node",
+      "label": "Decision Node",
+      "values": [
+        "bluffing",
+        "starting_hands"
+      ]
+    },
+    {
+      "key": "acting_order",
+      "label": "Acting Order",
+      "values": [
+        "heads_up_or_multiway_after_completion_discussion",
+        "position_sensitive_pre_completion_discussion"
+      ]
+    },
+    {
+      "key": "context",
+      "label": "Context",
+      "values": [
+        "section::bluffing",
+        "section::starting_hands"
+      ]
+    }
+  ],
+  "spotCount": 2,
+  "spots": [
+    {
+      "spotId": "starting_hands",
+      "spotLabel": "street=3rd / decision_node=starting_hands / acting_order=position_sensitive_pre_completion_discussion / context=section::starting_hands",
+      "selectors": {
+        "street": "3rd",
+        "decision_node": "starting_hands",
+        "acting_order": "position_sensitive_pre_completion_discussion",
+        "context": "section::starting_hands"
+      },
+      "heuristicCount": 4,
+      "heuristics": [
+        {
+          "scenarioLabel": "Early positions need full three-card quality; late unopened spots can lean more on the up card",
+          "recommendedAction": "tighten_early_opening_requirements",
+          "appliesWhen": "Third-street stud-high starting hands before the bring-in is heavily contested",
+          "adjustWhen": "In early positions all three cards matter and the opening bar should be tighter",
+          "rationale": "The source makes position the first filter for whether a stud-high starter is playable or merely cosmetic."
+        },
+        {
+          "scenarioLabel": "Rolled-up third street start",
+          "recommendedAction": "raise_and_reraise_aggressively",
+          "appliesWhen": "Your first three cards are three-of-a-kind on third street",
+          "adjustWhen": "",
+          "rationale": "The source calls rolled-up the best starting hand in Stud and explicitly recommends piling money in."
+        },
+        {
+          "scenarioLabel": "Good stud draw starters stay playable only while their outs are live",
+          "recommendedAction": "play_good_pairs_flushes_or_connectors_when_outs_are_live",
+          "appliesWhen": "High pair, concealed pair, three-flush, or three-straight style starter",
+          "adjustWhen": "Downgrade or fold flush and straight draws when multiple relevant outs are already exposed",
+          "rationale": "The source explicitly ties these starters to how many suit or straight outs are visible in other players' up cards."
+        },
+        {
+          "scenarioLabel": "Three broadway-style high cards are playable unopened but fold to heavy third-street strength",
+          "recommendedAction": "complete_unopened_fold_vs_completion_and_raise",
+          "appliesWhen": "Three high cards such as A-K down with J up in an unopened pot",
+          "adjustWhen": "Fold when facing both a completion and a raise",
+          "rationale": "The source gives an explicit three-high-card example with opposite advice depending on prior third-street aggression."
+        }
+      ]
+    },
+    {
+      "spotId": "bluffing",
+      "spotLabel": "street=3rd / decision_node=bluffing / acting_order=heads_up_or_multiway_after_completion_discussion / context=section::bluffing",
+      "selectors": {
+        "street": "3rd",
+        "decision_node": "bluffing",
+        "acting_order": "heads_up_or_multiway_after_completion_discussion",
+        "context": "section::bluffing"
+      },
+      "heuristicCount": 2,
+      "heuristics": [
+        {
+          "scenarioLabel": "Continue a third-street representation bluff mainly in heads-up pots when villain bricks fourth street",
+          "recommendedAction": "continue_bluff_on_fourth_street_when_villain_bricks",
+          "appliesWhen": "You completed or raised on third street to represent strength",
+          "adjustWhen": "Give up more often once two or more players continue unless your own hand improves considerably",
+          "rationale": "The source explicitly anchors bluff continuation to player count and how well the new up card connects with the opponent's visible structure."
+        },
+        {
+          "scenarioLabel": "As the heads-up aggressor, pressure visible brick cards",
+          "recommendedAction": "bet_again_when_opponent_catches_uncoordinated_upcard",
+          "appliesWhen": "Heads-up stud pot after you showed aggression earlier in the hand",
+          "adjustWhen": "Do not auto-fire when the new up card obviously strengthens their visible pair, draw, or made-hand line",
+          "rationale": "The source closes by stating that heads-up aggressors can often win simply by betting when the opponent's new up card appears to miss."
+        }
+      ]
+    }
+  ]
+}
