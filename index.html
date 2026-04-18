@@ -5447,6 +5447,7 @@
       selectedSpotIdByFamily: {},
       exactSpotByKey: {},
     };
+    let mixSurfaceRenderScheduled = false;
     const MIX_EMBEDDED_INDEX_PAYLOAD = {
       indexVersion: '1.0',
       indexType: 'poker_mix_grounded_display_index',
@@ -8604,7 +8605,15 @@
       if (!normalizedFamilyId || !normalizedSpotId) return;
       const stateKey = buildMixExactSpotKey(normalizedFamilyId, normalizedSpotId);
       const existingState = mixDisplayState.exactSpotByKey[stateKey];
-      if (!forceRefresh && existingState && (existingState.status === 'loading' || (existingState.status === 'ready' && existingState.page === page))) {
+      if (
+        !forceRefresh
+        && existingState
+        && (
+          existingState.status === 'loading'
+          || existingState.status === 'error'
+          || (existingState.status === 'ready' && existingState.page === page)
+        )
+      ) {
         return;
       }
       mixDisplayState.exactSpotByKey[stateKey] = {
@@ -8613,7 +8622,7 @@
         errorText: '',
         page,
       };
-      renderMixSurface();
+      scheduleMixSurfaceRender();
       const resolution = readMixBridgeResolution();
       const queryValues = {
         familyId: normalizedFamilyId,
@@ -8635,7 +8644,7 @@
           errorText: 'mix_exact_spot_api_unavailable',
           page,
         };
-        renderMixSurface();
+        scheduleMixSurfaceRender();
         return;
       }
       let resolvedPayload = null;
@@ -8661,7 +8670,7 @@
             errorText: errorText || 'mix_exact_spot_unknown',
             page,
           };
-      renderMixSurface();
+      scheduleMixSurfaceRender();
     }
 
     async function ensureMixUiCatalogLoaded(forceRefresh = false) {
@@ -8671,7 +8680,7 @@
         seedMixUiCatalogFromEmbeddedPayload();
       }
       mixDisplayState.uiCatalogStatus = 'loading';
-      renderMixSurface();
+      scheduleMixSurfaceRender();
       try {
         const result = await fetchMixUiCatalog();
         mixDisplayState.uiCatalog = result.catalog;
@@ -8682,7 +8691,7 @@
         mixDisplayState.uiCatalogStatus = 'ready';
         mixDisplayState.uiCatalogSourceMode = 'embedded';
       }
-      renderMixSurface();
+      scheduleMixSurfaceRender();
     }
 
     async function ensureMixFamilyBundleLoaded(familyId, forceRefresh = false) {
@@ -8692,7 +8701,15 @@
       const catalogEntry = readMixUiCatalogFamilyEntry(normalizedFamilyId);
       if (!catalogEntry) return;
       const existingState = readMixBundleState(normalizedFamilyId);
-      if (!forceRefresh && existingState && (existingState.status === 'loading' || existingState.status === 'ready')) {
+      if (
+        !forceRefresh
+        && existingState
+        && (
+          existingState.status === 'loading'
+          || existingState.status === 'ready'
+          || existingState.status === 'error'
+        )
+      ) {
         return;
       }
       mixDisplayState.bundleByFamily[normalizedFamilyId] = {
@@ -8701,7 +8718,7 @@
         errorText: '',
         sourceMode: '',
       };
-      renderMixSurface();
+      scheduleMixSurfaceRender();
       const resolution = readMixBridgeResolution();
       const errors = [];
       let resolvedBundleState = null;
@@ -8772,7 +8789,7 @@
       if (readyBundle && Array.isArray(readyBundle.spots) && readyBundle.spots.length && !mixDisplayState.selectedSpotIdByFamily[normalizedFamilyId]) {
         mixDisplayState.selectedSpotIdByFamily[normalizedFamilyId] = (pickMixPreferredSpot(readyBundle, normalizedFamilyId) || readyBundle.spots[0]).spotId;
       }
-      renderMixSurface();
+      scheduleMixSurfaceRender();
     }
 
     function pickMixSpotForSelectorChange(bundle, currentSpot, selectorKey, nextValue) {
@@ -9029,7 +9046,7 @@
           preview: null,
           errorText: '',
         };
-        renderMixSurface();
+        scheduleMixSurfaceRender();
         return;
       }
       mixDisplayState.previewByFamily[familyId] = {
@@ -9038,7 +9055,7 @@
         preview: null,
         errorText: '',
       };
-      renderMixSurface();
+      scheduleMixSurfaceRender();
       try {
         const rawPack = await fetchMixPackJson(buildMixArtifactHref(packPath));
         mixDisplayState.previewByFamily[familyId] = {
@@ -9055,7 +9072,7 @@
           errorText: describeMixPackError(err),
         };
       }
-      renderMixSurface();
+      scheduleMixSurfaceRender();
     }
 
     function renderMixPreviewPanel(selectedFamily) {
@@ -12515,6 +12532,15 @@
         renderMixRuntimeFailure(message);
         console.error('[MixSurfaceError]', err);
       }
+    }
+
+    function scheduleMixSurfaceRender() {
+      if (mixSurfaceRenderScheduled) return;
+      mixSurfaceRenderScheduled = true;
+      Promise.resolve().then(() => {
+        mixSurfaceRenderScheduled = false;
+        safeRenderMixSurface();
+      });
     }
 
     async function safeInitMixDisplaySurface(forceRefresh = false) {
