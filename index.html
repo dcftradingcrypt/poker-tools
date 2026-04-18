@@ -2502,7 +2502,7 @@
 
     <div id="mix-tab" class="tab-content">
       <section class="surface-card tight">
-        <h2>Mix Game Browser</h2>
+        <h2>ミックスゲームレンジ</h2>
         <p class="section-label">まずはゲームごとに、実際に使うレンジ表示へ寄せて整理します。現在は PLO のオープンレンジとコール / ディフェンス総覧を優先して表示します。</p>
       </section>
       <div
@@ -4263,30 +4263,14 @@
       },
       badugi: {
         label: 'Badugi',
-        cardCopy: '公開 HTML / note / PDF を統合した pre-draw open と blind defense を position ごとに見る。',
-        shellSummary: 'Badugi は pat / tri / two-card の閾値を position 別に比較して見るのが自然。',
-        sourceProfile: 'normalized public-source dataset backed by CountingOuts, CardPlayer, PokerNews, note, and PDF supplemental material',
+        cardCopy: 'EP / HJ / CO / BTN / SB / BB のレンジ表を表示する。',
+        shellSummary: 'Badugi は pat / tri / D2 の参加ラインを position 別に見る。',
+        sourceProfile: '',
         currentSurface: 'Current repo surface: assets/mix/badugi-pre-draw-public-ranges.v1.json + embedded runtime mirror',
-        shows: 'position 別の open core と blind defense baseline を source-backed な共通部分で見せる。',
-        notShows: 'solver exact mixed frequency や BB first-in open row を pretending しない。',
-        highlightCards: [
-          {
-            title: 'Open anchors',
-            body: '公開レンジの軸は EP 14.3%, MP 18.2%, CO 28.3%, BTN 38.2% の first-in totals。',
-          },
-          {
-            title: 'Tri first',
-            body: 'ほぼ全ソースで tri が利益の中心。弱い pat badugi と雑な two-card はむしろ削る。',
-          },
-          {
-            title: 'SB and BB are context heavy',
-            body: 'SB の open 幅と BB の flat range は相手依存。非 BB の flat はかなり減らすのが共通線。',
-          },
-        ],
-        knownLimits: [
-          'exact mixed-frequency bundle ではなく、公開ソース正規化データセットです。',
-          '公開情報は 6-max / full ring / 7-max が混在するため、弱い pat と marginal two-card は source ごとの差が残る。',
-        ],
+        shows: 'position-based range tables only.',
+        notShows: '',
+        highlightCards: [],
+        knownLimits: [],
       },
       a5_triple_draw: {
         label: 'A-5 Triple Draw',
@@ -4531,39 +4515,15 @@
       ],
       badugi: [
         {
-          title: 'Opening Thresholds',
+          title: 'Open Range Snapshot',
           type: 'table',
-          columns: ['Position', 'Top %', 'Open class'],
+          columns: ['Position', 'Top %', 'Range'],
           rows: [
-            ['EP', '14.3%', 'J-high or better badugi + breakable Q/K badugis + 75X or better tri'],
-            ['MP', '18.2%', 'Q-high or better badugi + breakable K badugis + A48 or better tri'],
-            ['CO', '28.3%', 'all badugis + 8 or better tris + A2, A3'],
-            ['BTN', '38.2%', 'all badugis + 9 or better tris + A2, A3, 23, A4'],
-            ['SB', 'dynamic', 'BTN-like baseline; softer games can add 24, 34, A5, 25, 35, 45'],
-          ],
-        },
-        {
-          title: 'Dealt-State Layer',
-          type: 'table',
-          columns: ['State', 'Dealt frequency', 'Meaning'],
-          rows: [
-            ['pat_badugi', '6.3%', 'already made badugi'],
-            ['tri', '57.0%', 'three-card badugi / drawing one'],
-            ['two_card', '35.6%', 'two-card draw / drawing two'],
-            ['one_card', '1.1%', 'drawing three; not an opening class'],
-          ],
-        },
-        {
-          title: 'Threshold Buckets',
-          type: 'table',
-          columns: ['Bucket', 'Meaning'],
-          rows: [
-            ['pat_4_8 / pat_9_10 / pat_J / pat_QK', 'public pat ladder compression'],
-            ['tri_75x_plus', 'EP premium tri threshold'],
-            ['tri_A48_plus', 'MP premium tri threshold'],
-            ['tri_8_plus / tri_9_plus', 'CO / BTN tri thresholds'],
-            ['A2 / A3 / 23 / A4', 'two-card opening families'],
-            ['sb_soft_addons', '24, 34, A5, 25, 35, 45 in softer SB games'],
+            ['EP', '14.3%', 'J-high+ badugi / breakable Q-K / 75X+ tri'],
+            ['HJ', '18.2%', 'Q-high+ badugi / breakable K / A48+ tri'],
+            ['CO', '28.3%', 'all badugis / all 8-tris / A2 / A3'],
+            ['BTN', '38.2%', 'all badugis / all 9-tris / A2 / A3 / 23 / A4'],
+            ['SB', 'dynamic', 'BTN shell; add 24 / 34 / A5 / 25 / 35 / 45 vs weaker BB'],
           ],
         },
       ],
@@ -4798,29 +4758,36 @@
         method: '',
         confirmed_source_refs: [],
       };
+    const MIX_POSITION_LABEL_OVERRIDES = {
+      BU: 'BTN',
+    };
+
+    function readMixPlainPositionLabel(positionKey) {
+      const safeKey = typeof positionKey === 'string' ? positionKey.trim() : '';
+      if (!safeKey) return '';
+      return MIX_POSITION_LABEL_OVERRIDES[safeKey] || safeKey;
+    }
+
     const MIX_PLO_POSITION_OPTIONS = Array.isArray(MIX_PLO_PUBLIC_RANGE_DATASET.position_order) && MIX_PLO_PUBLIC_RANGE_DATASET.position_order.length
       ? MIX_PLO_PUBLIC_RANGE_DATASET.position_order
         .filter(positionKey => typeof positionKey === 'string' && positionKey && MIX_PLO_POSITION_OBJECT[positionKey])
         .filter(Boolean)
       : ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
     const MIX_PLO_POSITION_LABELS = Object.fromEntries(
-      MIX_PLO_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_PLO_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
+      MIX_PLO_POSITION_OPTIONS.map(positionKey => [positionKey, readMixPlainPositionLabel(positionKey)])
     );
     const MIX_PLO_VIEW_OPTIONS = [
-      ['open_range', '6-max Unified Overview'],
-      ['hu_sb_open', 'Heads-Up Small Blind Open vs Big Blind'],
-      ['hu_bb_defend', 'Heads-Up Big Blind Call vs Small Blind Open'],
+      ['open_range', '6maxレンジ'],
+      ['hu_sb_open', 'HU SBオープン vs BB'],
+      ['hu_bb_defend', 'HU BBコール vs SBオープン'],
     ];
     const MIX_O8_POSITION_OPTIONS = ['LJ', 'HJ', 'CO', 'BU'];
     const MIX_O8_FAMILY_OPTIONS = ['A-2', 'A-3', 'A-4', 'A-5', '2-3'];
     const MIX_O8_POSITION_LABELS = {
-      LJ: 'Lojack',
-      HJ: 'Hijack',
-      CO: 'Cutoff',
-      BU: 'Button',
+      LJ: 'LJ',
+      HJ: 'HJ',
+      CO: 'CO',
+      BU: 'BTN',
     };
     const MIX_O8_FAMILY_TENDENCY_NOTES = {
       'A-2': 'open core from every listed position in the retained chart',
@@ -4879,16 +4846,19 @@
         .filter(Boolean)
       : ['UTG', 'MP', 'CO', 'BTN', 'SB'];
     const MIX_PLO8_POSITION_LABELS = Object.fromEntries(
-      MIX_PLO8_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_PLO8_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
+      MIX_PLO8_POSITION_OPTIONS.map(positionKey => [positionKey, readMixPlainPositionLabel(positionKey)])
     );
 
     const MIX_BADUGI_PUBLIC_RANGE_DATASET = (window.__BADUGI_PRE_DRAW_PUBLIC_RANGES_V1 && typeof window.__BADUGI_PRE_DRAW_PUBLIC_RANGES_V1 === 'object')
       ? window.__BADUGI_PRE_DRAW_PUBLIC_RANGES_V1
       : {
+        global_source_refs: [],
         collection_notes: [],
+        verification: {
+          checked_on: '',
+          method: '',
+          confirmed_source_refs: [],
+        },
         position_order: [],
         positions: {},
         source_index: {},
@@ -4899,6 +4869,21 @@
     const MIX_BADUGI_POSITION_OBJECT = (MIX_BADUGI_PUBLIC_RANGE_DATASET.positions && typeof MIX_BADUGI_PUBLIC_RANGE_DATASET.positions === 'object')
       ? MIX_BADUGI_PUBLIC_RANGE_DATASET.positions
       : {};
+    const MIX_BADUGI_GLOBAL_SOURCE_REFS = Array.isArray(MIX_BADUGI_PUBLIC_RANGE_DATASET.global_source_refs)
+      ? MIX_BADUGI_PUBLIC_RANGE_DATASET.global_source_refs
+        .filter(sourceRef => typeof sourceRef === 'string' && sourceRef.trim())
+        .map(sourceRef => sourceRef.trim())
+      : [];
+    const MIX_BADUGI_COLLECTION_NOTES = Array.isArray(MIX_BADUGI_PUBLIC_RANGE_DATASET.collection_notes)
+      ? MIX_BADUGI_PUBLIC_RANGE_DATASET.collection_notes.filter(note => typeof note === 'string' && note.trim())
+      : [];
+    const MIX_BADUGI_VERIFICATION = (MIX_BADUGI_PUBLIC_RANGE_DATASET.verification && typeof MIX_BADUGI_PUBLIC_RANGE_DATASET.verification === 'object')
+      ? MIX_BADUGI_PUBLIC_RANGE_DATASET.verification
+      : {
+        checked_on: '',
+        method: '',
+        confirmed_source_refs: [],
+      };
 
     function readMixBadugiSourceEntry(sourceRef) {
       return sourceRef && MIX_BADUGI_SOURCE_INDEX[sourceRef]
@@ -4906,24 +4891,14 @@
         : null;
     }
 
-    function formatMixBadugiAnchorBand(anchorOpenPct) {
-      return (typeof anchorOpenPct === 'string' && anchorOpenPct.trim()) ? anchorOpenPct : 'dynamic';
-    }
-
     const MIX_BADUGI_POSITION_OPTIONS = Array.isArray(MIX_BADUGI_PUBLIC_RANGE_DATASET.position_order) && MIX_BADUGI_PUBLIC_RANGE_DATASET.position_order.length
       ? MIX_BADUGI_PUBLIC_RANGE_DATASET.position_order
         .filter(positionKey => typeof positionKey === 'string' && positionKey && MIX_BADUGI_POSITION_OBJECT[positionKey])
         .filter(Boolean)
-      : ['EP', 'MP', 'CO', 'BTN', 'SB'];
+      : ['EP', 'MP', 'CO', 'BTN', 'SB', 'BB'];
     const MIX_BADUGI_POSITION_LABELS = Object.fromEntries(
-      MIX_BADUGI_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_BADUGI_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
+      MIX_BADUGI_POSITION_OPTIONS.map(positionKey => [positionKey, readMixPlainPositionLabel(positionKey)])
     );
-    const MIX_BADUGI_COLLECTION_NOTES = Array.isArray(MIX_BADUGI_PUBLIC_RANGE_DATASET.collection_notes)
-      ? MIX_BADUGI_PUBLIC_RANGE_DATASET.collection_notes.filter(note => typeof note === 'string' && note.trim())
-      : [];
 
     const MIX_RAZZ_PUBLIC_RANGE_DATASET = (window.__RAZZ_THIRD_STREET_PUBLIC_RANGES_V1 && typeof window.__RAZZ_THIRD_STREET_PUBLIC_RANGES_V1 === 'object')
       ? window.__RAZZ_THIRD_STREET_PUBLIC_RANGES_V1
@@ -4960,10 +4935,7 @@
         .filter(Boolean)
       : ['EP', 'MP', 'LP', 'BI'];
     const MIX_RAZZ_POSITION_LABELS = Object.fromEntries(
-      MIX_RAZZ_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_RAZZ_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
+      MIX_RAZZ_POSITION_OPTIONS.map(positionKey => [positionKey, readMixPlainPositionLabel(positionKey)])
     );
 
     const MIX_STUD_HIGH_PUBLIC_RANGE_DATASET = (window.__STUD_HIGH_THIRD_STREET_PUBLIC_RANGES_V1 && typeof window.__STUD_HIGH_THIRD_STREET_PUBLIC_RANGES_V1 === 'object')
@@ -5001,10 +4973,7 @@
         .filter(Boolean)
       : ['EP', 'MP', 'LP', 'BI'];
     const MIX_STUD_HIGH_POSITION_LABELS = Object.fromEntries(
-      MIX_STUD_HIGH_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_STUD_HIGH_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
+      MIX_STUD_HIGH_POSITION_OPTIONS.map(positionKey => [positionKey, readMixPlainPositionLabel(positionKey)])
     );
     const MIX_STUD8_PUBLIC_RANGE_DATASET = (window.__STUD8_THIRD_STREET_PUBLIC_RANGES_V1 && typeof window.__STUD8_THIRD_STREET_PUBLIC_RANGES_V1 === 'object')
       ? window.__STUD8_THIRD_STREET_PUBLIC_RANGES_V1
@@ -5041,10 +5010,7 @@
         .filter(Boolean)
       : ['EP', 'MP', 'LP', 'BI'];
     const MIX_STUD8_POSITION_LABELS = Object.fromEntries(
-      MIX_STUD8_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_STUD8_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
+      MIX_STUD8_POSITION_OPTIONS.map(positionKey => [positionKey, readMixPlainPositionLabel(positionKey)])
     );
 
     const MIX_BASIL_826_PUBLIC_RANGE_DATASET = window.__BASIL_826_PUBLIC_RANGES_V1
@@ -5059,12 +5025,12 @@
       ? Object.keys(MIX_BASIL_826_HAND_RANGES).filter(value => typeof value === 'string' && value.trim())
       : ['FL826TD', 'NL826SD'];
     const MIX_BASIL_826_VIEW_OPTIONS = [
-      ['open_raise', 'Open / Raise'],
-      ['bb_defense_call', 'BB Call'],
+      ['open_raise', 'オープン / レイズ'],
+      ['bb_defense_call', 'BBコール'],
     ];
     const MIX_BASIL_826_VIEW_LABELS = {
-      open_raise: 'Open / Raise',
-      bb_defense_call: 'BB Call',
+      open_raise: 'オープン / レイズ',
+      bb_defense_call: 'BBコール',
     };
     const MIX_BASIL_826_POSITION_ORDER = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
     const MIX_BASIL_826_POSITION_LABELS = {
@@ -5097,10 +5063,7 @@
         .filter(Boolean)
       : ['EP', 'CO', 'BTN', 'SB', 'BB'];
     const MIX_A5_POSITION_LABELS = Object.fromEntries(
-      MIX_A5_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_A5_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
+      MIX_A5_POSITION_OPTIONS.map(positionKey => [positionKey, readMixPlainPositionLabel(positionKey)])
     );
     const MIX_A5_COLLECTION_NOTES = Array.isArray(MIX_A5_PUBLIC_RANGE_DATASET.collection_notes)
       ? MIX_A5_PUBLIC_RANGE_DATASET.collection_notes.filter(note => typeof note === 'string' && note.trim())
@@ -5156,10 +5119,7 @@
         .filter(Boolean)
       : ['EP', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
     const MIX_27TD_POSITION_LABELS = Object.fromEntries(
-      MIX_27TD_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_27TD_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
+      MIX_27TD_POSITION_OPTIONS.map(positionKey => [positionKey, readMixPlainPositionLabel(positionKey)])
     );
     const MIX_PLO_HU_DEFEND_PREVIEW = {
       title: 'Big Blind Call vs Small Blind Open',
@@ -7973,10 +7933,10 @@
 
     function humanizeMixSelectorLabel(familyId, selectorKey, fallbackLabel = '') {
       if (familyId === 'cc_high / 4-card') {
-        if (selectorKey === 'position') return 'Hero seat';
-        if (selectorKey === 'stack_or_spr') return 'Effective stack';
-        if (selectorKey === 'facing_action') return 'Prior preflop action path';
-        if (selectorKey === 'action') return 'Hero action node';
+        if (selectorKey === 'position') return '自分の位置';
+        if (selectorKey === 'stack_or_spr') return '実効スタック';
+        if (selectorKey === 'facing_action') return 'ここまでのアクション';
+        if (selectorKey === 'action') return '表示アクション';
       }
       if (familyId === 'cc_hilo / 4-card') {
         if (selectorKey === 'position') return 'Open position';
@@ -7993,27 +7953,27 @@
       if (!text) return '';
       if (familyId === 'cc_high / 4-card' && selectorKey === 'facing_action') {
         const mapped = {
-          root: 'unopened pot / SB first action',
-          'SB:Call': 'BB facing SB limp',
-          'SB:Call > BB:Raise100': 'SB facing BB raise after limp',
-          'SB:Call > BB:Raise100 > SB:Raise100': 'BB facing SB limp-reraise',
-          'SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100': 'SB facing BB 4-bet after limp line',
-          'SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100': 'BB facing SB 5-bet after limp line',
-          'SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:AllIn': 'SB facing BB all-in after limp line',
-          'SB:Raise100': 'BB facing SB open raise',
-          'SB:Raise100 > BB:Raise100': 'SB facing BB 3-bet',
-          'SB:Raise100 > BB:Raise100 > SB:Raise100': 'BB facing SB 4-bet',
-          'SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100': 'SB facing BB 5-bet',
-          'SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:AllIn': 'BB facing SB all-in after raise line',
+          root: '未オープン / SB の初手',
+          'SB:Call': 'BB が SB のリンプに直面',
+          'SB:Call > BB:Raise100': 'SB がリンプ後の BB レイズに直面',
+          'SB:Call > BB:Raise100 > SB:Raise100': 'BB が SB のリンプリレイズに直面',
+          'SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100': 'SB がリンプライン後の BB 4ベットに直面',
+          'SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100': 'BB がリンプライン後の SB 5ベットに直面',
+          'SB:Call > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:AllIn': 'SB がリンプライン後の BB オールインに直面',
+          'SB:Raise100': 'BB が SB のオープンに直面',
+          'SB:Raise100 > BB:Raise100': 'SB が BB の 3ベットに直面',
+          'SB:Raise100 > BB:Raise100 > SB:Raise100': 'BB が SB の 4ベットに直面',
+          'SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100': 'SB が BB の 5ベットに直面',
+          'SB:Raise100 > BB:Raise100 > SB:Raise100 > BB:Raise100 > SB:AllIn': 'BB がレイズライン後の SB オールインに直面',
         };
         return mapped[text] || humanizeMixSelectorValue(text.replace(/>/g, ' -> '));
       }
       if (familyId === 'cc_high / 4-card' && selectorKey === 'action') {
         const mapped = {
-          Fold: 'Fold',
-          Call: 'Call',
-          Raise100: 'Raise100 (source label)',
-          AllIn: 'All-in',
+          Fold: 'フォールド',
+          Call: 'コール',
+          Raise100: 'レイズ',
+          AllIn: 'オールイン',
         };
         return mapped[text] || text;
       }
@@ -8028,7 +7988,7 @@
 
     function formatMixSelectedSpotSummary(familyId, selectedSpot) {
       if (!selectedSpot || !selectedSpot.selectors || typeof selectedSpot.selectors !== 'object') {
-        return selectedSpot?.spotLabel || 'spot unavailable';
+        return selectedSpot?.spotLabel || 'スポット情報がありません';
       }
       return Object.entries(selectedSpot.selectors)
         .map(([key, value]) => `${humanizeMixSelectorLabel(familyId, key, key)}: ${humanizeMixSelectorValueForFamily(familyId, key, value)}`)
@@ -9151,6 +9111,113 @@
       `;
     }
 
+    const MIX_DISPLAY_TEXT_EXACT_MAP = {
+      'Game': 'ゲーム',
+      'View': '表示',
+      'Variant': 'ゲーム形式',
+      'Position': 'ポジション',
+      'Range': 'レンジ',
+      'Category': '分類',
+      'Hand': 'ハンド',
+      'Hand Type': 'ハンド分類',
+      'Hand class': 'ハンド分類',
+      'State': '状態',
+      'Chart Value': 'チャート値',
+      'Freq': '頻度',
+      'Family': 'ファミリー',
+      'Family read': 'ファミリー傾向',
+      'Family slice': 'ファミリー',
+      'Open hands': 'レンジ',
+      'Open Range': 'オープンレンジ',
+      'First-In Open': 'オープンレンジ',
+      'Continue vs 3-bet': '3ベットに対する継続レンジ',
+      'Vs Open Continue': 'オープンに対する継続レンジ',
+      'Vs Open': 'オープンに対する継続レンジ',
+      'Vs EP Open': 'EPのオープンに対する継続レンジ',
+      'Facing Earlier Open': '前のオープンに対する継続レンジ',
+      'Facing CO / BTN Open': 'CO / BTN のオープンに対する継続レンジ',
+      'Open After Facing Action': 'レイズを受けた後の継続レンジ',
+      'Big Blind Call Range': 'BBコールレンジ',
+      'BB Call / 3-bet': 'BBコール / 3ベット',
+      'Open band': 'オープン帯',
+      'Vs open': 'コール / ディフェンス帯',
+      'Call hand detail': 'BBコールレンジ',
+      'Open hand detail': 'オープンレンジ',
+      'Published Anchor': '公開アンカー',
+      'Practical Core': '実戦の中核',
+      'Practical Tighten': '実戦では絞る',
+      'Do Not Auto-Open': '自動で開かない',
+      'Do Not Auto-Add': '自動で足さない',
+      'Do Not Auto-Union': '機械的に広げない',
+      'Not Default': '基本形ではない',
+      'Default raise': '基本はレイズ',
+      'Edge only': '条件付き',
+      'Snap fold': '即フォールド',
+      'Continue Strongly': '強く継続',
+      'Rare Continue': '限定的に継続',
+      'Release': 'フォールド',
+      'Open core': 'オープンの中核',
+      'Keep but watch quality': '残すが質は厳しめ',
+      'Still out': 'まだ入れない',
+      'Open core': 'オープンの中核',
+      'Core 3-Bet': '3ベットの中核',
+      '3-Bet Core': '3ベットの中核',
+      'Close Flat Only': 'かなり近い時だけコール',
+      'Skip': 'フォールド',
+      'Loose-Opener Widen': 'ルース相手に広げる',
+      'Mostly 3-bet or fold': '基本は3ベットかフォールド',
+      'Flat only when truly close': 'コールはかなり近い時だけ',
+      'Never turn D2 into a cold-call range': 'D2をコールドコール帯にしない',
+      'Judgment adds': '条件付き追加',
+      'Still not default': 'まだ基本形ではない',
+      'Flat-Call Core': 'コールの中核',
+      'Raise or Trap Upgrade': 'レイズ / トラップ候補',
+      'Respect Early Strength': '早い位置には引き締める',
+      'Late-position adds': '後ろの席に対する追加',
+      'Do not over-call': 'コールし過ぎない',
+      'Add only with blockers': 'ブロッカー付きでだけ追加',
+      'Strong-BB Base': '強いBB相手の基準',
+      'Exploit Adds': '相手次第で追加',
+      'Open / Raise': 'オープン / レイズ',
+      'BB Call': 'BBコール',
+      'ALL': '全て',
+      'NONE': 'なし',
+      'specific': '一部',
+      'source-backed': '公開ソースあり',
+      'source-backed early threshold bucket': '公開ソースで確認できる序盤しきい値',
+    };
+
+    const MIX_DISPLAY_TEXT_REPLACEMENTS = [
+      [/\bBig Blind\b/g, 'BB'],
+      [/\bSmall Blind\b/g, 'SB'],
+      [/\bButton\b/g, 'BTN'],
+      [/\bCutoff\b/g, 'CO'],
+      [/\bHijack\b/g, 'HJ'],
+      [/\bLojack\b/g, 'LJ'],
+      [/\bcold call\b/gi, 'コールドコール'],
+      [/\bflat call\b/gi, 'コール'],
+      [/\bflat\b/gi, 'コール'],
+      [/\bdefense-only seat\b/gi, 'ディフェンス専用'],
+      [/\bcall range\b/gi, 'コールレンジ'],
+      [/\bopen range\b/gi, 'オープンレンジ'],
+      [/\bcontinue\b/gi, '継続'],
+      [/\braise-or-fold\b/gi, 'レイズかフォールド'],
+      [/\bsource gap\b/gi, 'ソース差'],
+    ];
+
+    function normalizeMixDisplayText(value) {
+      const text = typeof value === 'string' ? value.trim() : '';
+      if (!text) return '';
+      if (Object.prototype.hasOwnProperty.call(MIX_DISPLAY_TEXT_EXACT_MAP, text)) {
+        return MIX_DISPLAY_TEXT_EXACT_MAP[text];
+      }
+      return MIX_DISPLAY_TEXT_REPLACEMENTS.reduce((next, [pattern, replacement]) => next.replace(pattern, replacement), text);
+    }
+
+    function escapeMixText(value) {
+      return escapeHtml(normalizeMixDisplayText(value));
+    }
+
     function renderMixStaticTable(columns, rows) {
       const safeColumns = Array.isArray(columns) ? columns.filter(value => typeof value === 'string' && value.trim()) : [];
       const safeRows = Array.isArray(rows) ? rows.filter(row => Array.isArray(row) && row.length) : [];
@@ -9162,13 +9229,13 @@
           <table class="mix-range-table">
             <thead>
               <tr>
-                ${safeColumns.map(column => `<th>${escapeHtml(column)}</th>`).join('')}
+                ${safeColumns.map(column => `<th>${escapeMixText(column)}</th>`).join('')}
               </tr>
             </thead>
             <tbody>
               ${safeRows.map(row => `
                 <tr>
-                  ${safeColumns.map((_, index) => `<td>${escapeHtml(row[index] ?? '')}</td>`).join('')}
+                  ${safeColumns.map((_, index) => `<td>${escapeMixText(row[index] ?? '')}</td>`).join('')}
                 </tr>
               `).join('')}
             </tbody>
@@ -9483,15 +9550,15 @@
       if (!parsed) return token || '';
       const rankText = sortMixPloRanksForDisplay(parsed.ranks);
       if (!parsed.groups.length) {
-        return `${rankText} / suited group shownなし`;
+        return `${rankText} / 同スート情報なし`;
       }
       if (parsed.groups.length === 1) {
-        return `${rankText} / suited: ${parsed.groups[0]}`;
+        return `${rankText} / ${parsed.groups[0]} が同スート`;
       }
       if (parsed.groups.length === 2 && parsed.groups.every(group => group.length === 2)) {
-        return `${rankText} / double-suited: ${parsed.groups[0]} + ${parsed.groups[1]}`;
+        return `${rankText} / ${parsed.groups[0]} と ${parsed.groups[1]} のダブルスーテッド`;
       }
-      return `${rankText} / suited groups: ${parsed.groups.join(' + ')}`;
+      return `${rankText} / 同スート組: ${parsed.groups.join(' + ')}`;
     }
 
     function classifyMixPloHuFrequencyBand(frequency) {
@@ -9504,7 +9571,7 @@
     }
 
     function formatMixPloHuActionRateLabel(viewKey) {
-      return viewKey === 'hu_bb_defend' ? 'Call rate' : 'Open rate';
+      return viewKey === 'hu_bb_defend' ? 'コール頻度' : 'オープン頻度';
     }
 
     function formatMixPloHuFrequencyText(frequency) {
@@ -9543,7 +9610,7 @@
             <span>${escapeHtml(`100%: ${bands.always} / 75-99%: ${bands.mostly} / 50-74%: ${bands.mixed}`)}</span>
           </div>
           <div class="mix-detail-band">
-            <strong>Mixed rows</strong>
+            <strong>ミックス頻度</strong>
             <span>${escapeHtml(`25-49%: ${bands.rarely} / 1-24%: ${bands.occasionally}`)}</span>
           </div>
         </div>
@@ -9552,23 +9619,23 @@
 
     function renderMixPloHuTokenGuide() {
       const guideRows = [
-        ['AA(TJ)', 'AATJ / suited: TJ'],
-        ['9A(TA)', 'AAT9 / suited: TA'],
-        ['(45)(45)', '4455 / double-suited: 45 + 45'],
-        ['JJAA', 'AAJJ / suited group shownなし'],
+        ['AA(TJ)', 'AATJ / TJ が同スート'],
+        ['9A(TA)', 'AAT9 / TA が同スート'],
+        ['(45)(45)', '4455 / 45 と 45 のダブルスーテッド'],
+        ['JJAA', 'AAJJ / 同スート情報なし'],
       ];
       return `
         <section class="surface-card tight">
-          <h3>Token Guide</h3>
-          <p class="mix-preview-copy">括弧の中は同じスートです。括弧が2つあれば別の suited group です。括弧の外のカードは、表示されている suited group には入っていません。</p>
-          ${renderMixStaticTable(['Source token', 'Read as'], guideRows)}
+          <h3>トークンの読み方</h3>
+          <p class="mix-preview-copy">括弧内は同じスートです。括弧が2つある場合は別々の同スート組を示します。括弧の外のカードは、その同スート組には含まれません。</p>
+          ${renderMixStaticTable(['表記', '読み方'], guideRows)}
         </section>
       `;
     }
 
     function renderMixPloHuReadableRowsTable(payload, viewKey) {
       if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
-        return '<p class="mix-empty">source rows unavailable</p>';
+        return '<p class="mix-empty">ハンド行を表示できません。</p>';
       }
       const rateLabel = formatMixPloHuActionRateLabel(viewKey);
       return `
@@ -9576,8 +9643,8 @@
           <table class="mix-range-table">
             <thead>
               <tr>
-                <th>Hand</th>
-                <th>Read As</th>
+                <th>ハンド</th>
+                <th>読み方</th>
                 <th>${escapeHtml(rateLabel)}</th>
               </tr>
             </thead>
@@ -9600,40 +9667,40 @@
       const payload = buildMixPloHuEmbeddedPayload(spot, viewKey);
       if (!spot || !payload) return '';
       const displayTitle = viewKey === 'hu_bb_defend'
-        ? 'PLO Heads-Up Big Blind Call vs Small Blind Open'
-        : 'PLO Heads-Up Small Blind Open vs Big Blind';
+        ? 'PLO HU BBコール vs SBオープン'
+        : 'PLO HU SBオープン vs BB';
       const displaySituation = viewKey === 'hu_bb_defend'
-        ? 'Big Blind facing Small Blind open raise'
-        : 'Unopened pot / Small Blind first action';
-      const displayAction = viewKey === 'hu_bb_defend' ? 'Call' : 'Raise100';
+        ? 'BB が SB のオープンに直面'
+        : '未オープン / SB の初手';
+      const displayAction = viewKey === 'hu_bb_defend' ? 'コール' : 'オープン';
       const prevDisabled = payload.page <= 1 ? ' disabled' : '';
       const nextDisabled = payload.page >= payload.pageCount ? ' disabled' : '';
       return `
         <section class="surface-card tight">
           <h3>${escapeHtml(displayTitle)}</h3>
-          <p class="mix-preview-copy">${escapeHtml(viewKey === 'hu_bb_defend' ? 'この表は Big Blind が Small Blind のオープンに対してコールする手だけを並べています。' : 'この表は heads-up で Small Blind が最初にオープンする手だけを並べています。')}</p>
+          <p class="mix-preview-copy">${escapeHtml(viewKey === 'hu_bb_defend' ? 'この表は BB が SB のオープンに対してコールするハンドだけを並べています。' : 'この表は HU で SB が最初にオープンするハンドだけを並べています。')}</p>
           <div class="mix-detail-grid">
             <div class="mix-detail-band">
-              <strong>Situation</strong>
+              <strong>状況</strong>
               <span>${escapeHtml(displaySituation)}</span>
             </div>
             <div class="mix-detail-band">
-              <strong>Action shown</strong>
+              <strong>表示アクション</strong>
               <span>${escapeHtml(displayAction)}</span>
             </div>
             <div class="mix-detail-band">
-              <strong>Tree</strong>
-              <span>${escapeHtml('HU / 100bb / with limp')}</span>
+              <strong>前提</strong>
+              <span>HU / 100bb / リンプあり</span>
             </div>
           </div>
           ${renderMixPloHuLegendBands(viewKey, spot.rows)}
           <div class="mix-range-toolbar">
             <p class="mix-range-summary">
-              ${escapeHtml(`${payload.rows.length} hands on this page / page ${payload.page} of ${payload.pageCount} / total listed hands ${payload.filteredEntries}`)}
+              ${escapeHtml(`このページ ${payload.rows.length}ハンド / 全${payload.pageCount}ページ中 ${payload.page}ページ / 掲載ハンド ${payload.filteredEntries}`)}
             </p>
             <div class="button-row">
-              <button type="button" class="secondary" data-mix-plo-embedded-view="${escapeHtml(viewKey)}" data-mix-plo-embedded-page="${escapeHtml(String(payload.page - 1))}"${prevDisabled}>Prev</button>
-              <button type="button" class="secondary" data-mix-plo-embedded-view="${escapeHtml(viewKey)}" data-mix-plo-embedded-page="${escapeHtml(String(payload.page + 1))}"${nextDisabled}>Next</button>
+              <button type="button" class="secondary" data-mix-plo-embedded-view="${escapeHtml(viewKey)}" data-mix-plo-embedded-page="${escapeHtml(String(payload.page - 1))}"${prevDisabled}>前へ</button>
+              <button type="button" class="secondary" data-mix-plo-embedded-view="${escapeHtml(viewKey)}" data-mix-plo-embedded-page="${escapeHtml(String(payload.page + 1))}"${nextDisabled}>次へ</button>
             </div>
           </div>
           ${renderMixPloHuReadableRowsTable(payload, viewKey)}
@@ -9655,42 +9722,32 @@
       if (isAppFileProtocol()) {
         return `
           <section class="surface-card tight">
-            <h3>PLO Heads-Up Big Blind Call vs Small Blind Open</h3>
-            <p class="mix-preview-copy">この view は repo 内の exact source slice を使います。file:// では full exact rows を直接読めないため、対象ノードの preview と source path を表示します。</p>
+            <h3>PLO HU BBコール vs SBオープン</h3>
+            <p class="mix-preview-copy">この画面はアプリ内の保持データを使います。file:// では元データ行を直接読めないため、対象ノードのプレビューを表示します。</p>
             <div class="mix-detail-grid">
               <div class="mix-detail-band">
-                <strong>Scope</strong>
-                <span>${escapeHtml(MIX_PLO_HU_DEFEND_PREVIEW.scope)}</span>
+                <strong>前提</strong>
+                <span>HU / 100bb / リンプあり</span>
               </div>
               <div class="mix-detail-band">
-                <strong>Facing action</strong>
-                <span>Big Blind facing Small Blind open raise</span>
+                <strong>対面アクション</strong>
+                <span>BB が SB のオープンに直面</span>
               </div>
               <div class="mix-detail-band">
-                <strong>Hero action</strong>
-                <span>Call</span>
-              </div>
-              <div class="mix-detail-band">
-                <strong>Source path</strong>
-                <span>${escapeHtml(MIX_PLO_HU_DEFEND_PREVIEW.sourcePathInArchive)}</span>
+                <strong>表示アクション</strong>
+                <span>コール</span>
               </div>
             </div>
-            <p class="mix-preview-copy">${escapeHtml(MIX_PLO_HU_DEFEND_PREVIEW.note)}</p>
+            <p class="mix-preview-copy">このノードは 6max の公開レンジではなく、HU の保持データに含まれる BB コールノードです。</p>
             ${renderMixExactSpotCards(previewEntry)}
-            ${selectedFamily ? `
-              <section class="surface-card tight">
-                <h3>Bundle artifacts</h3>
-                ${renderMixArtifactList([selectedFamily.detailArtifact, ...selectedFamily.stagedArtifacts].filter(Boolean))}
-              </section>
-            ` : ''}
           </section>
         `;
       }
       if (!selectedFamily) {
         return `
           <section class="surface-card tight">
-            <h3>PLO Heads-Up Big Blind Call vs Small Blind Open</h3>
-            <p class="mix-preview-copy">current repo exact family entry is unavailable.</p>
+            <h3>PLO HU BBコール vs SBオープン</h3>
+            <p class="mix-preview-copy">現在のデータでは詳細情報を参照できません。</p>
           </section>
         `;
       }
@@ -9700,8 +9757,8 @@
       if (!catalogEntry || !bundleState || bundleState.status === 'loading' || !bundleState.bundle) {
         return `
           <section class="surface-card tight">
-            <h3>PLO Heads-Up Big Blind Call vs Small Blind Open</h3>
-            <p class="mix-preview-copy">exact bundle から Big Blind facing Small Blind open raise / action = Call ノードを読込中です。</p>
+            <h3>PLO HU BBコール vs SBオープン</h3>
+            <p class="mix-preview-copy">詳細データから BB のコールノードを読み込み中です。</p>
             ${renderMixExactSpotCards(previewEntry)}
           </section>
         `;
@@ -9716,32 +9773,28 @@
       if (!defendSpot) {
         return `
           <section class="surface-card tight">
-            <h3>PLO Heads-Up Big Blind Call vs Small Blind Open</h3>
-            <p class="mix-preview-copy">target defend node was not found in the current exact bundle.</p>
+            <h3>PLO HU BBコール vs SBオープン</h3>
+            <p class="mix-preview-copy">現在の詳細データに対象の BB コールノードがありません。</p>
             ${renderMixArtifactList([catalogEntry.bundleArtifact, catalogEntry.sourcePackPath].filter(Boolean))}
           </section>
         `;
       }
       return `
         <section class="surface-card tight">
-          <h3>PLO Heads-Up Big Blind Call vs Small Blind Open</h3>
-          <p class="mix-preview-copy">公開 PLO RFI chart ではなく、repo にある exact HU source slice の defend node を表示します。</p>
+          <h3>PLO HU BBコール vs SBオープン</h3>
+          <p class="mix-preview-copy">公開 PLO レンジではなく、アプリ内に保持している HU 詳細データの BB コールノードを表示します。</p>
           <div class="mix-detail-grid">
             <div class="mix-detail-band">
-              <strong>Scope</strong>
-              <span>${escapeHtml(bundle.uiScopeLabel || MIX_PLO_HU_DEFEND_PREVIEW.scope)}</span>
+              <strong>前提</strong>
+              <span>HU / 100bb / リンプあり</span>
             </div>
             <div class="mix-detail-band">
-              <strong>Facing action</strong>
-              <span>Big Blind facing Small Blind open raise</span>
+              <strong>対面アクション</strong>
+              <span>BB が SB のオープンに直面</span>
             </div>
             <div class="mix-detail-band">
-              <strong>Hero action</strong>
-              <span>Call</span>
-            </div>
-            <div class="mix-detail-band">
-              <strong>Source path</strong>
-              <span>${escapeHtml(defendSpot.sourcePathInArchive || MIX_PLO_HU_DEFEND_PREVIEW.sourcePathInArchive)}</span>
+              <strong>表示アクション</strong>
+              <span>コール</span>
             </div>
           </div>
         </section>
@@ -9763,42 +9816,32 @@
       if (isAppFileProtocol()) {
         return `
           <section class="surface-card tight">
-            <h3>PLO Heads-Up Small Blind Open vs Big Blind</h3>
-            <p class="mix-preview-copy">この view は repo 内の exact source slice を使います。file:// では full exact rows を直接読めないため、対象ノードの preview と source path を表示します。</p>
+            <h3>PLO HU SBオープン vs BB</h3>
+            <p class="mix-preview-copy">この画面はアプリ内の保持データを使います。file:// では元データ行を直接読めないため、対象ノードのプレビューを表示します。</p>
             <div class="mix-detail-grid">
               <div class="mix-detail-band">
-                <strong>Scope</strong>
-                <span>${escapeHtml(MIX_PLO_HU_OPEN_PREVIEW.scope)}</span>
+                <strong>前提</strong>
+                <span>HU / 100bb / リンプあり</span>
               </div>
               <div class="mix-detail-band">
-                <strong>Facing action</strong>
-                <span>Unopened pot / Small Blind first action</span>
+                <strong>対面アクション</strong>
+                <span>未オープン / SB の初手</span>
               </div>
               <div class="mix-detail-band">
-                <strong>Hero action</strong>
-                <span>Raise100</span>
-              </div>
-              <div class="mix-detail-band">
-                <strong>Source path</strong>
-                <span>${escapeHtml(MIX_PLO_HU_OPEN_PREVIEW.sourcePathInArchive)}</span>
+                <strong>表示アクション</strong>
+                <span>オープン</span>
               </div>
             </div>
-            <p class="mix-preview-copy">${escapeHtml(MIX_PLO_HU_OPEN_PREVIEW.note)}</p>
+            <p class="mix-preview-copy">このノードは 6max の公開レンジではなく、HU の保持データに含まれる SB オープンノードです。</p>
             ${renderMixExactSpotCards(previewEntry)}
-            ${selectedFamily ? `
-              <section class="surface-card tight">
-                <h3>Bundle artifacts</h3>
-                ${renderMixArtifactList([selectedFamily.detailArtifact, ...selectedFamily.stagedArtifacts].filter(Boolean))}
-              </section>
-            ` : ''}
           </section>
         `;
       }
       if (!selectedFamily) {
         return `
           <section class="surface-card tight">
-            <h3>PLO Heads-Up Small Blind Open vs Big Blind</h3>
-            <p class="mix-preview-copy">current repo exact family entry is unavailable.</p>
+            <h3>PLO HU SBオープン vs BB</h3>
+            <p class="mix-preview-copy">現在のデータでは詳細情報を参照できません。</p>
           </section>
         `;
       }
@@ -9808,8 +9851,8 @@
       if (!catalogEntry || !bundleState || bundleState.status === 'loading' || !bundleState.bundle) {
         return `
           <section class="surface-card tight">
-            <h3>PLO Heads-Up Small Blind Open vs Big Blind</h3>
-            <p class="mix-preview-copy">exact bundle から Small Blind root / action = Raise100 ノードを読込中です。</p>
+            <h3>PLO HU SBオープン vs BB</h3>
+            <p class="mix-preview-copy">詳細データから SB のオープンノードを読み込み中です。</p>
             ${renderMixExactSpotCards(previewEntry)}
           </section>
         `;
@@ -9824,39 +9867,34 @@
       if (!openSpot) {
         return `
           <section class="surface-card tight">
-            <h3>PLO Heads-Up Small Blind Open vs Big Blind</h3>
-            <p class="mix-preview-copy">target open node was not found in the current exact bundle.</p>
+            <h3>PLO HU SBオープン vs BB</h3>
+            <p class="mix-preview-copy">現在の詳細データに対象の SB オープンノードがありません。</p>
             ${renderMixArtifactList([catalogEntry.bundleArtifact, catalogEntry.sourcePackPath].filter(Boolean))}
           </section>
         `;
       }
       return `
         <section class="surface-card tight">
-          <h3>PLO Heads-Up Small Blind Open vs Big Blind</h3>
-          <p class="mix-preview-copy">公開 6-max RFI chart ではなく、repo にある exact HU source slice の Small Blind open node を表示します。</p>
+          <h3>PLO HU SBオープン vs BB</h3>
+          <p class="mix-preview-copy">公開 6max レンジではなく、アプリ内に保持している HU 詳細データの SB オープンノードを表示します。</p>
           <div class="mix-detail-grid">
             <div class="mix-detail-band">
-              <strong>Scope</strong>
-              <span>${escapeHtml(bundle.uiScopeLabel || MIX_PLO_HU_OPEN_PREVIEW.scope)}</span>
+              <strong>前提</strong>
+              <span>HU / 100bb / リンプあり</span>
             </div>
             <div class="mix-detail-band">
-              <strong>Facing action</strong>
-              <span>Unopened pot / Small Blind first action</span>
+              <strong>対面アクション</strong>
+              <span>未オープン / SB の初手</span>
             </div>
             <div class="mix-detail-band">
-              <strong>Hero action</strong>
-              <span>Raise100</span>
-            </div>
-            <div class="mix-detail-band">
-              <strong>Source path</strong>
-              <span>${escapeHtml(openSpot.sourcePathInArchive || MIX_PLO_HU_OPEN_PREVIEW.sourcePathInArchive)}</span>
+              <strong>表示アクション</strong>
+              <span>オープン</span>
             </div>
           </div>
         </section>
         ${renderMixExactToolPanel(selectedFamily, bundle, openSpot, catalogEntry)}
       `;
     }
-
 
     function readMixPloSourceEntry(sourceRef) {
       return sourceRef && MIX_PLO_SOURCE_INDEX[sourceRef]
@@ -9898,7 +9936,7 @@
       const safePosition = readMixPloPosition(selectedPosition);
       const entry = readMixPloPositionEntry(safePosition);
       return {
-        label: entry?.label || MIX_PLO_POSITION_LABELS[safePosition] || safePosition,
+        label: MIX_PLO_POSITION_LABELS[safePosition] || safePosition,
         roleLabel: typeof entry?.role_label === 'string' ? entry.role_label.trim() : '',
         openBand: typeof entry?.open_band === 'string' ? entry.open_band.trim() : '',
         versusOpenBand: typeof entry?.versus_open_band === 'string' ? entry.versus_open_band.trim() : '',
@@ -10002,8 +10040,7 @@
       const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
       return `
         <section class="surface-card tight">
-          <h3>${escapeHtml(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.publicRangeRead ? `<p class="mix-preview-copy">${escapeHtml(section.publicRangeRead)}</p>` : ''}
+          <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
           ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
           ${renderMixStudHighRangeGroups(section)}
           ${renderMixStudHighActionBands(section)}
@@ -10014,28 +10051,26 @@
     function renderMixPloUpswingExactPanel(selectedPosition) {
       if (!['UTG', 'HJ', 'CO', 'BTN', 'SB'].includes(selectedPosition)) return '';
       return `
-        <details class="mix-stud8-details">
-          <summary>ハンドクラス詳細を見る</summary>
-          <div class="mix-stud8-details-body">
-            <p class="mix-preview-copy">${escapeHtml(`${MIX_PLO_POSITION_LABELS[selectedPosition] || selectedPosition} の pair / non-pair class を、詳細テーブルとして確認します。`)}</p>
-            <div class="mix-shell-frame">
-              <article class="mix-preview-card">
-                <h4>Pair classes</h4>
-                ${renderMixStaticTable(
-                  ['Pair class', 'DS', 'SS', 'R', '% Dealt', '% of RFI'],
-                  readMixPloUpswingPositionRows(selectedPosition, 'pairs')
-                )}
-              </article>
-              <article class="mix-preview-card">
-                <h4>Non-pair classes</h4>
-                ${renderMixStaticTable(
-                  ['Non-pair class', 'DS', 'SS', 'R', '% Dealt', '% of RFI'],
-                  readMixPloUpswingPositionRows(selectedPosition, 'nonPairs')
-                )}
-              </article>
-            </div>
+        <section class="surface-card tight">
+          <h3>ハンド分類詳細</h3>
+          <p class="mix-preview-copy">${escapeHtml(`${MIX_PLO_POSITION_LABELS[selectedPosition] || selectedPosition} のペア系とノンペア系を一覧表示します。`)}</p>
+          <div class="mix-shell-frame">
+            <article class="mix-preview-card">
+              <h4>ペア系</h4>
+              ${renderMixStaticTable(
+                ['ペア分類', 'DS', 'SS', 'R', '配られる割合', 'RFI内割合'],
+                readMixPloUpswingPositionRows(selectedPosition, 'pairs')
+              )}
+            </article>
+            <article class="mix-preview-card">
+              <h4>ノンペア系</h4>
+              ${renderMixStaticTable(
+                ['ノンペア分類', 'DS', 'SS', 'R', '配られる割合', 'RFI内割合'],
+                readMixPloUpswingPositionRows(selectedPosition, 'nonPairs')
+              )}
+            </article>
           </div>
-        </details>
+        </section>
       `;
     }
 
@@ -10049,7 +10084,7 @@
             <h3>PLO High</h3>
             <div class="mix-selector-grid">
               <label class="mix-selector-field">
-                <span>View</span>
+                <span>表示</span>
                 <select id="mix-plo-view-select" data-mix-plo-view-select="true">
                   ${MIX_PLO_VIEW_OPTIONS.map(([value, label]) => `
                     <option value="${escapeHtml(value)}"${value === selectedView ? ' selected' : ''}>${escapeHtml(label)}</option>
@@ -10067,7 +10102,7 @@
             <h3>PLO High</h3>
             <div class="mix-selector-grid">
               <label class="mix-selector-field">
-                <span>View</span>
+                <span>表示</span>
                 <select id="mix-plo-view-select" data-mix-plo-view-select="true">
                   ${MIX_PLO_VIEW_OPTIONS.map(([value, label]) => `
                     <option value="${escapeHtml(value)}"${value === selectedView ? ' selected' : ''}>${escapeHtml(label)}</option>
@@ -10081,18 +10116,22 @@
       }
       const selectedPosition = readMixPloPosition(mixDisplayState.selectedPloPosition);
       const selectedRange = buildMixPloSelectedRangePayload(selectedPosition);
+      const isBigBlind = selectedPosition === 'BB';
       const summaryBands = [
         ['役割', selectedRange.roleLabel],
-        ['Open band', selectedRange.openBand],
-        ['Vs open', selectedRange.versusOpenBand],
+        ...(!isBigBlind ? [['オープン帯', selectedRange.openBand]] : []),
+        ['コール / ディフェンス帯', selectedRange.versusOpenBand],
       ].filter(([, value]) => !!value);
+      const introCopy = isBigBlind
+        ? 'BBはオープンレンジではなく、相手のオープンに対するコール / ディフェンスレンジを表示します。'
+        : '選んだポジションのオープンレンジとコール / ディフェンスレンジを、ハンド分類ベースで表示します。';
       return `
         <section class="surface-card tight">
           <h3>PLO High ポジション別レンジ</h3>
-          <p class="mix-preview-copy">選んだ position の open と versus open だけを position-first surface として表示します。raw shorthand の保存ではなく、hand-family と action band に分解した版です。</p>
+          <p class="mix-preview-copy">${escapeHtml(introCopy)}</p>
           <div class="mix-selector-grid">
             <label class="mix-selector-field">
-              <span>View</span>
+              <span>表示</span>
               <select id="mix-plo-view-select" data-mix-plo-view-select="true">
                 ${MIX_PLO_VIEW_OPTIONS.map(([value, label]) => `
                   <option value="${escapeHtml(value)}"${value === selectedView ? ' selected' : ''}>${escapeHtml(label)}</option>
@@ -10111,8 +10150,6 @@
         </section>
         <section class="surface-card tight">
           <h3>${escapeHtml(selectedRange.label)}</h3>
-          ${selectedRange.positionSummary ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.positionSummary)}</p>` : ''}
-          ${selectedRange.cautionNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.cautionNote)}</p>` : ''}
           ${summaryBands.length ? `
             <div class="mix-detail-grid">
               ${summaryBands.map(([label, value]) => `
@@ -10126,7 +10163,7 @@
           ${renderMixStudHighSelectedOverview(selectedRange.overview)}
           ${renderMixPloAtGlance(selectedRange.atGlance)}
         </section>
-        ${renderMixPloSection(selectedRange.openSection)}
+        ${!isBigBlind ? renderMixPloSection(selectedRange.openSection) : ''}
         ${renderMixPloSection(selectedRange.versusSection)}
         ${renderMixPloUpswingExactPanel(selectedPosition)}
       `;
@@ -10362,7 +10399,7 @@
       const safePosition = readMixPlo8Position(selectedPosition);
       const entry = readMixPlo8PositionEntry(safePosition);
       return {
-        label: entry?.label || MIX_PLO8_POSITION_LABELS[safePosition] || safePosition,
+        label: MIX_PLO8_POSITION_LABELS[safePosition] || safePosition,
         roleLabel: typeof entry?.role_label === 'string' ? entry.role_label.trim() : '',
         openBand: typeof entry?.open_band === 'string' ? entry.open_band.trim() : '',
         versusOpenBand: typeof entry?.versus_open_band === 'string' ? entry.versus_open_band.trim() : '',
@@ -10556,9 +10593,7 @@
       const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
       return `
         <section class="surface-card tight">
-          <h3>${escapeHtml(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.anchorProfile ? `<p class="mix-preview-copy">${escapeHtml(`読み筋: ${section.anchorProfile}`)}</p>` : ''}
-          ${section.publicRangeRead ? `<p class="mix-preview-copy">${escapeHtml(section.publicRangeRead)}</p>` : ''}
+          <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
           ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
           ${renderMixPlo8RangeGroups(section)}
           ${renderMixPlo8ActionBands(section)}
@@ -10575,21 +10610,171 @@
       return MIX_BADUGI_POSITION_OBJECT[safePosition] || {};
     }
 
-    function formatMixBadugiList(items) {
-      return Array.isArray(items) && items.length ? items.join(' ; ') : '—';
+    function readMixBadugiSourceRefsForPosition(position) {
+      const entry = readMixBadugiPositionEntry(position);
+      const positionRefs = Array.isArray(entry?.source_refs)
+        ? entry.source_refs
+          .filter(sourceRef => typeof sourceRef === 'string' && sourceRef.trim())
+          .map(sourceRef => sourceRef.trim())
+        : [];
+      return Array.from(new Set([...MIX_BADUGI_GLOBAL_SOURCE_REFS, ...positionRefs]))
+        .filter(sourceRef => !!readMixBadugiSourceEntry(sourceRef));
     }
 
     function buildMixBadugiSelectedRangePayload(selectedPosition) {
-      const entry = readMixBadugiPositionEntry(selectedPosition);
-      const firstInOpen = entry?.first_in_open || {};
+      const safePosition = readMixBadugiPosition(selectedPosition);
+      const entry = readMixBadugiPositionEntry(safePosition);
       return {
-        label: entry?.label || MIX_BADUGI_POSITION_LABELS[readMixBadugiPosition(selectedPosition)] || selectedPosition,
-        openBand: formatMixBadugiAnchorBand(firstInOpen.anchor_chart_pct),
-        positionRead: firstInOpen.position_read || '',
-        publicRangeRead: firstInOpen.public_range_read || '',
-        sourceNote: firstInOpen.source_note || '',
-        openTableRows: Array.isArray(firstInOpen.open_table_rows) ? firstInOpen.open_table_rows : [],
+        label: MIX_BADUGI_POSITION_LABELS[safePosition] || safePosition,
+        roleLabel: typeof entry?.role_label === 'string' ? entry.role_label.trim() : '',
+        openBand: typeof entry?.open_band === 'string' ? entry.open_band.trim() : '',
+        versusOpenBand: typeof entry?.versus_open_band === 'string' ? entry.versus_open_band.trim() : '',
+        positionSummary: typeof entry?.position_summary === 'string' ? entry.position_summary.trim() : '',
+        cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
+        overview: normalizeMixStudHighOverview(entry?.overview),
+        atGlance: normalizeMixPlo8AtGlance(entry?.at_a_glance),
+        openSection: normalizeMixStudHighSection(entry?.open_section),
+        versusSection: normalizeMixStudHighSection(entry?.versus_section),
+        sourceRefs: readMixBadugiSourceRefsForPosition(safePosition),
       };
+    }
+
+    function buildMixBadugiEvidenceRows(section) {
+      if (!section || !Array.isArray(section.collectedRows)) return [];
+      return section.collectedRows.map(row => {
+        const sourceEntry = readMixBadugiSourceEntry(row.sourceRef) || {};
+        return [
+          sourceEntry.short_label || row.sourceRef,
+          humanizeMixSelectorValue(row.evidenceType || 'note'),
+          row.rangeRead || '',
+          row.notes || '',
+        ];
+      });
+    }
+
+    function renderMixBadugiSourceLinks(sourceRefs) {
+      if (!Array.isArray(sourceRefs) || !sourceRefs.length) {
+        return '<p class="mix-empty">参照リンクはまだありません</p>';
+      }
+      return `
+        <ul class="mix-link-list">
+          ${sourceRefs.map(sourceRef => {
+            const entry = readMixBadugiSourceEntry(sourceRef) || {};
+            const sourceUrl = typeof entry.url === 'string' && entry.url.trim() ? entry.url.trim() : '';
+            const sourceType = typeof entry.source_type === 'string' && entry.source_type.trim() ? entry.source_type.trim() : 'HTML';
+            const weightLabel = typeof entry.weight === 'string' && entry.weight.trim()
+              ? humanizeMixSelectorValue(entry.weight)
+              : '';
+            const typeClass = sourceType === 'PDF' ? 'mix-chip mix-chip-pdf' : 'mix-chip mix-chip-html';
+            const title = typeof entry.short_label === 'string' && entry.short_label.trim()
+              ? entry.short_label.trim()
+              : ((typeof entry.title === 'string' && entry.title.trim()) ? entry.title.trim() : sourceRef);
+            return `
+              <li>
+                <a class="mix-source-link" href="${escapeHtml(sourceUrl || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
+                <span class="${typeClass}">${escapeHtml(sourceType)}</span>
+                ${weightLabel ? `<span class="mix-chip mix-chip-preview">${escapeHtml(weightLabel)}</span>` : ''}
+              </li>
+            `;
+          }).join('')}
+        </ul>
+      `;
+    }
+
+    function renderMixBadugiCollectionNotes() {
+      if (!MIX_BADUGI_COLLECTION_NOTES.length) return '';
+      return `
+        <ul class="mix-stud8-note-list">
+          ${MIX_BADUGI_COLLECTION_NOTES.map(note => `<li>${escapeHtml(note)}</li>`).join('')}
+        </ul>
+      `;
+    }
+
+    function renderMixBadugiVerificationPanel(sourceRefs) {
+      const checkedOn = typeof MIX_BADUGI_VERIFICATION.checked_on === 'string' ? MIX_BADUGI_VERIFICATION.checked_on.trim() : '';
+      const method = typeof MIX_BADUGI_VERIFICATION.method === 'string' ? MIX_BADUGI_VERIFICATION.method.trim() : '';
+      const verifiedSourceRefs = Array.isArray(MIX_BADUGI_VERIFICATION.confirmed_source_refs)
+        ? MIX_BADUGI_VERIFICATION.confirmed_source_refs
+          .filter(sourceRef => typeof sourceRef === 'string' && sourceRef.trim())
+          .map(sourceRef => sourceRef.trim())
+        : [];
+      const detailSourceRefs = Array.from(new Set([...(Array.isArray(sourceRefs) ? sourceRefs : []), ...verifiedSourceRefs]))
+        .filter(sourceRef => !!readMixBadugiSourceEntry(sourceRef));
+      if (!checkedOn && !method && !detailSourceRefs.length && !MIX_BADUGI_COLLECTION_NOTES.length) {
+        return '';
+      }
+      const summaryText = [checkedOn ? `${checkedOn} 確認` : '', method].filter(Boolean).join(' / ');
+      return `
+        <details class="mix-stud8-details">
+          <summary>リンク先 / PDF / 確認メモ</summary>
+          <div class="mix-stud8-details-body">
+            ${summaryText ? `<p class="mix-preview-copy">${escapeHtml(summaryText)}</p>` : ''}
+            ${renderMixBadugiSourceLinks(detailSourceRefs)}
+            ${renderMixBadugiCollectionNotes()}
+          </div>
+        </details>
+      `;
+    }
+
+    function renderMixBadugiEvidenceDetails(section) {
+      const evidenceRows = buildMixBadugiEvidenceRows(section);
+      if ((!section?.sourceNote || !section.sourceNote.trim()) && !evidenceRows.length) {
+        return '';
+      }
+      return `
+        <details class="mix-stud8-details">
+          <summary>公開根拠を見る</summary>
+          <div class="mix-stud8-details-body">
+            ${section?.sourceNote ? `<p class="mix-preview-copy">${escapeHtml(section.sourceNote)}</p>` : ''}
+            ${evidenceRows.length ? renderMixStaticTable(['ソース', '根拠タイプ', '抽出レンジ', '補足'], evidenceRows) : ''}
+          </div>
+        </details>
+      `;
+    }
+
+    function renderMixBadugiSection(section, titleOverride = '') {
+      if (!section || !section.tableRows.length) {
+        return '';
+      }
+      const tableRows = section.tableRows
+        .filter(row => Array.isArray(row) && row.length)
+        .map(row => [row[0] || '', row[1] || ''])
+        .filter(row => row[0] || row[1]);
+      if (!tableRows.length) {
+        return '';
+      }
+      const tableColumns = Array.isArray(section.tableColumns) && section.tableColumns.length >= 2
+        ? [section.tableColumns[0], section.tableColumns[1]]
+        : ['Category', 'Range'];
+      return `
+        <section class="surface-card tight">
+          <h3>${escapeMixText(titleOverride || section.sectionLabel || 'レンジ')}</h3>
+          ${renderMixStaticTable(tableColumns, tableRows)}
+        </section>
+      `;
+    }
+
+    function renderMixBadugiOpenRangePanel() {
+      const selectedPosition = readMixBadugiPosition(mixDisplayState.selectedBadugiPosition);
+      const selectedRange = buildMixBadugiSelectedRangePayload(selectedPosition);
+      const isBigBlind = selectedPosition === 'BB';
+      const openTitle = `${selectedRange.label} ${selectedRange.openSection?.sectionLabel || 'オープンレンジ'}`;
+      const versusTitle = `${selectedRange.label} ${selectedRange.versusSection?.sectionLabel || '継続レンジ'}`;
+      return `
+        <section class="surface-card tight">
+          <h3>Badugi ポジション別レンジ</h3>
+          <div class="mix-selector-field">
+            <span>ポジション</span>
+            ${renderMixPlo8TabButtons(
+              MIX_BADUGI_POSITION_OPTIONS.map(position => [position, MIX_BADUGI_POSITION_LABELS[position] || position]),
+              selectedPosition,
+              'data-mix-badugi-position-tab'
+            )}
+          </div>
+        </section>
+        ${!isBigBlind ? renderMixBadugiSection(selectedRange.openSection, openTitle) : ''}
+        ${renderMixBadugiSection(selectedRange.versusSection, versusTitle)}
+      `;
     }
 
     function readMixStud8SourceEntry(sourceRef) {
@@ -10721,7 +10906,7 @@
       const safePosition = readMixStud8Position(selectedPosition);
       const entry = readMixStud8PositionEntry(safePosition);
       return {
-        label: entry?.label || MIX_STUD8_POSITION_LABELS[safePosition] || safePosition,
+        label: MIX_STUD8_POSITION_LABELS[safePosition] || safePosition,
         positionSummary: typeof entry?.position_summary === 'string' ? entry.position_summary.trim() : '',
         cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
         overview: normalizeMixStud8Overview(entry?.overview),
@@ -10913,8 +11098,7 @@
       const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
       return `
         <section class="surface-card tight">
-          <h3>${escapeHtml(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.publicRangeRead ? `<p class="mix-preview-copy">${escapeHtml(section.publicRangeRead)}</p>` : ''}
+          <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
           ${renderMixStud8RangeGroups(section)}
           ${renderMixStud8ActionBands(section)}
           ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
@@ -10940,8 +11124,6 @@
         </section>
         <section class="surface-card tight">
           <h3>${escapeHtml(selectedRange.label)}</h3>
-          ${selectedRange.positionSummary ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.positionSummary)}</p>` : ''}
-          ${selectedRange.cautionNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.cautionNote)}</p>` : ''}
           ${renderMixStud8SelectedOverview(selectedRange.overview)}
           ${renderMixStud8AtGlance(selectedRange.atGlance)}
         </section>
@@ -10980,7 +11162,7 @@
       const safePosition = readMixRazzPosition(selectedPosition);
       const entry = readMixRazzPositionEntry(safePosition);
       return {
-        label: entry?.label || MIX_RAZZ_POSITION_LABELS[safePosition] || safePosition,
+        label: MIX_RAZZ_POSITION_LABELS[safePosition] || safePosition,
         positionSummary: typeof entry?.position_summary === 'string' ? entry.position_summary.trim() : '',
         cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
         overview: normalizeMixStudHighOverview(entry?.overview),
@@ -11089,22 +11271,12 @@
         return '';
       }
       const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
-      const hasDetailBlocks = section.tableRows.length || section.rangeGroups.length || section.actionBands.length || section.collectedRows.length || (section.sourceNote && section.sourceNote.trim());
       return `
         <section class="surface-card tight">
-          <h3>${escapeHtml(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.publicRangeRead ? `<p class="mix-preview-copy">${escapeHtml(section.publicRangeRead)}</p>` : ''}
-          ${hasDetailBlocks ? `
-            <details class="mix-stud8-details">
-              <summary>具体的なハンド分類を見る</summary>
-              <div class="mix-stud8-details-body">
-                ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
-                ${renderMixStudHighRangeGroups(section)}
-                ${renderMixStudHighActionBands(section)}
-                ${renderMixRazzEvidenceDetails(section)}
-              </div>
-            </details>
-          ` : ''}
+          <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
+          ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
+          ${renderMixStudHighRangeGroups(section)}
+          ${renderMixStudHighActionBands(section)}
         </section>
       `;
     }
@@ -11127,11 +11299,8 @@
         </section>
         <section class="surface-card tight">
           <h3>${escapeHtml(selectedRange.label)}</h3>
-          ${selectedRange.positionSummary ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.positionSummary)}</p>` : ''}
-          ${selectedRange.cautionNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.cautionNote)}</p>` : ''}
           ${renderMixStudHighSelectedOverview(selectedRange.overview)}
           ${renderMixStudHighAtGlance(selectedRange.atGlance)}
-          ${renderMixRazzVerificationPanel(selectedRange.sourceRefs)}
         </section>
         ${renderMixRazzSection(selectedRange.openSection)}
         ${renderMixRazzSection(selectedRange.versusSection)}
@@ -11267,7 +11436,7 @@
       const safePosition = readMixStudHighPosition(selectedPosition);
       const entry = readMixStudHighPositionEntry(safePosition);
       return {
-        label: entry?.label || MIX_STUD_HIGH_POSITION_LABELS[safePosition] || safePosition,
+        label: MIX_STUD_HIGH_POSITION_LABELS[safePosition] || safePosition,
         positionSummary: typeof entry?.position_summary === 'string' ? entry.position_summary.trim() : '',
         cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
         overview: normalizeMixStudHighOverview(entry?.overview),
@@ -11459,12 +11628,10 @@
       const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
       return `
         <section class="surface-card tight">
-          <h3>${escapeHtml(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.publicRangeRead ? `<p class="mix-preview-copy">${escapeHtml(section.publicRangeRead)}</p>` : ''}
+          <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
           ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
           ${renderMixStudHighRangeGroups(section)}
           ${renderMixStudHighActionBands(section)}
-          ${renderMixStudHighEvidenceDetails(section)}
         </section>
       `;
     }
@@ -11487,11 +11654,8 @@
         </section>
         <section class="surface-card tight">
           <h3>${escapeHtml(selectedRange.label)}</h3>
-          ${selectedRange.positionSummary ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.positionSummary)}</p>` : ''}
-          ${selectedRange.cautionNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.cautionNote)}</p>` : ''}
           ${renderMixStudHighSelectedOverview(selectedRange.overview)}
           ${renderMixStudHighAtGlance(selectedRange.atGlance)}
-          ${renderMixStudHighVerificationPanel(selectedRange.sourceRefs)}
         </section>
         ${renderMixStudHighSection(selectedRange.openSection)}
         ${renderMixStudHighSection(selectedRange.versusSection)}
@@ -11505,6 +11669,7 @@
     function renderMixPlo8OpenRangePanel() {
       const selectedPosition = readMixPlo8Position(mixDisplayState.selectedPlo8Position);
       const selectedRange = buildMixPlo8SelectedRangePayload(selectedPosition);
+      const isBigBlind = selectedPosition === 'BB';
       const scope = MIX_PLO8_PUBLIC_RANGE_DATASET.scope && typeof MIX_PLO8_PUBLIC_RANGE_DATASET.scope === 'object'
         ? MIX_PLO8_PUBLIC_RANGE_DATASET.scope
         : {};
@@ -11513,14 +11678,16 @@
         .join(' / ');
       const summaryBands = [
         ['役割', selectedRange.roleLabel],
-        ['Open band', selectedRange.openBand],
-        ['Vs open', selectedRange.versusOpenBand],
+        ...(!isBigBlind ? [['オープン帯', selectedRange.openBand]] : []),
+        ['コール / ディフェンス帯', selectedRange.versusOpenBand],
       ].filter(([, value]) => !!value);
+      const introCopy = isBigBlind
+        ? 'BBはオープンレンジではなく、相手のオープンに対するコール / ディフェンスレンジを表示します。'
+        : 'PLO8 のオープンレンジとコール / ディフェンスレンジを、ポジション別に表示します。';
       return `
         <section class="surface-card tight">
           <h3>PLO8 / O8 ポジション別レンジ</h3>
-          <p class="mix-preview-copy">PLO8 の open と cold-call を position-first の hand range へ分解した surface です。選択 position のレンジだけを、そのまま読める形にしています。</p>
-          ${scopeLabel ? `<p class="mix-preview-copy">${escapeHtml(scopeLabel)}</p>` : ''}
+          <p class="mix-preview-copy">${escapeHtml(introCopy)}</p>
           <div class="mix-selector-field">
             <span>ポジション</span>
             ${renderMixPlo8TabButtons(
@@ -11532,8 +11699,6 @@
         </section>
         <section class="surface-card tight">
           <h3>${escapeHtml(selectedRange.label)}</h3>
-          ${selectedRange.positionSummary ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.positionSummary)}</p>` : ''}
-          ${selectedRange.cautionNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.cautionNote)}</p>` : ''}
           ${summaryBands.length ? `
             <div class="mix-detail-grid">
               ${summaryBands.map(([label, value]) => `
@@ -11547,49 +11712,11 @@
           ${renderMixPlo8SelectedOverview(selectedRange.overview)}
           ${renderMixPlo8AtGlance(selectedRange.atGlance)}
         </section>
-        ${renderMixPlo8Section(selectedRange.openSection)}
+        ${!isBigBlind ? renderMixPlo8Section(selectedRange.openSection) : ''}
         ${renderMixPlo8Section(selectedRange.versusSection)}
       `;
     }
 
-    function renderMixBadugiOpenRangePanel() {
-      const selectedPosition = readMixBadugiPosition(mixDisplayState.selectedBadugiPosition);
-      const selectedRange = buildMixBadugiSelectedRangePayload(selectedPosition);
-      return `
-        <section class="surface-card tight">
-          <h3>Badugi Open Chart</h3>
-          <p class="mix-preview-copy">公開 HTML と PDF を position ごとに集め、CountingOuts の exact chart を土台に Haney / Danzer / Ohel / note / PDF の公開情報を畳んだ Badugi first-in open baseline です。ポジションボタンは、そのポジションのオープンレンジ本体を切り替えるために使います。</p>
-          <div class="mix-selector-field">
-            <span>ポジション</span>
-            ${renderMixPlo8TabButtons(
-              MIX_BADUGI_POSITION_OPTIONS.map(position => [position, MIX_BADUGI_POSITION_LABELS[position] || position]),
-              selectedPosition,
-              'data-mix-badugi-position-tab'
-            )}
-          </div>
-          <p class="mix-preview-copy">First Position / Hijack / Cutoff / Button / Small Blind という shorthanded の公開 open anchor を基準にまとめています。主表は open-hand class ごとの merged baseline を表示し、exact chart とのズレや late-position add は下の補足 1 行へ寄せています。BB は fixed first-in open row が公開されていないため、ボタンからは外しています。</p>
-        </section>
-        <section class="surface-card tight">
-          <h3>${escapeHtml(selectedRange.label)} Open Chart</h3>
-          <div class="mix-detail-grid">
-            <div class="mix-detail-band">
-              <strong>表示中の位置</strong>
-              <span>${escapeHtml(selectedRange.label)}</span>
-            </div>
-            <div class="mix-detail-band">
-              <strong>Open band</strong>
-              <span>${escapeHtml(selectedRange.openBand || 'dynamic')}</span>
-            </div>
-          </div>
-          <p class="mix-preview-copy">${escapeHtml(selectedRange.publicRangeRead || selectedRange.positionRead || 'source-backed public chart')}</p>
-          ${renderMixStaticTable(
-            ['Open-hand class', 'Open hands'],
-            selectedRange.openTableRows
-          )}
-          ${selectedRange.sourceNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.sourceNote)}</p>` : ''}
-        </section>
-      `;
-    }
 
     function readMixBasil826Variant(variant) {
       return MIX_BASIL_826_VARIANT_OPTIONS.includes(variant) ? variant : MIX_BASIL_826_VARIANT_OPTIONS[0];
@@ -11648,14 +11775,14 @@
       const selectedDetailRows = buildMixBasil826DetailRows(selectedRows);
       const selectedPositionLabel = MIX_BASIL_826_POSITION_LABELS[safePosition] || safePosition;
       const selectedPositionTitle = safeView === 'bb_defense_call'
-        ? `BB vs ${selectedPositionLabel} open`
+        ? `BBコール vs ${selectedPositionLabel} オープン`
         : selectedPositionLabel;
       return `
         <section class="surface-card tight">
           <h3>${escapeHtml(`826 ${safeVariant} ${selectedPositionTitle}`)}</h3>
           <div class="mix-selector-grid">
             <label class="mix-selector-field">
-              <span>Variant</span>
+              <span>ゲーム形式</span>
               <select id="mix-826-variant-select" data-mix-826-variant-select="true">
                 ${MIX_BASIL_826_VARIANT_OPTIONS.map(variant => `
                   <option value="${escapeHtml(variant)}"${variant === safeVariant ? ' selected' : ''}>${escapeHtml(variant)}</option>
@@ -11663,7 +11790,7 @@
               </select>
             </label>
             <label class="mix-selector-field">
-              <span>View</span>
+              <span>表示</span>
               <select id="mix-826-view-select" data-mix-826-view-select="true">
                 ${MIX_BASIL_826_VIEW_OPTIONS.map(([value, label]) => `
                   <option value="${escapeHtml(value)}"${value === safeView ? ' selected' : ''}>${escapeHtml(label)}</option>
@@ -11671,11 +11798,11 @@
               </select>
             </label>
             <label class="mix-selector-field">
-              <span>${escapeHtml(safeView === 'bb_defense_call' ? 'Facing open' : 'Position')}</span>
+              <span>${escapeHtml(safeView === 'bb_defense_call' ? '相手のオープン位置' : 'ポジション')}</span>
               <select id="mix-826-position-select" data-mix-826-position-select="true">
                 ${readMixBasil826PositionOptions(safeVariant, safeView).map(position => {
                   const positionLabel = MIX_BASIL_826_POSITION_LABELS[position] || position;
-                  const optionLabel = safeView === 'bb_defense_call' ? `vs ${positionLabel}` : positionLabel;
+                  const optionLabel = safeView === 'bb_defense_call' ? `${positionLabel} オープン` : positionLabel;
                   return `<option value="${escapeHtml(position)}"${position === safePosition ? ' selected' : ''}>${escapeHtml(optionLabel)}</option>`;
                 }).join('')}
               </select>
@@ -11686,11 +11813,10 @@
               [safeView === 'bb_defense_call' ? 'Call hand detail' : 'Open hand detail'],
               selectedDetailRows
             )
-            : '<p class="mix-empty">hand range unavailable</p>'}
+            : '<p class="mix-empty">レンジを表示できません。</p>'}
         </section>
       `;
     }
-
 
     function readMixBasil826SourceIndex() {
       return MIX_BASIL_826_PUBLIC_RANGE_DATASET.source_index
@@ -11791,7 +11917,7 @@
           : safeVariant,
         variantSummary: typeof variantPayload.variant_summary === 'string' ? variantPayload.variant_summary.trim() : '',
         variantWarning: typeof variantPayload.variant_warning === 'string' ? variantPayload.variant_warning.trim() : '',
-        label: entry?.label || MIX_BASIL_826_POSITION_LABELS[safePosition] || safePosition,
+        label: MIX_BASIL_826_POSITION_LABELS[safePosition] || safePosition,
         confidenceLabel: typeof entry?.confidence_label === 'string' ? entry.confidence_label.trim() : '',
         positionSummary: typeof entry?.position_summary === 'string' ? entry.position_summary.trim() : '',
         cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
@@ -11889,8 +12015,7 @@
       const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
       return `
         <section class="surface-card tight">
-          <h3>${escapeHtml(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.publicRangeRead ? `<p class="mix-preview-copy">${escapeHtml(section.publicRangeRead)}</p>` : ''}
+          <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
           ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
           ${renderMixStudHighRangeGroups(section)}
           ${renderMixStudHighActionBands(section)}
@@ -11951,8 +12076,6 @@
           <h3>${escapeHtml(`826 ${selectedRange.variantLabel} ${selectedPositionTitle}`)}</h3>
           ${selectedRange.variantSummary ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.variantSummary)}</p>` : ''}
           ${selectedRange.variantWarning ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.variantWarning)}</p>` : ''}
-          ${selectedRange.positionSummary ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.positionSummary)}</p>` : ''}
-          ${selectedRange.cautionNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.cautionNote)}</p>` : ''}
           ${summaryBands.length ? `
             <div class="mix-detail-grid">
               ${summaryBands.map(([label, value]) => `
@@ -12011,7 +12134,7 @@
       const safePosition = readMix27TdPosition(selectedPosition);
       const entry = readMix27TdPositionEntry(safePosition);
       return {
-        label: entry?.label || MIX_27TD_POSITION_LABELS[safePosition] || safePosition,
+        label: MIX_27TD_POSITION_LABELS[safePosition] || safePosition,
         positionSummary: typeof entry?.position_summary === 'string' ? entry.position_summary.trim() : '',
         cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
         snapshot: normalizeMix27TdSnapshot(entry?.source_snapshot),
@@ -12123,12 +12246,10 @@
       const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
       return `
         <section class="surface-card tight">
-          <h3>${escapeHtml(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.publicRangeRead ? `<p class="mix-preview-copy">${escapeHtml(section.publicRangeRead)}</p>` : ''}
+          <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
           ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
           ${renderMixStudHighRangeGroups(section)}
           ${renderMixStudHighActionBands(section)}
-          ${renderMix27TdEvidenceDetails(section)}
         </section>
       `;
     }
@@ -12148,7 +12269,7 @@
         <div class="mix-detail-grid">
           ${rows.map(([label, value]) => `
             <div class="mix-detail-band">
-              <strong>${escapeHtml(label)}</strong>
+              <strong>${escapeMixText(label)}</strong>
               <span>${escapeHtml(value)}</span>
             </div>
           `).join('')}
@@ -12159,10 +12280,14 @@
     function renderMix27TdRangePanel() {
       const selectedPosition = readMix27TdPosition(mixDisplayState.selected27TdPosition);
       const selectedRange = buildMix27TdSelectedRangePayload(selectedPosition);
+      const isBigBlind = selectedPosition === 'BB';
+      const introCopy = isBigBlind
+        ? 'BBはオープンレンジではなく、相手のオープンに対するコール / ディフェンスレンジを表示します。'
+        : '選んだ席のオープンレンジとコール / ディフェンスレンジを表示します。';
       return `
         <section class="surface-card tight">
           <h3>2-7 Triple Draw ポジション別レンジ</h3>
-          <p class="mix-preview-copy">選んだ席だけを表示し、first-in open と raise-facing continue を position ごとに分けて見ます。compact / detailed の source gap も snapshot で残します。</p>
+          <p class="mix-preview-copy">${escapeHtml(introCopy)}</p>
           <div class="mix-selector-field">
             <span>ポジション</span>
             ${renderMixPlo8TabButtons(
@@ -12174,14 +12299,11 @@
         </section>
         <section class="surface-card tight">
           <h3>${escapeHtml(selectedRange.label)}</h3>
-          ${selectedRange.positionSummary ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.positionSummary)}</p>` : ''}
-          ${selectedRange.cautionNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.cautionNote)}</p>` : ''}
           ${renderMix27TdSnapshot(selectedRange.snapshot)}
           ${renderMixStudHighSelectedOverview(selectedRange.overview)}
           ${renderMixStudHighAtGlance(selectedRange.atGlance)}
-          ${renderMix27TdVerificationPanel(selectedRange.sourceRefs)}
         </section>
-        ${renderMix27TdSection(selectedRange.openSection)}
+        ${!isBigBlind ? renderMix27TdSection(selectedRange.openSection) : ''}
         ${renderMix27TdSection(selectedRange.versusSection)}
       `;
     }
@@ -12217,7 +12339,7 @@
       const safePosition = readMixA5Position(selectedPosition);
       const entry = readMixA5PositionEntry(safePosition);
       return {
-        label: entry?.label || MIX_A5_POSITION_LABELS[safePosition] || safePosition,
+        label: MIX_A5_POSITION_LABELS[safePosition] || safePosition,
         positionSummary: typeof entry?.position_summary === 'string' ? entry.position_summary.trim() : '',
         cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
         overview: normalizeMixStudHighOverview(entry?.overview),
@@ -12328,8 +12450,7 @@
       const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
       return `
         <section class="surface-card tight">
-          <h3>${escapeHtml(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.publicRangeRead ? `<p class="mix-preview-copy">${escapeHtml(section.publicRangeRead)}</p>` : ''}
+          <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
           ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
           ${renderMixStudHighRangeGroups(section)}
           ${renderMixStudHighActionBands(section)}
@@ -12342,12 +12463,12 @@
       const selectedRange = buildMixA5SelectedRangePayload(selectedPosition);
       const isBbCallSeat = selectedPosition === 'BB';
       const summaryBands = [
-        !isBbCallSeat ? ['Open anchor', selectedRange.openSection.anchorProfile] : null,
-        [isBbCallSeat ? 'BB call anchor' : 'Vs open anchor', selectedRange.versusSection.anchorProfile],
+        !isBbCallSeat ? ['オープン基準', selectedRange.openSection.anchorProfile] : null,
+        [isBbCallSeat ? 'BBコール基準' : 'コール / ディフェンス基準', selectedRange.versusSection.anchorProfile],
       ].filter(item => Array.isArray(item) && item[1]);
       const introCopy = isBbCallSeat
-        ? 'BB だけは first-in open を出さず、facing open の call range を前面に置いた A-5 pre-draw baseline として表示します。'
-        : 'position ごとの first-in open と raise-facing continue に分解した A-5 pre-draw baseline です。文章の羅列ではなく、その席で残す hand class と消える hand class が読める形にしています。';
+        ? 'BBはオープンレンジではなく、相手のオープンに対するコール / ディフェンスレンジを表示します。'
+        : 'A-5 のオープンレンジとコール / ディフェンスレンジを、ポジション別に表示します。';
       return `
         <section class="surface-card tight">
           <h3>A-5 Triple Draw ポジション別レンジ</h3>
@@ -12363,8 +12484,6 @@
         </section>
         <section class="surface-card tight">
           <h3>${escapeHtml(selectedRange.label)}</h3>
-          ${selectedRange.positionSummary ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.positionSummary)}</p>` : ''}
-          ${selectedRange.cautionNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.cautionNote)}</p>` : ''}
           ${summaryBands.length ? `
             <div class="mix-detail-grid">
               ${summaryBands.map(([label, value]) => `
@@ -12385,7 +12504,7 @@
 
 
     function renderMixSelectedGamePanel(selectedGame, selectedFamily) {
-      if (!selectedGame) return '<p class="mix-empty">game を選ぶと表示します。</p>';
+      if (!selectedGame) return '<p class="mix-empty">ゲームを選ぶと表示します。</p>';
       if (selectedGame.gameId === 'plo_high') {
         return renderMixPloOpenRangePanel(selectedFamily);
       }
@@ -12418,7 +12537,7 @@
 
     function renderMixExactRowsTable(payload) {
       if (!payload || !Array.isArray(payload.rows) || !payload.rows.length) {
-        return '<p class="mix-empty">source rows unavailable</p>';
+        return '<p class="mix-empty">ハンド行を表示できません。</p>';
       }
       if (payload.rowMode === 'chart_value') {
         return `
@@ -12426,17 +12545,17 @@
             <table class="mix-range-table">
               <thead>
                 <tr>
-                  <th>Hand Type</th>
-                  <th>State</th>
-                  <th>Chart Value</th>
+                  <th>ハンド分類</th>
+                  <th>状態</th>
+                  <th>チャート値</th>
                 </tr>
               </thead>
               <tbody>
                 ${payload.rows.map(row => `
                   <tr>
                     <td class="mix-code-cell">${escapeHtml(row.handToken || '')}</td>
-                    <td>${escapeHtml(row.inclusionState || '')}</td>
-                    <td>${escapeHtml(row.sourceValueText || '')}</td>
+                    <td>${escapeMixText(row.inclusionState || '')}</td>
+                    <td>${escapeMixText(row.sourceValueText || '')}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -12449,8 +12568,8 @@
           <table class="mix-range-table">
             <thead>
               <tr>
-                <th>Hand</th>
-                <th>Freq</th>
+                <th>ハンド</th>
+                <th>頻度</th>
                 <th>EV (msb)</th>
               </tr>
             </thead>
@@ -12473,16 +12592,16 @@
       if (!exactState || exactState.status === 'loading') {
         return `
           <section class="surface-card tight">
-            <h3>Exact preflop spot rows</h3>
-            <p class="mix-preview-copy">selected preflop spot の full source rows を読込中です。</p>
+            <h3>元データのハンド行</h3>
+            <p class="mix-preview-copy">選択中スポットの元データ行を読み込み中です。</p>
           </section>
         `;
       }
       if (exactState.status === 'error' || !exactState.payload) {
         return `
           <section class="surface-card tight">
-            <h3>Exact preflop spot rows</h3>
-            <p class="mix-preview-copy">full source rows を読み込めませんでした。reason: ${escapeHtml(exactState?.errorText || 'unknown')}</p>
+            <h3>元データのハンド行</h3>
+            <p class="mix-preview-copy">元データ行を読み込めませんでした。理由: ${escapeHtml(exactState?.errorText || '不明')}</p>
             ${renderMixArtifactList([catalogEntry.bundleArtifact, catalogEntry.sourcePackPath].filter(Boolean))}
           </section>
         `;
@@ -12492,15 +12611,15 @@
       const nextDisabled = payload.page >= payload.pageCount ? ' disabled' : '';
       return `
         <section class="surface-card tight">
-          <h3>Exact preflop spot rows</h3>
+          <h3>元データのハンド行</h3>
           <p class="mix-preview-copy">${escapeHtml(formatMixSelectedSpotSummary(selectedFamily.familyId, selectedSpot))}</p>
           <div class="mix-range-toolbar">
             <p class="mix-range-summary">
-              ${escapeHtml(`showing ${payload.rows.length} rows / page ${payload.page} of ${payload.pageCount} / visible rows ${payload.filteredEntries} / source rows ${payload.totalEntries}`)}
+              ${escapeHtml(`このページ ${payload.rows.length}件 / 全${payload.pageCount}ページ中 ${payload.page}ページ / 表示対象 ${payload.filteredEntries}件 / 総行数 ${payload.totalEntries}件`)}
             </p>
             <div class="button-row">
-              <button type="button" class="secondary" data-mix-exact-family-id="${escapeHtml(selectedFamily.familyId)}" data-mix-exact-spot-id="${escapeHtml(selectedSpot.spotId)}" data-mix-exact-page="${escapeHtml(String(payload.page - 1))}"${prevDisabled}>Prev</button>
-              <button type="button" class="secondary" data-mix-exact-family-id="${escapeHtml(selectedFamily.familyId)}" data-mix-exact-spot-id="${escapeHtml(selectedSpot.spotId)}" data-mix-exact-page="${escapeHtml(String(payload.page + 1))}"${nextDisabled}>Next</button>
+              <button type="button" class="secondary" data-mix-exact-family-id="${escapeHtml(selectedFamily.familyId)}" data-mix-exact-spot-id="${escapeHtml(selectedSpot.spotId)}" data-mix-exact-page="${escapeHtml(String(payload.page - 1))}"${prevDisabled}>前へ</button>
+              <button type="button" class="secondary" data-mix-exact-family-id="${escapeHtml(selectedFamily.familyId)}" data-mix-exact-spot-id="${escapeHtml(selectedSpot.spotId)}" data-mix-exact-page="${escapeHtml(String(payload.page + 1))}"${nextDisabled}>次へ</button>
             </div>
           </div>
           ${renderMixExactRowsTable(payload)}
@@ -12513,7 +12632,7 @@
       if (!slot) return;
       slot.innerHTML = `
         <section class="surface-card tight" id="mix-display-surface">
-          <h2>Mix Game Browser</h2>
+          <h2>ミックスゲームレンジ</h2>
           <p class="section-label status-negative">mix runtime error</p>
           <p class="mix-preview-copy">${escapeHtml(message || 'unknown mix runtime error')}</p>
           <p class="mix-preview-copy">Mix UI の処理は止めました。他タブや他の選択は継続できる状態を優先しています。</p>
@@ -12601,13 +12720,13 @@
 
     function renderMixExactSpotCards(selectedSpot) {
       if (!selectedSpot || !Array.isArray(selectedSpot.previewEntries) || !selectedSpot.previewEntries.length) {
-        return '<p class="mix-empty">source preview unavailable</p>';
+        return '<p class="mix-empty">プレビューを表示できません。</p>';
       }
       return `
         <div class="mix-preview-grid">
           ${selectedSpot.previewEntries.map((entry, index) => `
             <article class="mix-preview-card">
-              <p class="mix-preview-eyebrow">Source row sample ${escapeHtml(String(index + 1))}</p>
+              <p class="mix-preview-eyebrow">元データ行サンプル ${escapeHtml(String(index + 1))}</p>
               <p class="mix-preview-body mix-preview-body-code">${escapeHtml(entry)}</p>
             </article>
           `).join('')}
@@ -12733,7 +12852,7 @@
         <section class="surface-card tight">
           <div class="mix-selector-grid">
             <label class="mix-selector-field">
-              <span>Game</span>
+              <span>ゲーム</span>
               <select id="mix-game-select" data-mix-game-select="true">
                 ${gameOptions.map(option => `
                   <option value="${escapeHtml(option.gameId)}"${option.gameId === selectedGameId ? ' selected' : ''}>${escapeHtml(option.label)}</option>
@@ -13288,7 +13407,7 @@
         : (mixDisplayState.fetchInFlight ? 'loading' : (mixDisplayState.hasLoaded ? 'ready' : 'idle'));
       slot.innerHTML = `
         <section class="surface-card tight" id="mix-display-surface">
-          <h2>Mix Game Browser</h2>
+          <h2>ミックスゲームレンジ</h2>
           ${renderMixGameSelector(selectedGame?.gameId || MIX_DEFAULT_GAME_ID)}
           ${renderMixSelectedGamePanel(selectedGame, selectedFamily)}
         </section>
