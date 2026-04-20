@@ -325,11 +325,11 @@ test('served static AOF page under a project-pages-like subpath loads the repo-h
     await expect(page.locator('#pushfold-secondary-position-select')).toBeVisible();
     await expect(page.locator('#pushfold-runtime-note')).toContainText('10max / call / BB ante selected');
     await page.selectOption('#pushfold-stack-select', '11');
-    await page.selectOption('#pushfold-position-select', 'UTG+2');
-    await page.selectOption('#pushfold-secondary-position-select', 'UTG+1');
+    await page.selectOption('#pushfold-position-select', 'UTG+1');
+    await page.selectOption('#pushfold-secondary-position-select', 'UTG+2');
     await page.locator('#pushfold-load-btn').click();
     await expect(page.locator('#pushfold-range-preview')).toHaveAttribute('data-preview-state', 'loaded');
-    await expect(page.locator('#pushfold-range-preview-summary')).toContainText('11bb / jam UTG+2 / caller UTG+1');
+    await expect(page.locator('#pushfold-range-preview-summary')).toContainText('11bb / jam UTG+1 / caller UTG+2');
     await expect(page.locator('#pushfold-range-preview-summary')).toContainText('13 active');
     await expect(page.locator('#pushfold-range-preview-summary')).toContainText('10max / call / BB ante');
     await expect(page.locator('#pushfold-range-grid td.active-range')).toHaveCount(13);
@@ -620,21 +620,21 @@ test('served AOF page supports BB ante shove and call regimes from the official 
   await expect(page.locator('#pushfold-regime-badge')).toHaveText('call');
   await expect(page.locator('#pushfold-runtime-note')).toContainText('10max / call / BB ante selected / preview cleared');
   await expect(page.locator('#pushfold-secondary-position-select')).toBeVisible();
-  await expect(page.locator('#pushfold-secondary-position-select')).toHaveValue('UTG');
+  await expect(page.locator('#pushfold-secondary-position-select')).toHaveValue('UTG+3');
 
   await page.selectOption('#pushfold-stack-select', '11');
-  await page.selectOption('#pushfold-position-select', 'UTG+2');
+  await page.selectOption('#pushfold-position-select', 'UTG+1');
   await expect(page.locator('#pushfold-secondary-position-select')).toBeVisible();
-  await page.selectOption('#pushfold-secondary-position-select', 'UTG+1');
+  await page.selectOption('#pushfold-secondary-position-select', 'UTG+2');
   const callLoadResponsePromise = page.waitForResponse(candidate =>
     candidate.url().startsWith(`${BRIDGE_BASE}/api/stack?`)
     && candidate.url().includes(`regime=${encodeURIComponent(TARGET_CALL_REGIME)}`)
-    && candidate.url().includes('secondaryPosition=UTG%2B1')
+    && candidate.url().includes('secondaryPosition=UTG%2B2')
     && candidate.status() === 200
   );
   await page.locator('#pushfold-load-btn').click();
   const callLoadPayload = await (await callLoadResponsePromise).json();
-  await expect(page.locator('#pushfold-range-preview-summary')).toContainText('11bb / jam UTG+2 / caller UTG+1');
+  await expect(page.locator('#pushfold-range-preview-summary')).toContainText('11bb / jam UTG+1 / caller UTG+2');
   await expect(page.locator('#pushfold-range-preview-summary')).toContainText('13 active');
   await expect(page.locator('#pushfold-range-preview-summary')).toContainText('10max / call / BB ante');
   await expect(page.locator('#pushfold-range-legend')).toContainText('active = call included');
@@ -680,9 +680,9 @@ test('served AOF page supports BB ante shove and call regimes from the official 
   expect(bbCallState.anteBadgeText).toBe('BB ante');
   expect(bbCallState.positionLabelText).toBe('Jam position');
   expect(bbCallState.secondaryPositionLabelText).toBe('Caller position');
-  expect(bbCallState.secondaryPositionOptionLabels).toEqual(expect.arrayContaining(['UTG', 'UTG+1']));
+  expect(bbCallState.secondaryPositionOptionLabels).toEqual(expect.arrayContaining(['UTG+2', 'UTG+3']));
   expect(callLoadPayload.selectedRegime).toBe(TARGET_CALL_REGIME);
-  expect(callLoadPayload.secondaryPosition).toBe('UTG+1');
+  expect(callLoadPayload.secondaryPosition).toBe('UTG+2');
   expect(callLoadPayload.categoryCount).toBe(13);
   expect(callLoadPayload.categories).toEqual(EXPECTED_BB100_CALL_CATEGORIES);
   expect(sortStrings(bbCallState.previewCategoryTexts)).toEqual(sortStrings(EXPECTED_BB100_CALL_CATEGORIES));

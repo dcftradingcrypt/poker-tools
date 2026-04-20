@@ -4182,25 +4182,25 @@
     const MIX_GAME_UI_META = {
       plo_high: {
         label: 'PLO High',
-        cardCopy: 'UTG / HJ / CO / BTN / SB / BB を切り替え、open と versus open を position ごとに分けて読む。',
-        shellSummary: 'PLO High は raw hand dump ではなく、position ごとの hand-family surface と blind-defense structure で見せる。',
+        cardCopy: 'UTG / HJ / CO / BTN / SB / BB を切り替え、open と vs open だけを見る。',
+        shellSummary: 'PLO High は position-first の open / vs open table だけを前に出す。',
         hideSourceProfile: true,
         sourceProfile: '',
-        currentSurface: 'position tabs + open_first_in / versus_open + detailed class table',
-        shows: 'position tab、open_first_in、versus_open、詳細クラス表を表示する。',
-        notShows: 'full solver combo dump や、公開されていない fake exact frequency grid は出さない。',
+        currentSurface: 'position tabs + open bucket table + vs open continue table',
+        shows: 'position tab、open の full bucket table、vs open continue table を表示する。',
+        notShows: 'overview card、Core / Conditional / Fold、source panel は主表示に出さない。',
         highlightCards: [
           {
-            title: 'Position-first surface',
-            body: 'open と versus open を別 section に分け、選んだ seat のレンジだけを front 表示する。',
+            title: 'Open First',
+            body: 'open は position ごとの full open notation を先に出す。',
           },
           {
-            title: 'Source-backed families',
-            body: 'PokerVIP shorthand と Upswing class table を、PLO Genius / PLO Mastermind の frequency band で再分解する。',
+            title: 'Vs Open Only',
+            body: 'vs open は facing spot ごとの 3-bet / cold call table に絞る。',
           },
           {
-            title: 'Blind honesty',
-            body: 'SB は rake-sensitive、BB は defense-only seat として正直に分ける。',
+            title: 'Blind Seats',
+            body: 'SB は first-action mode を併記し、BB は defense-only seat として扱う。',
           },
         ],
         knownLimits: [
@@ -9462,23 +9462,8 @@
         return '<p class="mix-empty">open range unavailable</p>';
       }
       return `
-        <div class="mix-range-table-wrap">
-          <table class="mix-range-table">
-            <thead>
-              <tr>
-                <th>Source notation</th>
-                <th>How to read</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${safeItems.map(item => `
-                <tr>
-                  <td class="mix-code-cell">${escapeHtml(formatMixPloSourceNotation(item))}</td>
-                  <td>${escapeHtml(describeMixPloRule(item))}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+        <div class="mix-stud8-chip-list">
+          ${safeItems.map(item => `<span class="mix-stud8-chip">${escapeHtml(item.trim())}</span>`).join('')}
         </div>
       `;
     }
@@ -9932,144 +9917,85 @@
       };
     }
 
+    function normalizeMixPloRows(rawRows) {
+      return Array.isArray(rawRows)
+        ? rawRows
+          .filter(row => Array.isArray(row) && row.length)
+          .map(row => row.map(cell => typeof cell === 'string' ? cell.trim() : String(cell ?? '')))
+        : [];
+    }
+
+    function normalizeMixPloTokens(rawTokens) {
+      return Array.isArray(rawTokens)
+        ? rawTokens.filter(token => typeof token === 'string' && token.trim()).map(token => token.trim())
+        : [];
+    }
+
     function buildMixPloSelectedRangePayload(selectedPosition) {
       const safePosition = readMixPloPosition(selectedPosition);
       const entry = readMixPloPositionEntry(safePosition);
+      const open = entry?.open && typeof entry.open === 'object' ? entry.open : {};
+      const vsOpen = entry?.vs_open && typeof entry.vs_open === 'object' ? entry.vs_open : {};
       return {
-        label: MIX_PLO_POSITION_LABELS[safePosition] || safePosition,
-        roleLabel: typeof entry?.role_label === 'string' ? entry.role_label.trim() : '',
-        openBand: typeof entry?.open_band === 'string' ? entry.open_band.trim() : '',
-        versusOpenBand: typeof entry?.versus_open_band === 'string' ? entry.versus_open_band.trim() : '',
-        sourceSeat: typeof entry?.source_seat === 'string' ? entry.source_seat.trim() : '',
-        positionSummary: typeof entry?.position_summary === 'string' ? entry.position_summary.trim() : '',
-        cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
-        overview: normalizeMixStudHighOverview(entry?.overview),
-        atGlance: normalizeMixPloAtGlance(entry?.at_a_glance),
-        openSection: normalizeMixStudHighSection(entry?.open_first_in),
-        versusSection: normalizeMixStudHighSection(entry?.versus_open),
-        sourceRefs: readMixPloSourceRefsForPosition(safePosition),
+        label: typeof entry?.label === 'string' && entry.label.trim()
+          ? entry.label.trim()
+          : (MIX_PLO_POSITION_LABELS[safePosition] || safePosition),
+        open: {
+          kind: typeof open.kind === 'string' ? open.kind.trim() : 'none',
+          tokens: normalizeMixPloTokens(open.tokens),
+          columns: Array.isArray(open.columns)
+            ? open.columns.filter(value => typeof value === 'string' && value.trim()).map(value => value.trim())
+            : [],
+          rows: normalizeMixPloRows(open.rows),
+          message: typeof open.message === 'string' ? open.message.trim() : '',
+        },
+        vsOpen: {
+          columns: Array.isArray(vsOpen.columns)
+            ? vsOpen.columns.filter(value => typeof value === 'string' && value.trim()).map(value => value.trim())
+            : ['Facing open', '3-bet', 'Cold call'],
+          rows: normalizeMixPloRows(vsOpen.rows),
+        },
       };
     }
 
-    function buildMixPloEvidenceRows(section) {
-      if (!section || !Array.isArray(section.collectedRows)) return [];
-      return section.collectedRows.map(row => {
-        const sourceEntry = readMixPloSourceEntry(row.sourceRef) || {};
-        return [
-          sourceEntry.short_label || row.sourceRef,
-          humanizeMixSelectorValue(row.evidenceType || 'note'),
-          row.rangeRead || '',
-          row.notes || '',
-        ];
-      });
-    }
-
-    function renderMixPloSourceLinks(sourceRefs) {
-      if (!Array.isArray(sourceRefs) || !sourceRefs.length) {
-        return '<p class="mix-empty">参照リンクはまだありません</p>';
+    function renderMixPloOpenSection(selectedRange) {
+      const open = selectedRange?.open || {};
+      if (open.kind === 'token_list' && Array.isArray(open.tokens) && open.tokens.length) {
+        return `
+          <section class="surface-card tight">
+            <h3>Open</h3>
+            ${renderMixPloRuleList(open.tokens)}
+          </section>
+        `;
       }
-      return `
-        <ul class="mix-link-list">
-          ${sourceRefs.map(sourceRef => {
-            const entry = readMixPloSourceEntry(sourceRef) || {};
-            const sourceUrl = typeof entry.url === 'string' && entry.url.trim() ? entry.url.trim() : '';
-            const sourceType = typeof entry.source_type === 'string' && entry.source_type.trim() ? entry.source_type.trim() : 'HTML';
-            const weightLabel = typeof entry.weight === 'string' && entry.weight.trim()
-              ? humanizeMixSelectorValue(entry.weight)
-              : '';
-            const typeClass = sourceType === 'PDF' ? 'mix-chip mix-chip-pdf' : 'mix-chip mix-chip-html';
-            const title = typeof entry.short_label === 'string' && entry.short_label.trim()
-              ? entry.short_label.trim()
-              : ((typeof entry.title === 'string' && entry.title.trim()) ? entry.title.trim() : sourceRef);
-            return `
-              <li>
-                <a class="mix-source-link" href="${escapeHtml(sourceUrl || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
-                <span class="${typeClass}">${escapeHtml(sourceType)}</span>
-                ${weightLabel ? `<span class="mix-chip mix-chip-preview">${escapeHtml(weightLabel)}</span>` : ''}
-              </li>
-            `;
-          }).join('')}
-        </ul>
-      `;
-    }
-
-    function renderMixPloCollectionNotes() {
-      if (!MIX_PLO_COLLECTION_NOTES.length) return '';
-      return `
-        <ul class="mix-stud8-note-list">
-          ${MIX_PLO_COLLECTION_NOTES.map(note => `<li>${escapeHtml(note)}</li>`).join('')}
-        </ul>
-      `;
-    }
-
-    function renderMixPloVerificationPanel() {
+      if (open.kind === 'mode_table' && Array.isArray(open.rows) && open.rows.length) {
+        return `
+          <section class="surface-card tight">
+            <h3>Open</h3>
+            ${renderMixStaticTable(open.columns.length ? open.columns : ['Mode', 'Public info'], open.rows)}
+          </section>
+        `;
+      }
+      if (open.kind === 'none' && open.message) {
+        return `
+          <section class="surface-card tight">
+            <h3>Open</h3>
+            <p class="mix-preview-copy">${escapeHtml(open.message)}</p>
+          </section>
+        `;
+      }
       return '';
     }
 
-    function renderMixPloAtGlance(atGlance) {
-      if (!atGlance || (!atGlance.openCore && !atGlance.positionAdd && !atGlance.vsOpen && !atGlance.snapFold)) {
+    function renderMixPloVsOpenSection(selectedRange) {
+      const vsOpen = selectedRange?.vsOpen || {};
+      if (!Array.isArray(vsOpen.rows) || !vsOpen.rows.length) {
         return '';
       }
-      const cards = [
-        ['主に開く帯', atGlance.openCore],
-        ['この位置で追加', atGlance.positionAdd],
-        ['オープンへの対応', atGlance.vsOpen],
-        ['すぐ切る帯', atGlance.snapFold],
-      ].filter(([, value]) => !!value);
-      if (!cards.length) return '';
-      return `
-        <div class="mix-stud8-overview-grid">
-          ${cards.map(([label, value]) => `
-            <article class="mix-stud8-overview-card">
-              <strong>${escapeHtml(label)}</strong>
-              <p>${escapeHtml(value)}</p>
-            </article>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    function renderMixPloEvidenceDetails() {
-      return '';
-    }
-
-    function renderMixPloSection(section) {
-      if (!section || (!section.publicRangeRead && !section.rangeGroups.length && !section.actionBands.length && !section.tableRows.length && !section.collectedRows.length)) {
-        return '';
-      }
-      const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
       return `
         <section class="surface-card tight">
-          <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
-          ${renderMixStudHighRangeGroups(section)}
-          ${renderMixStudHighActionBands(section)}
-        </section>
-      `;
-    }
-
-    function renderMixPloUpswingExactPanel(selectedPosition) {
-      if (!['UTG', 'HJ', 'CO', 'BTN', 'SB'].includes(selectedPosition)) return '';
-      return `
-        <section class="surface-card tight">
-          <h3>ハンド分類詳細</h3>
-          <p class="mix-preview-copy">${escapeHtml(`${MIX_PLO_POSITION_LABELS[selectedPosition] || selectedPosition} のペア系とノンペア系を一覧表示します。`)}</p>
-          <div class="mix-shell-frame">
-            <article class="mix-preview-card">
-              <h4>ペア系</h4>
-              ${renderMixStaticTable(
-                ['ペア分類', 'DS', 'SS', 'R', '配られる割合', 'RFI内割合'],
-                readMixPloUpswingPositionRows(selectedPosition, 'pairs')
-              )}
-            </article>
-            <article class="mix-preview-card">
-              <h4>ノンペア系</h4>
-              ${renderMixStaticTable(
-                ['ノンペア分類', 'DS', 'SS', 'R', '配られる割合', 'RFI内割合'],
-                readMixPloUpswingPositionRows(selectedPosition, 'nonPairs')
-              )}
-            </article>
-          </div>
+          <h3>Vs Open</h3>
+          ${renderMixStaticTable(vsOpen.columns, vsOpen.rows)}
         </section>
       `;
     }
@@ -10116,19 +10042,9 @@
       }
       const selectedPosition = readMixPloPosition(mixDisplayState.selectedPloPosition);
       const selectedRange = buildMixPloSelectedRangePayload(selectedPosition);
-      const isBigBlind = selectedPosition === 'BB';
-      const summaryBands = [
-        ['役割', selectedRange.roleLabel],
-        ...(!isBigBlind ? [['オープン帯', selectedRange.openBand]] : []),
-        ['コール / ディフェンス帯', selectedRange.versusOpenBand],
-      ].filter(([, value]) => !!value);
-      const introCopy = isBigBlind
-        ? 'BBはオープンレンジではなく、相手のオープンに対するコール / ディフェンスレンジを表示します。'
-        : '選んだポジションのオープンレンジとコール / ディフェンスレンジを、ハンド分類ベースで表示します。';
       return `
         <section class="surface-card tight">
           <h3>PLO High ポジション別レンジ</h3>
-          <p class="mix-preview-copy">${escapeHtml(introCopy)}</p>
           <div class="mix-selector-grid">
             <label class="mix-selector-field">
               <span>表示</span>
@@ -10150,22 +10066,9 @@
         </section>
         <section class="surface-card tight">
           <h3>${escapeHtml(selectedRange.label)}</h3>
-          ${summaryBands.length ? `
-            <div class="mix-detail-grid">
-              ${summaryBands.map(([label, value]) => `
-                <div class="mix-detail-band">
-                  <strong>${escapeHtml(label)}</strong>
-                  <span>${escapeHtml(value)}</span>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-          ${renderMixStudHighSelectedOverview(selectedRange.overview)}
-          ${renderMixPloAtGlance(selectedRange.atGlance)}
         </section>
-        ${!isBigBlind ? renderMixPloSection(selectedRange.openSection) : ''}
-        ${renderMixPloSection(selectedRange.versusSection)}
-        ${renderMixPloUpswingExactPanel(selectedPosition)}
+        ${renderMixPloOpenSection(selectedRange)}
+        ${renderMixPloVsOpenSection(selectedRange)}
       `;
     }
 
@@ -10305,6 +10208,16 @@
       };
     }
 
+    function normalizeMixPlo8Display(rawDisplay) {
+      const display = rawDisplay && typeof rawDisplay === 'object' ? rawDisplay : {};
+      return {
+        openPct: typeof display.open_pct === 'string' ? display.open_pct.trim() : '',
+        openRange: typeof display.open_range === 'string' ? display.open_range.trim() : '',
+        coldCallPct: typeof display.cold_call_pct === 'string' ? display.cold_call_pct.trim() : '',
+        coldCallRange: typeof display.cold_call_range === 'string' ? display.cold_call_range.trim() : '',
+      };
+    }
+
     function normalizeMixPlo8ActionBands(rawBands) {
       return Array.isArray(rawBands)
         ? rawBands
@@ -10407,6 +10320,7 @@
         cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
         overview: normalizeMixPlo8Overview(entry?.overview),
         atGlance: normalizeMixPlo8AtGlance(entry?.at_a_glance),
+        display: normalizeMixPlo8Display(entry?.display),
         openSection: normalizeMixPlo8Section(entry?.open_section),
         versusSection: normalizeMixPlo8Section(entry?.versus_section),
         sourceRefs: readMixPlo8SourceRefsForPosition(safePosition),
@@ -10491,14 +10405,13 @@
     }
 
     function renderMixPlo8SelectedOverview(overview) {
-      if (!overview || (!overview.seatTrigger && !overview.openIdentity && !overview.addsHere && !overview.stillAvoid)) {
+      if (!overview || (!overview.seatTrigger && !overview.openIdentity && !overview.addsHere)) {
         return '';
       }
       const cards = [
         ['この位置の前提', overview.seatTrigger],
         ['オープンの軸', overview.openIdentity],
         ['ここで追加するもの', overview.addsHere],
-        ['まだ避けるもの', overview.stillAvoid],
       ].filter(([, value]) => !!value);
       if (!cards.length) return '';
       return `
@@ -10514,14 +10427,13 @@
     }
 
     function renderMixPlo8AtGlance(atGlance) {
-      if (!atGlance || (!atGlance.openCore && !atGlance.positionAdd && !atGlance.vsOpen && !atGlance.snapFold)) {
+      if (!atGlance || (!atGlance.openCore && !atGlance.positionAdd && !atGlance.vsOpen)) {
         return '';
       }
       const cards = [
         ['主に開く手', atGlance.openCore],
         ['この位置で追加', atGlance.positionAdd],
         ['open に対して残す手', atGlance.vsOpen],
-        ['すぐ落とす手', atGlance.snapFold],
       ].filter(([, value]) => !!value);
       if (!cards.length) return '';
       return `
@@ -10536,8 +10448,273 @@
       `;
     }
 
+    function isMixPlo8FoldRow(row) {
+      const label = Array.isArray(row) && typeof row[0] === 'string' ? row[0].trim() : '';
+      return /fold|見送り/iu.test(label);
+    }
+
+    function readMixPlo8RangeValueFromRow(row) {
+      return Array.isArray(row) && typeof row[1] === 'string'
+        ? row[1].trim()
+        : '';
+    }
+
+    function readMixPlo8PlayableTableRows(section) {
+      return Array.isArray(section?.tableRows)
+        ? section.tableRows.filter(row => !isMixPlo8FoldRow(row))
+        : [];
+    }
+
+    function readMixPlo8PlayableRangeGroups(section) {
+      return Array.isArray(section?.rangeGroups)
+        ? section.rangeGroups.filter(group => group?.tone !== 'fold')
+        : [];
+    }
+
+    function readMixPlo8PlayableActionBands(section) {
+      return Array.isArray(section?.actionBands)
+        ? section.actionBands.filter(band => band?.tone !== 'fold')
+        : [];
+    }
+
+    function splitMixPlo8RangeTokens(rangeText) {
+      return typeof rangeText === 'string' && rangeText.trim()
+        ? rangeText
+          .split(/\s\+\s|,\s*/u)
+          .map(token => token.trim())
+          .filter(Boolean)
+        : [];
+    }
+
+    function readMixPlo8SectionRangeTokens(section) {
+      const seen = new Set();
+      const tokens = [];
+      const pushToken = (token) => {
+        const normalized = token.replace(/\s+/gu, ' ').trim().toLowerCase();
+        if (!normalized || normalized === 'n/a' || seen.has(normalized)) return;
+        seen.add(normalized);
+        tokens.push(token.replace(/\s+/gu, ' ').trim());
+      };
+
+      const tableRows = readMixPlo8PlayableTableRows(section);
+      tableRows.forEach(row => {
+        splitMixPlo8RangeTokens(readMixPlo8RangeValueFromRow(row)).forEach(pushToken);
+      });
+
+      if (tokens.length) return tokens;
+
+      readMixPlo8PlayableRangeGroups(section).forEach(group => {
+        (Array.isArray(group?.items) ? group.items : []).forEach(item => {
+          splitMixPlo8RangeTokens(item).forEach(pushToken);
+        });
+      });
+
+      return tokens;
+    }
+
+    function formatMixPlo8SectionRangeText(section) {
+      const tokens = readMixPlo8SectionRangeTokens(section);
+      if (!tokens.length) return '';
+      const [head, ...tail] = tokens;
+      if (tail.length && /\bcore\b/iu.test(head)) {
+        return `${head} + ${tail.join(', ')}`;
+      }
+      return tokens.join(', ');
+    }
+
+    function readMixPlo8SectionHeading(section, options = {}) {
+      const rawLabel = typeof section?.sectionLabel === 'string' ? section.sectionLabel.trim() : '';
+      if (/^open\b/iu.test(rawLabel)) return 'オープンレンジ';
+      if (/^cold call\b/iu.test(rawLabel)) {
+        return options.isBigBlind ? 'コール / ディフェンスレンジ' : 'コールドコールレンジ';
+      }
+      return rawLabel || 'レンジ';
+    }
+
+    function renderMixPlo8CompactSection(section, options = {}) {
+      const rangeText = formatMixPlo8SectionRangeText(section);
+      if (!rangeText) return '';
+      return `
+        <section class="surface-card tight">
+          <h3>${escapeHtml(readMixPlo8SectionHeading(section, options))}</h3>
+          <p class="mix-preview-body mix-preview-body-code">${escapeHtml(rangeText)}</p>
+        </section>
+      `;
+    }
+
+    function renderMixPlo8DirectRange(title, rangeText) {
+      const safeRangeText = typeof rangeText === 'string' ? rangeText.trim() : '';
+      if (!safeRangeText) return '';
+      return `
+        <section class="surface-card tight">
+          <h3>${escapeHtml(title)}</h3>
+          <p class="mix-preview-body mix-preview-body-code">${escapeHtml(safeRangeText)}</p>
+        </section>
+      `;
+    }
+
+
+    function readMixPlo8OpenChartSeat(position) {
+      const seatMap = {
+        UTG: 'LJ',
+        MP: 'HJ',
+        CO: 'CO',
+        BTN: 'BU',
+      };
+      return seatMap[position] || '';
+    }
+
+    function combineMixPlo8OpenChartValues(values, order = []) {
+      const safeValues = Array.isArray(values) ? values.map(value => String(value ?? '').trim()).filter(Boolean) : [];
+      const orderedValues = Array.isArray(order) && order.length
+        ? order.map(index => safeValues[index]).filter(Boolean)
+        : safeValues;
+      if (orderedValues.some(value => value === 'ALL')) return 'ALL';
+      const seen = new Set();
+      const tokens = [];
+      orderedValues.forEach(value => {
+        value.split(',').map(token => token.trim()).filter(Boolean).forEach(token => {
+          if (seen.has(token)) return;
+          seen.add(token);
+          tokens.push(token);
+        });
+      });
+      return tokens.join(', ');
+    }
+
+    function collapseMixPlo8OpenChartRuns(rows) {
+      const safeRows = Array.isArray(rows) ? rows : [];
+      const collapsedRows = [];
+      safeRows.forEach(row => {
+        if (!Array.isArray(row) || row.length < 3) return;
+        const family = String(row[0] ?? '').trim();
+        const slice = String(row[1] ?? '').trim();
+        const value = String(row[2] ?? '').trim();
+        if (!family || !slice || !value) return;
+        const previousRow = collapsedRows[collapsedRows.length - 1];
+        if (previousRow && previousRow[0] === family && previousRow[2] === value) {
+          previousRow[1] = `${previousRow[1]} / ${slice}`;
+          return;
+        }
+        collapsedRows.push([family, slice, value]);
+      });
+      return collapsedRows;
+    }
+
+    function summarizeMixPlo8OpenChartRows(rows) {
+      const safeRows = Array.isArray(rows) ? rows : [];
+      const familyMergeConfig = {
+        'A-2': {
+          fullPairRule: {
+            slices: ['A2PP w/ Suited A or DS', 'A2 99+', 'A2 Small Pair', 'A22X', 'A2(2X)'],
+            mergedSlice: 'A2 22+',
+          },
+          sidePairRule: {
+            slices: ['A2 99+', 'A2 Small Pair'],
+            sameValueSlice: 'A2 33+',
+            combinedSlice: 'A2 side pairs w/o suited A / DS',
+          },
+        },
+        'A-3': {
+          fullPairRule: {
+            slices: ['A3PP w/ Suited A or DS', 'A3 99+', 'A3 Small Pair', 'A33X', 'A3(3X)'],
+            mergedSlice: 'A3 33+',
+          },
+          sidePairRule: {
+            slices: ['A3 99+', 'A3 Small Pair'],
+            sameValueSlice: 'A3 44+',
+            combinedSlice: 'A3 side pairs w/o suited A / DS',
+          },
+        },
+        'A-4': {
+          fullPairRule: {
+            slices: ['A4PP w/ Suited A or DS', 'A4 99+', 'A4 Small Pair', 'A44X', 'A4(4X)'],
+            mergedSlice: 'A4 44+',
+          },
+          sidePairRule: {
+            slices: ['A4 99+', 'A4 Small Pair'],
+            sameValueSlice: 'A4 55+',
+            combinedSlice: 'A4 side pairs w/o suited A / DS',
+          },
+        },
+        'A-5': {
+          fullPairRule: {
+            slices: ['A5PP w/ Suited Ace or DS', 'A5 99+', 'A5 Small Pair', 'A55X', 'A5(5X)'],
+            mergedSlice: 'A5 55+',
+          },
+          sidePairRule: {
+            slices: ['A5 99+', 'A5 Small Pair'],
+            sameValueSlice: 'A5 66+',
+            combinedSlice: 'A5 side pairs w/o suited A / DS',
+          },
+        },
+      };
+      const summarizedRows = [];
+      for (let index = 0; index < safeRows.length; index += 1) {
+        const currentRow = Array.isArray(safeRows[index]) ? safeRows[index] : null;
+        if (!currentRow) continue;
+        const currentFamily = String(currentRow[0] ?? '').trim();
+        const currentSlice = String(currentRow[1] ?? '').trim();
+        const currentValue = String(currentRow[2] ?? '').trim();
+        const familyConfig = familyMergeConfig[currentFamily] || null;
+        if (familyConfig?.fullPairRule) {
+          const rule = familyConfig.fullPairRule;
+          const segment = safeRows.slice(index, index + rule.slices.length);
+          const sameFamily = segment.length === rule.slices.length && segment.every(row => Array.isArray(row) && String(row[0] ?? '').trim() === currentFamily);
+          const sameSlices = sameFamily && segment.every((row, offset) => String(row[1] ?? '').trim() === rule.slices[offset]);
+          const values = sameSlices ? segment.map(row => String(row[2] ?? '').trim()) : [];
+          const sameValue = values[0] && values.every(value => value === values[0]);
+          if (sameSlices && sameValue) {
+            summarizedRows.push([currentFamily, rule.mergedSlice, values[0]]);
+            index += rule.slices.length - 1;
+            continue;
+          }
+        }
+        if (familyConfig?.sidePairRule) {
+          const rule = familyConfig.sidePairRule;
+          const segment = safeRows.slice(index, index + rule.slices.length);
+          const sameFamily = segment.length === rule.slices.length && segment.every(row => Array.isArray(row) && String(row[0] ?? '').trim() === currentFamily);
+          const sameSlices = sameFamily && segment.every((row, offset) => String(row[1] ?? '').trim() === rule.slices[offset]);
+          if (sameSlices) {
+            const values = segment.map(row => String(row[2] ?? '').trim());
+            const sameValue = values[0] && values.every(value => value === values[0]);
+            const mergedSlice = sameValue ? rule.sameValueSlice : rule.combinedSlice;
+            const mergedValue = sameValue ? values[0] : combineMixPlo8OpenChartValues(values, [1, 0]);
+            summarizedRows.push([currentFamily, mergedSlice, mergedValue]);
+            index += rule.slices.length - 1;
+            continue;
+          }
+        }
+        summarizedRows.push([currentFamily, currentSlice, currentValue]);
+      }
+      return collapseMixPlo8OpenChartRuns(summarizedRows);
+    }
+
+    function readMixPlo8OpenChartRows(position) {
+      const chartSeat = readMixPlo8OpenChartSeat(position);
+      if (!chartSeat) return [];
+      const rawRows = Object.entries(MIX_O8_OPEN_CHART).flatMap(([family, familySeats]) => {
+        const familyRows = familySeats && Array.isArray(familySeats[chartSeat]) ? familySeats[chartSeat] : [];
+        return familyRows
+          .filter(row => Array.isArray(row) && row.length >= 2)
+          .map(row => [family, String(row[0] ?? '').trim(), String(row[1] ?? '').trim()]);
+      });
+      return summarizeMixPlo8OpenChartRows(rawRows);
+    }
+
+    function renderMixPlo8OpenChartTable(position, label) {
+      const rows = readMixPlo8OpenChartRows(position);
+      if (!rows.length) return '';
+      return `
+        <section class="surface-card tight">
+          <h3>${escapeHtml(label)} オープンレンジ</h3>
+          ${renderMixStaticTable(['ファミリー', 'スライス', 'オープンハンド'], rows)}
+        </section>
+      `;
+    }
+
     function renderMixPlo8RangeGroups(section) {
-      const rangeGroups = Array.isArray(section?.rangeGroups) ? section.rangeGroups : [];
+      const rangeGroups = readMixPlo8PlayableRangeGroups(section);
       if (!rangeGroups.length) return '';
       return `
         <div class="mix-stud8-chip-grid">
@@ -10554,7 +10731,7 @@
     }
 
     function renderMixPlo8ActionBands(section) {
-      const actionBands = Array.isArray(section?.actionBands) ? section.actionBands : [];
+      const actionBands = readMixPlo8PlayableActionBands(section);
       if (!actionBands.length) return '';
       return `
         <div class="mix-stud8-band-grid">
@@ -10587,16 +10764,19 @@
     }
 
     function renderMixPlo8Section(section) {
-      if (!section || (!section.publicRangeRead && !section.rangeGroups.length && !section.actionBands.length && !section.tableRows.length && !section.collectedRows.length)) {
+      const playableTableRows = readMixPlo8PlayableTableRows(section);
+      const playableRangeGroups = readMixPlo8PlayableRangeGroups(section);
+      const playableActionBands = readMixPlo8PlayableActionBands(section);
+      if (!section || (!section.publicRangeRead && !playableRangeGroups.length && !playableActionBands.length && !playableTableRows.length)) {
         return '';
       }
       const tableColumns = section.tableColumns.length ? section.tableColumns : ['区分', 'レンジ'];
       return `
         <section class="surface-card tight">
           <h3>${escapeMixText(section.sectionLabel || 'レンジ区分')}</h3>
-          ${section.tableRows.length ? renderMixStaticTable(tableColumns, section.tableRows) : ''}
-          ${renderMixPlo8RangeGroups(section)}
-          ${renderMixPlo8ActionBands(section)}
+          ${playableTableRows.length ? renderMixStaticTable(tableColumns, playableTableRows) : ''}
+          ${playableRangeGroups.length ? renderMixPlo8RangeGroups(section) : ''}
+          ${playableActionBands.length ? renderMixPlo8ActionBands(section) : ''}
         </section>
       `;
     }
@@ -11670,24 +11850,12 @@
       const selectedPosition = readMixPlo8Position(mixDisplayState.selectedPlo8Position);
       const selectedRange = buildMixPlo8SelectedRangePayload(selectedPosition);
       const isBigBlind = selectedPosition === 'BB';
-      const scope = MIX_PLO8_PUBLIC_RANGE_DATASET.scope && typeof MIX_PLO8_PUBLIC_RANGE_DATASET.scope === 'object'
-        ? MIX_PLO8_PUBLIC_RANGE_DATASET.scope
-        : {};
-      const scopeLabel = [scope.table_format, scope.effective_stack, 'open + cold call']
-        .filter(value => typeof value === 'string' && value.trim())
-        .join(' / ');
-      const summaryBands = [
-        ['役割', selectedRange.roleLabel],
-        ...(!isBigBlind ? [['オープン帯', selectedRange.openBand]] : []),
-        ['コール / ディフェンス帯', selectedRange.versusOpenBand],
-      ].filter(([, value]) => !!value);
-      const introCopy = isBigBlind
-        ? 'BBはオープンレンジではなく、相手のオープンに対するコール / ディフェンスレンジを表示します。'
-        : 'PLO8 のオープンレンジとコール / ディフェンスレンジを、ポジション別に表示します。';
+      const openRangePanel = !isBigBlind && selectedPosition !== 'SB'
+        ? renderMixPlo8OpenChartTable(selectedPosition, selectedRange.label) || renderMixPlo8DirectRange(`${selectedRange.label} オープンレンジ`, selectedRange.display.openRange)
+        : (!isBigBlind ? renderMixPlo8DirectRange(`${selectedRange.label} オープンレンジ`, selectedRange.display.openRange) : '');
       return `
         <section class="surface-card tight">
           <h3>PLO8 / O8 ポジション別レンジ</h3>
-          <p class="mix-preview-copy">${escapeHtml(introCopy)}</p>
           <div class="mix-selector-field">
             <span>ポジション</span>
             ${renderMixPlo8TabButtons(
@@ -11697,23 +11865,8 @@
             )}
           </div>
         </section>
-        <section class="surface-card tight">
-          <h3>${escapeHtml(selectedRange.label)}</h3>
-          ${summaryBands.length ? `
-            <div class="mix-detail-grid">
-              ${summaryBands.map(([label, value]) => `
-                <div class="mix-detail-band">
-                  <strong>${escapeHtml(label)}</strong>
-                  <span>${escapeHtml(value)}</span>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-          ${renderMixPlo8SelectedOverview(selectedRange.overview)}
-          ${renderMixPlo8AtGlance(selectedRange.atGlance)}
-        </section>
-        ${!isBigBlind ? renderMixPlo8Section(selectedRange.openSection) : ''}
-        ${renderMixPlo8Section(selectedRange.versusSection)}
+        ${openRangePanel}
+        ${renderMixPlo8DirectRange(`${selectedRange.label} ${isBigBlind ? 'コール / ディフェンスレンジ' : 'コールドコールレンジ'}`, selectedRange.display.coldCallRange)}
       `;
     }
 

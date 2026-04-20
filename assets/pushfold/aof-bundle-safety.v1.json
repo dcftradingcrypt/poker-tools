@@ -1,0 +1,537 @@
+{
+  "assetVersion": "1.0",
+  "familyIdOrLabel": "cc_high / 2-card",
+  "generatedAtUtc": "2026-04-08T21:01:00.326091+00:00",
+  "generatedFrom": {
+    "script": "/mnt/c/repos/popker/scripts/audit_cc_high_2card_bundle_equivalence.py",
+    "bundlePath": "/mnt/c/repos/popker/assets/pushfold/aof-bundle.v1.json",
+    "sourceSafetyManifest": "/mnt/c/repos/popker/out/_codex/cc_high_2card_bundle_safety_manifest.json"
+  },
+  "defaultBundleMembershipSafe": true,
+  "classificationVocabulary": [
+    "exact_verbatim_match",
+    "exact_ordered_membership_match",
+    "membership_equivalent_after_normalization",
+    "materially_lossy",
+    "insufficient_to_prove"
+  ],
+  "summary": {
+    "totalLeafCount": 1795,
+    "safeLeafCount": 1753,
+    "unsafeLeafCount": 42,
+    "exactVerbatimMatchCount": 0,
+    "exactOrderedMembershipMatchCount": 598,
+    "membershipEquivalentAfterNormalizationCount": 6,
+    "materiallyLossyCount": 1191,
+    "insufficientToProveCount": 0,
+    "consumerAuthorityRule": "normalized_pack remains authoritative for exact semantics unless exact-contract-equivalence is proven for a leaf",
+    "bundleMembershipRule": "default safe unless the concrete lookup tuple appears in regimes.*.unsafeLookupKeys"
+  },
+  "regimes": {
+    "antes0": {
+      "variantLabel": "antes0 (base 9max first-in)",
+      "nativeSchema": "ranges[bb][position]",
+      "unsafeLeafCount": 0,
+      "safeLeafCount": 152,
+      "unsafeLookupKeys": {}
+    },
+    "antes10": {
+      "variantLabel": "antes10",
+      "nativeSchema": "ranges[bb][position]",
+      "unsafeLeafCount": 1,
+      "safeLeafCount": 151,
+      "unsafeLookupKeys": {
+        "2|SB": {
+          "lookupKeyTuple": "(stack=2, position=SB)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership."
+        }
+      }
+    },
+    "antes12_5": {
+      "variantLabel": "antes12_5",
+      "nativeSchema": "ranges[bb][position]",
+      "unsafeLeafCount": 1,
+      "safeLeafCount": 151,
+      "unsafeLookupKeys": {
+        "2|SB": {
+          "lookupKeyTuple": "(stack=2, position=SB)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership."
+        }
+      }
+    },
+    "antes20": {
+      "variantLabel": "antes20",
+      "nativeSchema": "ranges[bb][position]",
+      "unsafeLeafCount": 2,
+      "safeLeafCount": 150,
+      "unsafeLookupKeys": {
+        "2|SB": {
+          "lookupKeyTuple": "(stack=2, position=SB)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership."
+        },
+        "3|SB": {
+          "lookupKeyTuple": "(stack=3, position=SB)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership."
+        }
+      }
+    },
+    "tool10max_bb100_openjam": {
+      "variantLabel": "tool10max_bb100_openjam",
+      "nativeSchema": "ranges[bb][position]",
+      "unsafeLeafCount": 4,
+      "safeLeafCount": 194,
+      "unsafeLookupKeys": {
+        "1|SB": {
+          "lookupKeyTuple": "(stack=1, position=SB)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|SB": {
+          "lookupKeyTuple": "(stack=2, position=SB)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "19|UTG+2": {
+          "lookupKeyTuple": "(stack=19, position=UTG+2)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "22|UTG+3": {
+          "lookupKeyTuple": "(stack=22, position=UTG+3)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        }
+      }
+    },
+    "tool10max_bb100_call": {
+      "variantLabel": "tool10max_bb100_call",
+      "nativeSchema": "ranges[bb][jammer][caller]",
+      "unsafeLeafCount": 34,
+      "safeLeafCount": 955,
+      "unsafeLookupKeys": {
+        "1|SB|UTG": {
+          "lookupKeyTuple": "(stack=1, jammer=SB, caller=UTG)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|SB|UTG+1": {
+          "lookupKeyTuple": "(stack=1, jammer=SB, caller=UTG+1)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|SB|UTG+2": {
+          "lookupKeyTuple": "(stack=1, jammer=SB, caller=UTG+2)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|SB|UTG+3": {
+          "lookupKeyTuple": "(stack=1, jammer=SB, caller=UTG+3)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|SB|LJ": {
+          "lookupKeyTuple": "(stack=1, jammer=SB, caller=LJ)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|SB|HJ": {
+          "lookupKeyTuple": "(stack=1, jammer=SB, caller=HJ)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|SB|CO": {
+          "lookupKeyTuple": "(stack=1, jammer=SB, caller=CO)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|SB|BTN": {
+          "lookupKeyTuple": "(stack=1, jammer=SB, caller=BTN)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|BB|UTG": {
+          "lookupKeyTuple": "(stack=1, jammer=BB, caller=UTG)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|BB|UTG+1": {
+          "lookupKeyTuple": "(stack=1, jammer=BB, caller=UTG+1)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|BB|UTG+2": {
+          "lookupKeyTuple": "(stack=1, jammer=BB, caller=UTG+2)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|BB|UTG+3": {
+          "lookupKeyTuple": "(stack=1, jammer=BB, caller=UTG+3)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|BB|LJ": {
+          "lookupKeyTuple": "(stack=1, jammer=BB, caller=LJ)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|BB|HJ": {
+          "lookupKeyTuple": "(stack=1, jammer=BB, caller=HJ)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|BB|CO": {
+          "lookupKeyTuple": "(stack=1, jammer=BB, caller=CO)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "1|BB|BTN": {
+          "lookupKeyTuple": "(stack=1, jammer=BB, caller=BTN)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|BB|UTG": {
+          "lookupKeyTuple": "(stack=2, jammer=BB, caller=UTG)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|BB|UTG+1": {
+          "lookupKeyTuple": "(stack=2, jammer=BB, caller=UTG+1)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|BB|UTG+2": {
+          "lookupKeyTuple": "(stack=2, jammer=BB, caller=UTG+2)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|BB|UTG+3": {
+          "lookupKeyTuple": "(stack=2, jammer=BB, caller=UTG+3)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|BB|LJ": {
+          "lookupKeyTuple": "(stack=2, jammer=BB, caller=LJ)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|BB|HJ": {
+          "lookupKeyTuple": "(stack=2, jammer=BB, caller=HJ)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|BB|CO": {
+          "lookupKeyTuple": "(stack=2, jammer=BB, caller=CO)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|BB|BTN": {
+          "lookupKeyTuple": "(stack=2, jammer=BB, caller=BTN)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "2|BB|SB": {
+          "lookupKeyTuple": "(stack=2, jammer=BB, caller=SB)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "3|BB|UTG": {
+          "lookupKeyTuple": "(stack=3, jammer=BB, caller=UTG)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "3|BB|UTG+1": {
+          "lookupKeyTuple": "(stack=3, jammer=BB, caller=UTG+1)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "3|BB|UTG+2": {
+          "lookupKeyTuple": "(stack=3, jammer=BB, caller=UTG+2)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "3|BB|UTG+3": {
+          "lookupKeyTuple": "(stack=3, jammer=BB, caller=UTG+3)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "3|BB|LJ": {
+          "lookupKeyTuple": "(stack=3, jammer=BB, caller=LJ)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "3|BB|HJ": {
+          "lookupKeyTuple": "(stack=3, jammer=BB, caller=HJ)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "3|BB|CO": {
+          "lookupKeyTuple": "(stack=3, jammer=BB, caller=CO)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "3|BB|BTN": {
+          "lookupKeyTuple": "(stack=3, jammer=BB, caller=BTN)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        },
+        "3|BB|SB": {
+          "lookupKeyTuple": "(stack=3, jammer=BB, caller=SB)",
+          "comparisonClass": "materially_lossy",
+          "bundleMembershipSafe": false,
+          "exactSemanticsAuthority": "normalized_pack",
+          "lossModes": [
+            "dropped_percentage_prefix",
+            "bundle_missing_membership"
+          ],
+          "note": "Bundle is not safe for membership lookup; membership-affecting loss modes: bundle_missing_membership; additional exact-semantic loss modes: dropped_percentage_prefix."
+        }
+      }
+    }
+  }
+}

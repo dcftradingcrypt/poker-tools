@@ -74,7 +74,7 @@
   ],
   "positions": {
     "EP": {
-      "label": "アーリーポジション",
+      "label": "EP",
       "role_label": "first-in anchor seat",
       "open_band": "14.3%基準 / 実戦では13〜14%",
       "versus_open_band": "do not defend marginal early opens",
@@ -93,25 +93,33 @@
         "snap_fold": "all D2 / rough 8-tri / weak unbreakable J-Q-K pat"
       },
       "open_section": {
-        "section_label": "オープンレンジ",
+        "section_label": "Open Range",
         "anchor_profile": "14.3% exact chart / 13-14% practical",
         "public_range_read": "UTG は exact chart をそのまま union 化するより、exact anchor と practical core を分けて読む方がズレません。公開 overlap は tri-first で、弱い pat と D2 はここでは主役になりません。",
         "table_columns": [
-          "区分",
-          "ハンドレンジ"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "基準レンジ",
-            "J以上のバドゥーギー / 崩せるQ・Kのバドゥーギー / 75X以上の3枚"
+            "Pat badugis",
+            "T-high+"
           ],
           [
-            "実戦の中心",
-            "T以上のバドゥーギー / すべての7の3枚 / スムーズな8の3枚"
+            "Borderline pats",
+            "J-high / breakable Q-K"
           ],
           [
-            "基本的に外す手",
-            "すべての2枚ドロー / ラフな8の3枚 / 弱いJ〜Kの完成形"
+            "Tri core",
+            "all 7-tris"
+          ],
+          [
+            "Extra tris",
+            "best smooth 8-tris"
+          ],
+          [
+            "Fold",
+            "all D2 / rough 8-tris / weak pat J-K"
           ]
         ],
         "range_groups": [
@@ -207,29 +215,29 @@
         ]
       },
       "versus_section": {
-        "section_label": "After You Open / Facing Pressure",
+        "section_label": "Continue vs 3-bet",
         "anchor_profile": "continue value-heavy / no marginal defense",
         "public_range_read": "公開ソースは EP open defense の exact matrix を出していません。重なる部分はもっと単純で、non-BB continue は raise-or-fold に寄り、marginal early opens を守りすぎないことです。",
         "table_columns": [
-          "Band",
-          "Hand classes",
-          "How to use"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "Keep going",
-            "Made badugis; premium 7-tri; best smooth 8-tri",
-            "non-BB continue は face-up flat より value-heavy"
+            "Continue pats",
+            "T-high+"
           ],
           [
-            "Borderline only",
-            "Strong pat J with real underside value",
-            "close and lineup dependent"
+            "Continue tris",
+            "premium 7-tris: A23 / A24 / A25 / A34 / 234 / 245 / 345"
           ],
           [
-            "Release",
-            "Chart-edge Q/K, weak J, rough 8-tri, exploit-only D2",
-            "public overlap gives no reason to defend these wide"
+            "Borderline",
+            "J-high / best smooth 8-tris"
+          ],
+          [
+            "Fold",
+            "breakable Q-K / rough 8-tris / all D2"
           ]
         ],
         "range_groups": [
@@ -310,7 +318,7 @@
       ]
     },
     "MP": {
-      "label": "ハイジャック",
+      "label": "HJ",
       "role_label": "second seat / HJ opener",
       "open_band": "18.2%基準 / 最良のA2・A3だけ追加",
       "versus_open_band": "J+ badugi / A36+ tight continue",
@@ -329,25 +337,37 @@
         "snap_fold": "23-A4-24 as auto-open / rough 8-tri / weak pat Q-K"
       },
       "open_section": {
-        "section_label": "オープンレンジ",
+        "section_label": "Open Range",
         "anchor_profile": "18.2% exact chart / best low D2 only",
         "public_range_read": "HJ は exact anchor と practical read のズレが大きい seat です。CountingOuts の explicit row は no-D2 ですが、Haney は very best low D2 を少量だけ足します。ここを全部の 2-high through 5-high に広げると default としては行きすぎます。",
         "table_columns": [
-          "区分",
-          "ハンドレンジ"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "基準レンジ",
-            "Q以上のバドゥーギー / 崩せるKのバドゥーギー / A48以上の3枚"
+            "Pat badugis",
+            "T-high+"
           ],
           [
-            "実戦の中心",
-            "T〜強いJのバドゥーギー / すべての7の3枚 / 減りやすい8の3枚 / 最良のA2・A3"
+            "Extra pats",
+            "most J-high / some breakable K"
           ],
           [
-            "基本的に外す手",
-            "23・A4・24の常用オープン / 5スタート2枚ドロー全般 / 減りにくい8の3枚"
+            "Tri core",
+            "all 7-tris"
+          ],
+          [
+            "Extra tris",
+            "reducible 8-tris"
+          ],
+          [
+            "Best D2",
+            "best A2 / A3"
+          ],
+          [
+            "Fold",
+            "routine 23 / A4 / 24 / most 5-high D2 / rough 8-tris"
           ]
         ],
         "range_groups": [
@@ -441,29 +461,29 @@
         ]
       },
       "versus_section": {
-        "section_label": "Facing an Earlier Open",
+        "section_label": "Vs EP Open",
         "anchor_profile": "J+ badugi / A36+ tight continue floor",
         "public_range_read": "HJ facing EP open is still a tight continue spot with many players left. The overlap across public sources is 3-bet or fold by default, with Danzer allowing only very close calls in tighter full-ring style spots.",
         "table_columns": [
-          "Band",
-          "Hand classes",
-          "How to use"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "Tight 3-bet core",
-            "J+ badugi; A36+",
-            "CountingOuts Part 4 の tight floor"
+            "3-bet pats",
+            "J-high+"
           ],
           [
-            "Close exceptions",
-            "Three low cards below a six in very tight full-ring style spots",
-            "Danzer の call 例外"
+            "3-bet tris",
+            "strong 6-low tris: A23 / A24 / A25 / A34 / A35 / 234 / 245 / 345"
           ],
           [
-            "Default fold",
-            "Any D2 cold-call; rough 8-tri; weak pats",
-            "non-BB cold-calling is face-up and weakい"
+            "Flat exceptions",
+            "a few strong 6-low tris only"
+          ],
+          [
+            "Fold",
+            "all D2 cold-calls / rough 8-tris / weak pats"
           ]
         ],
         "range_groups": [
@@ -549,7 +569,7 @@
       ]
     },
     "CO": {
-      "label": "カットオフ",
+      "label": "CO",
       "role_label": "late-position expansion seat",
       "open_band": "28.3%基準 / A2・A3中心、23・A4・24は条件付き",
       "versus_open_band": "J+ / A36+ core, widen to Q+ / A37+ vs loose opens",
@@ -568,29 +588,37 @@
         "snap_fold": "bad-blocker D2 / rough 9-tri / face-up cold-call D2"
       },
       "open_section": {
-        "section_label": "オープンレンジ",
+        "section_label": "Open Range",
         "anchor_profile": "28.3% exact chart / Q-high+ practical pat default",
         "public_range_read": "CO は exact chart と practical pat row の差を honest に残すべき seat です。exact anchor は all badugi + 8-tri+ + A2/A3 ですが、Haney は weak pat を tighter に読み、23/A4/24 を judgment call に置きます。",
         "table_columns": [
-          "区分",
-          "ハンドレンジ"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "基準レンジ",
-            "すべてのバドゥーギー / 8以下の3枚 / A2・A3"
+            "Pat badugis",
+            "all badugis"
           ],
           [
-            "実戦の中心",
-            "Q以上のバドゥーギーを基本 / 8以下の3枚 / A2・A3"
+            "Practical pat default",
+            "usually Q-high+; weak J-Q-K are lineup dependent"
           ],
           [
-            "条件付きで追加",
-            "23・A4・24。ブロッカーが良く、後ろやブラインドが弱いとき"
+            "Tri core",
+            "all 8-tris"
           ],
           [
-            "基本的に外す手",
-            "ラフな9の3枚 / 34・A5・25の常用 / 6以上の2枚ドロー"
+            "Core D2",
+            "A2 / A3"
+          ],
+          [
+            "Conditional adds",
+            "23 / A4 / 24 with good blockers"
+          ],
+          [
+            "Fold",
+            "routine 34 / A5 / 25 / 6-high+ D2 / rough 9-tris"
           ]
         ],
         "range_groups": [
@@ -684,29 +712,33 @@
         ]
       },
       "versus_section": {
-        "section_label": "Facing an Earlier Open",
+        "section_label": "Vs EP / HJ Open",
         "anchor_profile": "J+ / A36+ core, widen to Q+ / A37+ vs loose opener",
         "public_range_read": "CO is late enough to widen a little versus loose early opens, but public continues are still 3-bet heavy rather than flat heavy. The safe baseline is J+ badugi and A36+, then widen toward Q+ and A37+ only when the opener is loose enough.",
         "table_columns": [
-          "Band",
-          "Hand classes",
-          "How to use"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "Tight continue core",
-            "J+ badugi; A36+",
-            "tight or solid EP-HJ opener"
+            "3-bet pats",
+            "J-high+"
           ],
           [
-            "Loose-opener widen",
-            "Q+ badugi; A37+",
-            "late position versus looser early opens"
+            "3-bet tris",
+            "strong 6-low tris"
           ],
           [
-            "Default fold",
-            "D2 cold-calls; marginal 8-tri; weak pats",
-            "non-BB flat remains poor"
+            "Widen vs loose opens",
+            "Q-high / better 7-tris"
+          ],
+          [
+            "Flat exceptions",
+            "a few very smooth tris"
+          ],
+          [
+            "Fold",
+            "all D2 cold-calls / bottom 8-tris / weak pats"
           ]
         ],
         "range_groups": [
@@ -792,7 +824,7 @@
       ]
     },
     "BTN": {
-      "label": "ボタン",
+      "label": "BTN",
       "role_label": "widest first-in seat",
       "open_band": "38.2%基準 / 9の3枚と良質な2枚ドローまで",
       "versus_open_band": "J+ / A36+ vs tight, Q+ / A37+ vs CO",
@@ -811,29 +843,37 @@
         "snap_fold": "very rough 9 / bad-blocker 34-A5-25 / fake wide D2 union"
       },
       "open_section": {
-        "section_label": "オープンレンジ",
+        "section_label": "Open Range",
         "anchor_profile": "38.2% exact chart / blocker-qualified late D2 fringe",
         "public_range_read": "Button is the only row where any badugi and rough 9-tri are public baseline. The late D2 shell is wide, but it is still not a license to auto-open every 6-high, 7-high, or 8-high two-card class.",
         "table_columns": [
-          "区分",
-          "ハンドレンジ"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "基準レンジ",
-            "すべてのバドゥーギー / 9以下の3枚 / A2・A3・23・A4"
+            "Pat badugis",
+            "all badugis"
           ],
           [
-            "実戦の中心",
-            "すべてのバドゥーギー / ラフな9の3枚 / A2・A3 / 23・A4・24の大半"
+            "Tri core",
+            "all 9-tris"
           ],
           [
-            "条件付きで追加",
-            "34 と A5。良いブロッカー付きのとき"
+            "Core D2",
+            "A2 / A3"
           ],
           [
-            "基本的に外す手",
-            "6〜8スタートの2枚ドロー全般 / かなりラフな9の3枚 / ブロッカーの悪い34・A5・25"
+            "Wide D2",
+            "most 23 / A4 / 24"
+          ],
+          [
+            "Conditional adds",
+            "best 34 / A5 / 25 with strong blockers"
+          ],
+          [
+            "Fold",
+            "generic 6-high to 8-high D2 / very rough 9-tris"
           ]
         ],
         "range_groups": [
@@ -936,29 +976,33 @@
         ]
       },
       "versus_section": {
-        "section_label": "Facing an Open",
+        "section_label": "Vs Open",
         "anchor_profile": "J+ / A36+ vs tight, Q+ / A37+ vs CO",
         "public_range_read": "Button is the cleanest in-position continue seat. The public baseline is still aggressive rather than passive: J+ badugi and A36+ against tight ranges, widening to Q+ badugi and A37+ against CO or loose early opens. D2 cold-calls remain outside the core.",
         "table_columns": [
-          "Band",
-          "Hand classes",
-          "How to use"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "Tight-opener 3-bet",
-            "J+ badugi; A36+",
-            "tight early opener"
+            "Vs EP / HJ 3-bet",
+            "J-high+ / strong 6-low tris"
           ],
           [
-            "CO or loose-opener widen",
-            "Q+ badugi; A37+",
-            "late-vs-late / loose early branches"
+            "Vs CO 3-bet",
+            "Q-high+ / better 7-tris"
           ],
           [
-            "Flat exceptions only",
-            "Very close smooth tri spots",
-            "no default D2 cold-call matrix"
+            "Extra attack vs loose opens",
+            "A2 / A3"
+          ],
+          [
+            "Flat exceptions",
+            "a few very smooth tris"
+          ],
+          [
+            "Fold",
+            "all D2 cold-calls / rough 8-9 bottoms"
           ]
         ],
         "range_groups": [
@@ -1045,7 +1089,7 @@
       ]
     },
     "SB": {
-      "label": "スモールブラインド",
+      "label": "SB",
       "role_label": "blind-war expansion seat",
       "open_band": "可変 / ボタン基準 + 相手次第で追加",
       "versus_open_band": "3-bet-or-fold baseline / smooth wheel D2 flats only",
@@ -1064,25 +1108,37 @@
         "snap_fold": "43 / 42 / rough D2 flats / generic blind junk"
       },
       "open_section": {
-        "section_label": "オープンレンジ",
+        "section_label": "Open Range",
         "anchor_profile": "dynamic / button baseline plus exploit adds",
         "public_range_read": "Small blind first-in is not one fixed chart. The exact public rule is: use the button range versus strong BB, then add 24 / 34 / A5 / 25 / 35 / 45 as the BB weakens or over-folds.",
         "table_columns": [
-          "区分",
-          "ハンドレンジ"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "基本",
-            "強いビッグブラインド相手はボタンのオープンレンジをそのまま使う"
+            "Pat badugis",
+            "all badugis"
           ],
           [
-            "追加する手",
-            "まず 24・34・A5。さらに弱い相手には 25・35・45 まで"
+            "Tri shell",
+            "all 9-tris"
           ],
           [
-            "基本的に外す手",
-            "上の追加リストを超える雑なブラインド戦レンジ"
+            "D2 shell",
+            "A2 / A3 / 23 / A4 / 24"
+          ],
+          [
+            "Add vs weak BB",
+            "34 / A5"
+          ],
+          [
+            "Add more vs very weak BB",
+            "25 / 35 / 45"
+          ],
+          [
+            "Fold",
+            "junk D2 beyond that / very rough tris"
           ]
         ],
         "range_groups": [
@@ -1160,29 +1216,33 @@
         ]
       },
       "versus_section": {
-        "section_label": "Facing an Open / Blind Defense",
+        "section_label": "SB Defense vs Open",
         "anchor_profile": "3-bet-or-fold baseline / smooth wheel flats only vs BTN",
         "public_range_read": "SB is the most context-heavy continue seat. The public overlap is 3-bet or fold except for the smoothest wheel-card two-card draws versus a button steal. Ohel trims the flat-call bucket to only the smoother half of wheel D2, while CountingOuts Part 4 widens the aggressive branch against a very loose button.",
         "table_columns": [
-          "Band",
-          "Hand classes",
-          "How to use"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "Versus EP-HJ-CO open",
-            "Mostly 3-bet or fold; J+ badugi and A36+ as the tight floor",
-            "Danzer close-call exception only"
+            "Vs EP / HJ / CO 3-bet",
+            "J-high+ / strong 6-low tris"
           ],
           [
-            "Versus BTN steal",
-            "Flat only the smoothest wheel D2; 3-bet any badugi, A37+, A2, and A3 versus very loose BTN",
-            "Ohel + CountingOuts Part 4"
+            "Vs EP / HJ / CO flat exceptions",
+            "a few 6-low tris only"
           ],
           [
-            "Default folds",
-            "43 / 42-type rough D2; most face-up cold-calls",
-            "SB flats stay narrow"
+            "Vs BTN calls",
+            "smooth wheel D2: A2 / A3 / 23 / A4 / 24"
+          ],
+          [
+            "Vs BTN 3-bets",
+            "all badugis / strong 7-tris / add A2 / A3 vs very loose BTN"
+          ],
+          [
+            "Fold",
+            "42 / 43 type rough D2 / face-up cold-calls"
           ]
         ],
         "range_groups": [
@@ -1278,7 +1338,7 @@
       ]
     },
     "BB": {
-      "label": "ビッグブラインド",
+      "label": "BB",
       "role_label": "defense-only seat",
       "open_band": "",
       "versus_open_band": "スムーズなホイール2枚 / 一部の5スタート2枚 / 利益の出る3枚",
@@ -1298,25 +1358,33 @@
       },
       "open_section": null,
       "versus_section": {
-        "section_label": "コールレンジ",
+        "section_label": "BB Call / 3-bet",
         "anchor_profile": "widest continue seat / closing action matters",
         "public_range_read": "BB is where public badugi material actually allows flats. Ohel gives the core as smooth wheel D2 plus some two-card fives because BB closes the action. CountingOuts adds specific profitable tri defenses such as 763, 256, and A35-type holdings in the right price and induce spots.",
         "table_columns": [
-          "区分",
-          "ハンドレンジ"
+          "Category",
+          "Range"
         ],
         "table_rows": [
           [
-            "CO・BTNのオープンにコール",
-            "スムーズなホイール2枚ドロー / 一部の5スタート2枚ドロー / 利益の出る3枚ハンド"
+            "Vs CO calls",
+            "A2 / A3 / 23 / A4 / 24 + some 34 / A5 / 25 + profitable 7-tris"
           ],
           [
-            "レイズにコールが付いた場面",
-            "256型の2枚ドローや良い3枚はオッズが付けば残す"
+            "Vs BTN calls",
+            "above + some 5-high D2"
           ],
           [
-            "EPのオープンにコールが付いた場面",
-            "かなり締める。ラフな2枚ドローは外す"
+            "Vs raise + call",
+            "256-type D2 / strong 7-tris / overlay continues"
+          ],
+          [
+            "Vs EP open + call",
+            "tighten to better A2 / A3 / 23 and strong 6-low tris"
+          ],
+          [
+            "3-bets",
+            "badugis / premium 6-low tris / add A2 / A3 vs very loose BTN"
           ]
         ],
         "range_groups": [

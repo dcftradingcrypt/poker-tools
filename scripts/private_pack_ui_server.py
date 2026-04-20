@@ -2,6 +2,7 @@
 import argparse
 import json
 import re
+import zipfile
 from datetime import datetime, timezone
 from functools import lru_cache
 from http import HTTPStatus
@@ -12,9 +13,14 @@ from urllib.parse import parse_qs, urlparse
 
 RANKS = "AKQJT98765432"
 RANK_INDEX = {rank: idx for idx, rank in enumerate(RANKS)}
+POSITION_ORDER = ["UTG", "UTG+1", "UTG+2", "UTG+3", "LJ", "HJ", "CO", "BTN", "SB", "BB"]
+POSITION_ORDER_INDEX = {position: idx for idx, position in enumerate(POSITION_ORDER)}
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PACK_PATH = REPO_ROOT / "out/_private/pushfold_real_data/pack.json"
 DEFAULT_REGIMES_ROOT = REPO_ROOT / "out/_private/pushfold_real_data_regimes"
+DEFAULT_SAFETY_ASSET_PATH = REPO_ROOT / "assets/pushfold/aof-bundle-safety.v1.json"
+DEFAULT_MIX_DISPLAY_INDEX_PATH = REPO_ROOT / "out/_codex/poker_mix_display_index.json"
+DEFAULT_MIX_UI_CATALOG_PATH = REPO_ROOT / "out/_codex/poker_mix_ui_catalog.json"
 VALID_CATEGORIES = set()
 for i, high in enumerate(RANKS):
     VALID_CATEGORIES.add(high + high)
@@ -30,6 +36,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pack", default=str(DEFAULT_PACK_PATH))
     parser.add_argument("--regimes-root", default=str(DEFAULT_REGIMES_ROOT))
     parser.add_argument("--index", default=str(REPO_ROOT / "index.html"))
+    parser.add_argument("--safety-asset", default=str(DEFAULT_SAFETY_ASSET_PATH))
+    parser.add_argument("--mix-display-index", default=str(DEFAULT_MIX_DISPLAY_INDEX_PATH))
+    parser.add_argument("--mix-ui-catalog", default=str(DEFAULT_MIX_UI_CATALOG_PATH))
     parser.add_argument("--export-public-bundle", default="")
     return parser
 
@@ -37,6 +46,170 @@ def build_parser() -> argparse.ArgumentParser:
 @lru_cache(maxsize=None)
 def load_pack(pack_path: str) -> dict:
     return json.loads(Path(pack_path).read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=None)
+def load_runtime_safety_asset(asset_path: str) -> dict:
+    return json.loads(Path(asset_path).read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=None)
+def load_mix_display_index(index_path: str) -> dict:
+    return json.loads(Path(index_path).read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=None)
+def load_mix_ui_catalog(catalog_path: str) -> dict:
+    return json.loads(Path(catalog_path).read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=None)
+def load_mix_ui_family_bundle(bundle_path: str) -> dict:
+    return json.loads(Path(bundle_path).read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=None)
+def load_json_file(path: str) -> dict:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def position_order_index(position: str) -> int:
+    return POSITION_ORDER_INDEX.get(str(position).strip(), len(POSITION_ORDER) + 1)
+
+
+def sort_positions(values) -> list[str]:
+    unique = {str(value).strip() for value in values if str(value).strip()}
+    return sorted(unique, key=lambda value: (position_order_index(value), value))
+
+
+def infer_call_role_orientation_from_pairs(position_pairs) -> str:
+    jammer_first_count = 0
+    caller_first_count = 0
+    for first_position, second_position in position_pairs:
+        first_index = position_order_index(first_position)
+        second_index = position_order_index(second_position)
+        if first_index == second_index:
+            continue
+        if first_index < second_index:
+            jammer_first_count += 1
+        else:
+            caller_first_count += 1
+    return "caller_first" if caller_first_count > jammer_first_count else "jammer_first"
+
+
+def should_invert_call_secondary_positions(secondary_positions_by_position: dict) -> bool:
+    position_pairs = [
+        (position, secondary_position)
+        for position, secondary_positions in secondary_positions_by_position.items()
+        if isinstance(secondary_positions, list)
+        for secondary_position in secondary_positions
+        if str(secondary_position).strip()
+    ]
+    if not position_pairs:
+        return False
+    return infer_call_role_orientation_from_pairs(position_pairs) == "caller_first"
+
+
+def invert_call_secondary_positions_by_position(secondary_positions_by_position: dict) -> dict[str, list[str]]:
+    inverted = {}
+    for caller, jammers in secondary_positions_by_position.items():
+        if not isinstance(jammers, list):
+            continue
+        for jammer in jammers:
+            normalized_jammer = str(jammer).strip()
+            normalized_caller = str(caller).strip()
+            if not normalized_jammer or not normalized_caller:
+                continue
+            inverted.setdefault(normalized_jammer, []).append(normalized_caller)
+    return {
+        position: sort_positions(values)
+        for position, values in inverted.items()
+    }
+
+
+def invert_call_catalog(catalog: dict) -> dict:
+    inverted = {}
+    for bb, raw_positions in catalog.items():
+        if not isinstance(raw_positions, dict):
+            continue
+        inverted_positions = {}
+        for caller, raw_jammers in raw_positions.items():
+            if not isinstance(raw_jammers, dict):
+                continue
+            normalized_caller = str(caller).strip()
+            if not normalized_caller:
+                continue
+            for jammer, categories in raw_jammers.items():
+                normalized_jammer = str(jammer).strip()
+                if not normalized_jammer or not isinstance(categories, list):
+                    continue
+                inverted_positions.setdefault(normalized_jammer, {})[normalized_caller] = list(categories)
+        inverted[bb] = inverted_positions
+    return inverted
+
+
+def should_invert_call_unsafe_lookup_keys(unsafe_lookup_keys: dict) -> bool:
+    position_pairs = []
+    for lookup_key in unsafe_lookup_keys.keys():
+        parts = str(lookup_key).split("|")
+        if len(parts) != 3:
+            continue
+        position_pairs.append((parts[1], parts[2]))
+    if not position_pairs:
+        return False
+    return infer_call_role_orientation_from_pairs(position_pairs) == "caller_first"
+
+
+def invert_call_unsafe_lookup_keys(unsafe_lookup_keys: dict) -> dict:
+    inverted = {}
+    for lookup_key, record in unsafe_lookup_keys.items():
+        parts = str(lookup_key).split("|")
+        if len(parts) != 3:
+            inverted[str(lookup_key)] = record
+            continue
+        bb, caller, jammer = parts
+        next_record = dict(record)
+        next_record["lookupKeyTuple"] = re.sub(
+            r"\(stack=([^,]+),\s*jammer=([^,]+),\s*caller=([^)]+)\)",
+            r"(stack=\1, jammer=\3, caller=\2)",
+            str(record.get("lookupKeyTuple", "")).strip(),
+        )
+        inverted[f"{bb}|{jammer}|{caller}"] = next_record
+    return inverted
+
+
+@lru_cache(maxsize=None)
+def load_rng_rows_from_archive(zip_path: str, source_path_in_archive: str) -> tuple[dict, ...]:
+    archive_path = Path(zip_path)
+    with zipfile.ZipFile(archive_path) as zf:
+        target_name = next(
+            (name for name in zf.namelist() if name.endswith(source_path_in_archive)),
+            "",
+        )
+        if not target_name:
+            raise FileNotFoundError(f"source path not found in archive: {source_path_in_archive}")
+        lines = zf.read(target_name).decode("utf-8", "replace").splitlines()
+    rows = []
+    for hand_token, raw_line in zip(lines[0::2], lines[1::2]):
+        parts = raw_line.split(";", 1)
+        try:
+            frequency = float(parts[0])
+        except ValueError:
+            frequency = 0.0
+        try:
+            ev_value = float(parts[1]) if len(parts) > 1 else 0.0
+        except ValueError:
+            ev_value = 0.0
+        rows.append(
+            {
+                "handToken": hand_token,
+                "frequency": frequency,
+                "evMilliSmallBlind": ev_value,
+                "rawLine": raw_line,
+            }
+        )
+    rows.sort(key=lambda row: (-row["frequency"], -row["evMilliSmallBlind"], row["handToken"]))
+    return tuple(rows)
 
 
 def utc_now_iso() -> str:
@@ -224,6 +397,9 @@ def build_catalog(pack: dict) -> dict:
     stacks = [int(x) for x in pack.get("stacksBb", []) if isinstance(x, (int, float))]
     positions = [str(x) for x in pack.get("positions", []) if isinstance(x, str)]
     ranges = pack.get("ranges", {}) if isinstance(pack, dict) else {}
+    meta = pack.get("meta", {}) if isinstance(pack, dict) else {}
+    assumptions = meta.get("assumptions", {}) if isinstance(meta, dict) else {}
+    range_mode = str(assumptions.get("rangeMode", "")).strip() or "open_jam"
     secondary_positions_by_position = (
         pack.get("secondaryPositionsByPosition", {}) if isinstance(pack.get("secondaryPositionsByPosition", {}), dict) else {}
     )
@@ -242,15 +418,22 @@ def build_catalog(pack: dict) -> dict:
                 for secondary_position, secondary_raw_value in raw_value.items():
                     if isinstance(secondary_raw_value, str):
                         catalog[bb][position][str(secondary_position)] = parse_categories(secondary_raw_value)
+    normalized_secondary_positions = {
+        str(position): [str(value) for value in values if isinstance(value, str)]
+        for position, values in secondary_positions_by_position.items()
+        if isinstance(values, list)
+    }
+    normalized_catalog = catalog
+    normalized_positions = positions
+    if range_mode == "call_vs_jam" and should_invert_call_secondary_positions(normalized_secondary_positions):
+        normalized_secondary_positions = invert_call_secondary_positions_by_position(normalized_secondary_positions)
+        normalized_catalog = invert_call_catalog(catalog)
+        normalized_positions = sort_positions(normalized_secondary_positions.keys())
     return {
         "stacks": stacks,
-        "positions": positions,
-        "secondaryPositionsByPosition": {
-            str(position): [str(value) for value in values if isinstance(value, str)]
-            for position, values in secondary_positions_by_position.items()
-            if isinstance(values, list)
-        },
-        "catalog": catalog,
+        "positions": normalized_positions,
+        "secondaryPositionsByPosition": normalized_secondary_positions,
+        "catalog": normalized_catalog,
     }
 
 
@@ -369,6 +552,227 @@ def build_public_bundle_payload(primary_pack_path: str, regimes_root: str) -> di
     }
 
 
+def build_runtime_safety_state(safety_asset_path: str) -> dict:
+    payload = load_runtime_safety_asset(safety_asset_path)
+    raw_regimes = payload.get("regimes", {}) if isinstance(payload, dict) else {}
+    if not isinstance(raw_regimes, dict):
+        raise RuntimeError(f"invalid runtime safety asset: {safety_asset_path}")
+    normalized_regimes = {}
+    for regime_id, raw_entry in raw_regimes.items():
+        if not isinstance(raw_entry, dict):
+            continue
+        raw_unsafe_lookup_keys = raw_entry.get("unsafeLookupKeys", {})
+        if not isinstance(raw_unsafe_lookup_keys, dict):
+            raw_unsafe_lookup_keys = {}
+        unsafe_lookup_keys = {}
+        for lookup_key, raw_record in raw_unsafe_lookup_keys.items():
+            if not isinstance(raw_record, dict):
+                continue
+            unsafe_lookup_keys[str(lookup_key)] = {
+                "lookupKeyTuple": str(raw_record.get("lookupKeyTuple", "")).strip(),
+                "comparisonClass": str(raw_record.get("comparisonClass", "")).strip() or "materially_lossy",
+                "bundleMembershipSafe": raw_record.get("bundleMembershipSafe") is True,
+                "exactSemanticsAuthority": str(raw_record.get("exactSemanticsAuthority", "")).strip() or "normalized_pack",
+                "lossModes": [str(value).strip() for value in raw_record.get("lossModes", []) if str(value).strip()],
+                "note": str(raw_record.get("note", "")).strip(),
+            }
+        normalized_unsafe_lookup_keys = (
+            invert_call_unsafe_lookup_keys(unsafe_lookup_keys)
+            if "call" in str(regime_id).lower() and should_invert_call_unsafe_lookup_keys(unsafe_lookup_keys)
+            else unsafe_lookup_keys
+        )
+        normalized_regimes[str(regime_id)] = {
+            "variantLabel": str(raw_entry.get("variantLabel", "")).strip() or str(regime_id),
+            "nativeSchema": str(raw_entry.get("nativeSchema", "")).strip(),
+            "unsafeLookupKeys": normalized_unsafe_lookup_keys,
+        }
+    return {
+        "assetPath": str(safety_asset_path),
+        "defaultBundleMembershipSafe": payload.get("defaultBundleMembershipSafe", True) is True,
+        "regimes": normalized_regimes,
+    }
+
+
+def build_mix_display_state(index_path: str) -> dict:
+    payload = load_mix_display_index(index_path)
+    families = payload.get("families", []) if isinstance(payload, dict) else []
+    if not isinstance(families, list):
+        raise RuntimeError(f"invalid mix display index: {index_path}")
+    normalized_payload = dict(payload) if isinstance(payload, dict) else {}
+    normalized_payload["assetPath"] = display_path(Path(index_path))
+    return normalized_payload
+
+
+def display_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(REPO_ROOT)).replace("\\", "/")
+    except ValueError:
+        return str(path)
+
+
+def build_mix_ui_state(catalog_path: str) -> tuple[dict, dict[str, dict]]:
+    payload = load_mix_ui_catalog(catalog_path)
+    families = payload.get("families", []) if isinstance(payload, dict) else []
+    if not isinstance(families, list):
+        raise RuntimeError(f"invalid mix ui catalog: {catalog_path}")
+    normalized_catalog = dict(payload) if isinstance(payload, dict) else {}
+    normalized_catalog["assetPath"] = display_path(Path(catalog_path))
+    bundles: dict[str, dict] = {}
+    for raw_family in families:
+        if not isinstance(raw_family, dict):
+            continue
+        family_id = str(raw_family.get("familyId", "")).strip()
+        bundle_artifact = str(raw_family.get("bundleArtifact", "")).strip()
+        if not family_id or not bundle_artifact:
+            continue
+        bundle_path = Path(bundle_artifact)
+        if not bundle_path.is_absolute():
+            bundle_path = REPO_ROOT / bundle_artifact
+        bundle_payload = load_mix_ui_family_bundle(str(bundle_path))
+        if not isinstance(bundle_payload, dict):
+            raise RuntimeError(f"invalid mix ui family bundle: {bundle_path}")
+        normalized_bundle = dict(bundle_payload)
+        normalized_bundle["assetPath"] = display_path(bundle_path)
+        normalized_bundle["bundleArtifact"] = bundle_artifact
+        bundles[family_id] = normalized_bundle
+    return normalized_catalog, bundles
+
+
+def read_mix_bundle_spot(bundle_payload: dict, spot_id: str) -> dict | None:
+    spots = bundle_payload.get("spots", []) if isinstance(bundle_payload, dict) else []
+    if not isinstance(spots, list):
+        return None
+    for raw_spot in spots:
+        if not isinstance(raw_spot, dict):
+            continue
+        if str(raw_spot.get("spotId", "")).strip() == spot_id:
+            return raw_spot
+    return None
+
+
+def build_mix_exact_spot_payload(
+    mix_ui_bundles: dict[str, dict],
+    *,
+    family_id: str,
+    spot_id: str,
+    page: int,
+    page_size: int,
+    positive_only: bool,
+) -> dict:
+    bundle_payload = mix_ui_bundles.get(family_id)
+    if not isinstance(bundle_payload, dict):
+        raise KeyError("family_unavailable")
+    if str(bundle_payload.get("displayClass", "")).strip() != "grounded_exact_display":
+        raise ValueError("exact_display_unavailable")
+    bundle_artifact = str(bundle_payload.get("bundleArtifact", "")).strip()
+    source_pack_path = str(bundle_payload.get("sourcePackPath", "")).strip()
+    spot_payload = read_mix_bundle_spot(bundle_payload, spot_id)
+    if not isinstance(spot_payload, dict):
+        raise KeyError("spot_unavailable")
+
+    resolved_rows: list[dict] = []
+    row_mode = "preview_only"
+    if family_id == "cc_high / 4-card":
+        if not source_pack_path:
+            raise FileNotFoundError("source_pack_missing")
+        pack_path = REPO_ROOT / source_pack_path
+        manifest_path = pack_path.parent / "manifest.json"
+        manifest_payload = load_json_file(str(manifest_path))
+        retained_basis_path = str(
+            manifest_payload.get("source", {}).get("retainedBasisPath", "")
+        ).strip()
+        if not retained_basis_path:
+            raise FileNotFoundError("retained_basis_missing")
+        archive_path = (pack_path.parent / retained_basis_path).resolve()
+        source_path_in_archive = str(spot_payload.get("sourcePathInArchive", "")).strip()
+        if not source_path_in_archive:
+            raise FileNotFoundError("source_path_in_archive_missing")
+        resolved_rows = [dict(row) for row in load_rng_rows_from_archive(str(archive_path), source_path_in_archive)]
+        row_mode = "frequency_ev"
+    else:
+        pack_path = REPO_ROOT / source_pack_path
+        pack_payload = load_json_file(str(pack_path))
+        candidate_ranges = pack_payload.get("candidateRanges", []) if isinstance(pack_payload, dict) else []
+        exact_range = next(
+            (
+                raw_range
+                for raw_range in candidate_ranges
+                if isinstance(raw_range, dict)
+                and str(raw_range.get("decisionNodeId", "")).strip() == spot_id
+            ),
+            None,
+        )
+        if not isinstance(exact_range, dict):
+            raise KeyError("spot_unavailable_in_pack")
+        for raw_entry in exact_range.get("entries", []):
+            if not isinstance(raw_entry, dict):
+                continue
+            raw_leaf = raw_entry.get("rawLeaf", {}) if isinstance(raw_entry.get("rawLeaf"), dict) else {}
+            resolved_rows.append(
+                {
+                    "handToken": str(raw_entry.get("handToken", "")).strip(),
+                    "inclusionState": str(raw_entry.get("inclusionState", "")).strip(),
+                    "sourceValueText": str(raw_leaf.get("sourceValueText", "")).strip(),
+                }
+            )
+        row_mode = "chart_value"
+
+    total_entries = len(resolved_rows)
+    if positive_only and row_mode == "frequency_ev":
+        filtered_rows = [row for row in resolved_rows if float(row.get("frequency", 0.0)) > 0.0]
+    elif positive_only and row_mode == "chart_value":
+        filtered_rows = [
+            row
+            for row in resolved_rows
+            if str(row.get("inclusionState", "")).strip().lower() not in {"none", "exclude", "excluded"}
+        ]
+    else:
+        filtered_rows = resolved_rows
+    filtered_count = len(filtered_rows)
+    normalized_page_size = max(25, min(500, page_size))
+    normalized_page = max(1, page)
+    page_count = max(1, (filtered_count + normalized_page_size - 1) // normalized_page_size)
+    if normalized_page > page_count:
+        normalized_page = page_count
+    start_index = (normalized_page - 1) * normalized_page_size
+    end_index = start_index + normalized_page_size
+    page_rows = filtered_rows[start_index:end_index]
+    return {
+        "ok": True,
+        "familyId": family_id,
+        "spotId": spot_id,
+        "spotLabel": str(spot_payload.get("spotLabel", "")).strip(),
+        "displayClass": str(bundle_payload.get("displayClass", "")).strip(),
+        "bundleArtifact": bundle_artifact,
+        "sourcePackPath": source_pack_path,
+        "sourcePathInArchive": str(spot_payload.get("sourcePathInArchive", "")).strip(),
+        "rowMode": row_mode,
+        "positiveOnly": positive_only,
+        "totalEntries": total_entries,
+        "filteredEntries": filtered_count,
+        "page": normalized_page,
+        "pageSize": normalized_page_size,
+        "pageCount": page_count,
+        "rows": page_rows,
+    }
+
+
+def build_runtime_safety_lookup_key(bb: int, position: str, secondary_position: str = "") -> str:
+    return f"{bb}|{position}" if not secondary_position else f"{bb}|{position}|{secondary_position}"
+
+
+def read_runtime_unsafe_tuple_record(runtime_safety: dict, regime_id: str, bb: int, position: str, secondary_position: str = "") -> dict | None:
+    regimes = runtime_safety.get("regimes", {}) if isinstance(runtime_safety, dict) else {}
+    regime_entry = regimes.get(regime_id)
+    if not isinstance(regime_entry, dict):
+        return None
+    unsafe_lookup_keys = regime_entry.get("unsafeLookupKeys", {})
+    if not isinstance(unsafe_lookup_keys, dict):
+        return None
+    record = unsafe_lookup_keys.get(build_runtime_safety_lookup_key(bb, position, secondary_position))
+    return record if isinstance(record, dict) else None
+
+
 class PrivatePackUiHandler(BaseHTTPRequestHandler):
     server_version = "PrivatePackUiServer/1.0"
 
@@ -404,6 +808,102 @@ class PrivatePackUiHandler(BaseHTTPRequestHandler):
         if parsed.path == "/api/stack":
             self.serve_stack_payload(query)
             return
+        if parsed.path == "/api/mix-display-index":
+            self.serve_json(self.app["mixDisplayIndex"])
+            return
+        if parsed.path == "/api/mix-ui-catalog":
+            self.serve_json(self.app["mixUiCatalog"])
+            return
+        if parsed.path == "/api/mix-ui-family":
+            requested_family = (query.get("familyId") or [""])[0].strip()
+            available_families = sorted(self.app["mixUiBundles"].keys())
+            if not requested_family:
+                self.serve_json(
+                    {
+                        "ok": False,
+                        "status": "family_missing",
+                        "availableFamilies": available_families,
+                    },
+                    HTTPStatus.BAD_REQUEST,
+                )
+                return
+            payload = self.app["mixUiBundles"].get(requested_family)
+            if not isinstance(payload, dict):
+                self.serve_json(
+                    {
+                        "ok": False,
+                        "status": "family_unavailable",
+                        "requestedFamily": requested_family,
+                        "availableFamilies": available_families,
+                    },
+                    HTTPStatus.NOT_FOUND,
+                )
+                return
+            self.serve_json(payload)
+            return
+        if parsed.path == "/api/mix-exact-spot":
+            requested_family = (query.get("familyId") or [""])[0].strip()
+            requested_spot = (query.get("spotId") or [""])[0].strip()
+            try:
+                page = int((query.get("page") or ["1"])[0])
+            except ValueError:
+                page = 1
+            try:
+                page_size = int((query.get("pageSize") or ["200"])[0])
+            except ValueError:
+                page_size = 200
+            positive_only_raw = (query.get("positiveOnly") or ["1"])[0].strip().lower()
+            positive_only = positive_only_raw not in {"0", "false", "no"}
+            if not requested_family:
+                self.serve_json({"ok": False, "status": "family_missing"}, HTTPStatus.BAD_REQUEST)
+                return
+            if not requested_spot:
+                self.serve_json({"ok": False, "status": "spot_missing"}, HTTPStatus.BAD_REQUEST)
+                return
+            try:
+                payload = build_mix_exact_spot_payload(
+                    self.app["mixUiBundles"],
+                    family_id=requested_family,
+                    spot_id=requested_spot,
+                    page=page,
+                    page_size=page_size,
+                    positive_only=positive_only,
+                )
+            except KeyError as err:
+                self.serve_json(
+                    {
+                        "ok": False,
+                        "status": str(err).strip("'"),
+                        "requestedFamily": requested_family,
+                        "requestedSpot": requested_spot,
+                    },
+                    HTTPStatus.NOT_FOUND,
+                )
+                return
+            except ValueError as err:
+                self.serve_json(
+                    {
+                        "ok": False,
+                        "status": str(err),
+                        "requestedFamily": requested_family,
+                        "requestedSpot": requested_spot,
+                    },
+                    HTTPStatus.BAD_REQUEST,
+                )
+                return
+            except FileNotFoundError as err:
+                self.serve_json(
+                    {
+                        "ok": False,
+                        "status": str(err),
+                        "requestedFamily": requested_family,
+                        "requestedSpot": requested_spot,
+                    },
+                    HTTPStatus.NOT_FOUND,
+                )
+                return
+            self.serve_json(payload)
+            return
         self.send_error(HTTPStatus.NOT_FOUND)
 
     def serve_index(self) -> None:
@@ -413,7 +913,10 @@ class PrivatePackUiHandler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            return
 
     def serve_json(self, payload: dict, status: int = HTTPStatus.OK) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -424,7 +927,10 @@ class PrivatePackUiHandler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            return
 
     def read_requested_regime_id(self, query: dict) -> str:
         requested_regime = (query.get("regime") or [""])[0].strip()
@@ -544,6 +1050,35 @@ class PrivatePackUiHandler(BaseHTTPRequestHandler):
             categories = range_payload[secondary_position]
         else:
             categories = range_payload
+        unsafe_tuple_record = read_runtime_unsafe_tuple_record(
+            self.app.get("runtimeSafety", {}),
+            entry["id"],
+            bb,
+            position,
+            secondary_position,
+        )
+        if unsafe_tuple_record:
+            payload = {
+                "ok": True,
+                "status": "unsafe_tuple_non_authoritative",
+                "bb": bb,
+                "position": position,
+                "categoryCount": 0,
+                "categories": [],
+                "bundleMembershipSafe": False,
+                "nonAuthoritative": True,
+                "exactSemanticsAuthority": unsafe_tuple_record.get("exactSemanticsAuthority", "normalized_pack"),
+                "comparisonClass": unsafe_tuple_record.get("comparisonClass", "materially_lossy"),
+                "lossModes": unsafe_tuple_record.get("lossModes", []),
+                "lookupKeyTuple": unsafe_tuple_record.get("lookupKeyTuple", ""),
+                "safetyGateNote": unsafe_tuple_record.get("note", ""),
+                "secondaryPositionsByPosition": entry["secondaryPositionsByPosition"],
+            }
+            if secondary_position:
+                payload["secondaryPosition"] = secondary_position
+            payload.update(self.build_selected_regime_payload(entry))
+            self.serve_json(payload)
+            return
         payload = {
             "ok": True,
             "status": "ok",
@@ -567,9 +1102,16 @@ def main() -> int:
         print(f"public_bundle_written {bundle_path}")
         return 0
     app_state = build_app_state(args.pack, args.regimes_root)
+    runtime_safety = build_runtime_safety_state(args.safety_asset)
+    mix_display_index = build_mix_display_state(args.mix_display_index)
+    mix_ui_catalog, mix_ui_bundles = build_mix_ui_state(args.mix_ui_catalog)
     server = ThreadingHTTPServer((args.host, args.port), PrivatePackUiHandler)
     server.app = {  # type: ignore[attr-defined]
         "index": args.index,
+        "runtimeSafety": runtime_safety,
+        "mixDisplayIndex": mix_display_index,
+        "mixUiCatalog": mix_ui_catalog,
+        "mixUiBundles": mix_ui_bundles,
         **app_state,
     }
     print(f"private_pack_ui_server_ready {args.host}:{args.port}")

@@ -18,8 +18,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PACK = REPO_ROOT / "out/_private/pushfold_real_data/pack.json"
 DEFAULT_INDEX = REPO_ROOT / "index.html"
 DEFAULT_STARTER = REPO_ROOT / "scripts/start_pushfold_local.py"
-SOURCE_PATH = "scripts/private_pack_ui_server.py"
-SOURCE_KIND = "local_runnable_consumer_path"
+DEFAULT_SAFETY_ASSET = REPO_ROOT / "assets/pushfold/aof-bundle-safety.v1.json"
+SOURCE_PATH = "scripts/start_pushfold_local.py"
+SOURCE_KIND = "local_bootstrap_bridge_consumer_path"
 STATUS_ID = "FOUND_LOCAL_UI_BRIDGE_CONSUMER"
 UI_MARKERS = [
     "pushfold-family-select",
@@ -30,6 +31,36 @@ UI_MARKERS = [
     "loadPushfoldRangeFromBridge",
     "pushfold-runtime-source-missing-chip",
 ]
+REPRESENTATIVE_PROBES = (
+    {
+        "name": "safeOpenControl",
+        "regime": "antes0",
+        "bb": 2,
+        "position": "UTG",
+        "secondaryPosition": "",
+    },
+    {
+        "name": "unsafeOpenGuard",
+        "regime": "antes10",
+        "bb": 2,
+        "position": "SB",
+        "secondaryPosition": "",
+    },
+    {
+        "name": "safeCallControl",
+        "regime": "tool10max_bb100_call",
+        "bb": 2,
+        "position": "UTG",
+        "secondaryPosition": "UTG+1",
+    },
+    {
+        "name": "unsafeCallGuard",
+        "regime": "tool10max_bb100_call",
+        "bb": 1,
+        "position": "UTG",
+        "secondaryPosition": "SB",
+    },
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -48,6 +79,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--regimes-root", default=str(REPO_ROOT / "out/_private/pushfold_real_data_regimes"))
     parser.add_argument("--index", default=str(DEFAULT_INDEX))
     parser.add_argument("--starter", default=str(DEFAULT_STARTER))
+    parser.add_argument("--safety-asset", default=str(DEFAULT_SAFETY_ASSET))
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--strict-gate-report", type=Path)
     return parser
@@ -105,14 +137,46 @@ def terminate_process(proc: subprocess.Popen[str]) -> int:
         except subprocess.TimeoutExpired:
             proc.kill()
             return proc.wait(timeout=5)
-
-
 def summarize_stack_probe(status: int, payload: dict[str, Any], payload_size: int) -> dict[str, Any]:
     return {
         "httpStatus": status,
         "payloadSize": payload_size,
         "keyCount": len(payload),
         "categoryCount": int(payload.get("categoryCount", 0)),
+        "payloadStatus": str(payload.get("status", "")),
+        "bundleMembershipSafe": payload.get("bundleMembershipSafe"),
+        "nonAuthoritative": payload.get("nonAuthoritative"),
+        "lossModes": payload.get("lossModes", []),
+        "safetyGateNote": str(payload.get("safetyGateNote", "")),
+    }
+
+
+def build_stack_probe_url(base_url: str, regime: str, bb: int, position: str, secondary_position: str = "") -> str:
+    query_payload = {"regime": regime, "bb": str(bb), "position": position}
+    if secondary_position:
+        query_payload["secondaryPosition"] = secondary_position
+    return f"{base_url}/api/stack?{urlencode(query_payload)}"
+
+
+def summarize_named_probe(name: str, url: str, status: int, payload: dict[str, Any], payload_size: int) -> dict[str, Any]:
+    return {
+        "name": name,
+        "url": url,
+        "httpStatus": status,
+        "payloadSize": payload_size,
+        "payloadStatus": str(payload.get("status", "")),
+        "selectedRegime": str(payload.get("selectedRegime", "")),
+        "bb": payload.get("bb"),
+        "position": str(payload.get("position", "")),
+        "secondaryPosition": str(payload.get("secondaryPosition", "")),
+        "categoryCount": int(payload.get("categoryCount", 0)),
+        "bundleMembershipSafe": payload.get("bundleMembershipSafe"),
+        "nonAuthoritative": payload.get("nonAuthoritative"),
+        "comparisonClass": str(payload.get("comparisonClass", "")),
+        "exactSemanticsAuthority": str(payload.get("exactSemanticsAuthority", "")),
+        "lossModes": payload.get("lossModes", []),
+        "lookupKeyTuple": str(payload.get("lookupKeyTuple", "")),
+        "safetyGateNote": str(payload.get("safetyGateNote", "")),
     }
 
 
@@ -169,6 +233,21 @@ def build_report_markdown(summary: dict[str, Any], http_summary_path: Path) -> s
     strict_gate_report = summary.get("strictGateReport")
     if strict_gate_report:
         lines.append(f"- strictGateReport: {strict_gate_report}")
+    representative_probes = summary.get("representativeProbes", {})
+    if isinstance(representative_probes, dict) and representative_probes:
+        lines.append("- representativeProbes:")
+        for name, payload in representative_probes.items():
+            if not isinstance(payload, dict):
+                continue
+            lines.append(
+                "  - "
+                f"{name}: httpStatus={payload.get('httpStatus')} / "
+                f"payloadStatus={payload.get('payloadStatus')} / "
+                f"categoryCount={payload.get('categoryCount')} / "
+                f"bundleMembershipSafe={payload.get('bundleMembershipSafe')} / "
+                f"nonAuthoritative={payload.get('nonAuthoritative')} / "
+                f"lossModes={payload.get('lossModes')}"
+            )
     lines.extend(
         [
             f"- bridgeUiMarkerCount: {summary['bridgeUiMarkerCount']}",
@@ -188,9 +267,9 @@ def main() -> int:
     summary_path = out_dir / "consumer_reopen_summary.json"
     report_path = out_dir / "consumer_reopen_report.md"
 
-    starter = Path(args.starter)
-    if not starter.exists():
-        print(f"ERROR: starter not found: {starter}", file=sys.stderr)
+    starter_path = Path(args.starter)
+    if not starter_path.exists():
+        print(f"ERROR: starter script not found: {starter_path}", file=sys.stderr)
         return 2
 
     bridge_base = f"http://{args.host}:{args.bridge_port}"
@@ -212,10 +291,11 @@ def main() -> int:
     stack_max_query = urlencode(stack_max_query_payload)
     stack_min_url = f"{bridge_base}/api/stack?{stack_min_query}"
     stack_max_url = f"{bridge_base}/api/stack?{stack_max_query}"
+    representative_probe_results: dict[str, dict[str, Any]] = {}
 
-    launcher_cmd = [
+    starter_cmd = [
         sys.executable,
-        str(starter),
+        str(starter_path),
         "--host",
         args.host,
         "--static-port",
@@ -232,6 +312,8 @@ def main() -> int:
         args.regimes_root,
         "--index",
         args.index,
+        "--safety-asset",
+        args.safety_asset,
         "--pushfold-regime",
         args.probe_regime,
     ]
@@ -239,8 +321,10 @@ def main() -> int:
     proc: subprocess.Popen[str] | None = None
     try:
         with launcher_log.open("w", encoding="utf-8") as log_file:
+            log_file.write(f"starter_cmd={' '.join(starter_cmd)}\n")
+            log_file.flush()
             proc = subprocess.Popen(
-                launcher_cmd,
+                starter_cmd,
                 cwd=str(REPO_ROOT),
                 stdout=log_file,
                 stderr=subprocess.STDOUT,
@@ -254,6 +338,23 @@ def main() -> int:
         stacks_status, _stacks_headers, stacks_payload, stacks_payload_size = load_json_response(stacks_url)
         stack_min_status, _stack_min_headers, stack_min_payload, stack_min_payload_size = load_json_response(stack_min_url)
         stack_max_status, _stack_max_headers, stack_max_payload, stack_max_payload_size = load_json_response(stack_max_url)
+        representative_probe_results = {}
+        for probe in REPRESENTATIVE_PROBES:
+            probe_url = build_stack_probe_url(
+                bridge_base,
+                probe["regime"],
+                probe["bb"],
+                probe["position"],
+                probe["secondaryPosition"],
+            )
+            probe_status, _probe_headers, probe_payload, probe_payload_size = load_json_response(probe_url)
+            representative_probe_results[probe["name"]] = summarize_named_probe(
+                probe["name"],
+                probe_url,
+                probe_status,
+                probe_payload,
+                probe_payload_size,
+            )
     except Exception as exc:  # noqa: BLE001
         if proc is not None:
             exit_code = terminate_process(proc)
@@ -261,10 +362,7 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     finally:
-        if proc is not None:
-            exit_code = terminate_process(proc)
-        else:
-            exit_code = 1
+        exit_code = terminate_process(proc) if proc is not None else 1
 
     ui_text = ui_body.decode("utf-8", errors="replace")
     bridge_ui_markers = {marker: (marker in ui_text) for marker in UI_MARKERS}
@@ -286,6 +384,35 @@ def main() -> int:
         and stack_max_status == 200
         and bool(health_payload.get("ok"))
     )
+    safe_open_control = representative_probe_results["safeOpenControl"]
+    unsafe_open_guard = representative_probe_results["unsafeOpenGuard"]
+    safe_call_control = representative_probe_results["safeCallControl"]
+    unsafe_call_guard = representative_probe_results["unsafeCallGuard"]
+    safe_open_ok = (
+        safe_open_control["httpStatus"] == 200
+        and safe_open_control["payloadStatus"] == "ok"
+        and int(safe_open_control["categoryCount"]) > 0
+    )
+    unsafe_open_ok = (
+        unsafe_open_guard["httpStatus"] == 200
+        and unsafe_open_guard["payloadStatus"] == "unsafe_tuple_non_authoritative"
+        and unsafe_open_guard["bundleMembershipSafe"] is False
+        and unsafe_open_guard["nonAuthoritative"] is True
+        and "bundle_missing_membership" in list(unsafe_open_guard["lossModes"])
+    )
+    safe_call_ok = (
+        safe_call_control["httpStatus"] == 200
+        and safe_call_control["payloadStatus"] == "ok"
+        and int(safe_call_control["categoryCount"]) > 0
+    )
+    unsafe_call_ok = (
+        unsafe_call_guard["httpStatus"] == 200
+        and unsafe_call_guard["payloadStatus"] == "unsafe_tuple_non_authoritative"
+        and unsafe_call_guard["bundleMembershipSafe"] is False
+        and unsafe_call_guard["nonAuthoritative"] is True
+        and "bundle_missing_membership" in list(unsafe_call_guard["lossModes"])
+        and "dropped_percentage_prefix" in list(unsafe_call_guard["lossModes"])
+    )
     bridge_ok = (
         ui_status == 200
         and bridge_http_ok
@@ -299,6 +426,10 @@ def main() -> int:
         and options_status == 204
         and options_private_network
         and all(bridge_ui_markers.values())
+        and safe_open_ok
+        and unsafe_open_ok
+        and safe_call_ok
+        and unsafe_call_ok
     )
 
     http_summary = {
@@ -341,6 +472,7 @@ def main() -> int:
         },
         "bridgeUiMarkers": bridge_ui_markers,
         "bridgeUiMarkerCount": sum(1 for value in bridge_ui_markers.values() if value),
+        "representativeProbes": representative_probe_results,
     }
 
     summary = {
@@ -383,6 +515,11 @@ def main() -> int:
         "semanticsSourceName": str(semantics_payload.get("sourceName", "")),
         "privateNetworkHeaderOnHealth": health_private_network,
         "privateNetworkHeaderOnOptions": options_private_network,
+        "safeOpenGuardOk": safe_open_ok,
+        "unsafeOpenGuardOk": unsafe_open_ok,
+        "safeCallGuardOk": safe_call_ok,
+        "unsafeCallGuardOk": unsafe_call_ok,
+        "representativeProbes": representative_probe_results,
         "bridgeUiMarkerCount": http_summary["bridgeUiMarkerCount"],
         "launcherExitCode": exit_code,
         "launcherLog": launcher_log.as_posix(),

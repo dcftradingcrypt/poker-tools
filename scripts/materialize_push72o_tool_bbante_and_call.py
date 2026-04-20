@@ -118,7 +118,10 @@ def parse_call_assignments(js_text: str) -> dict[int, dict[int, dict[str, dict[s
         raw_range = match.group(7).strip()
         caller = normalize_position(caller_raw)
         jammer = normalize_position(jammer_raw)
-        parsed[bucket_index][bb][caller][jammer] = raw_range
+        # The source javascript indexes call_range[bucket][bb][caller][jammer].
+        # Normalize into the repo's jammer-first shape here so every downstream
+        # consumer can treat `position` as the jam position consistently.
+        parsed[bucket_index][bb][jammer][caller] = raw_range
     return parsed
 
 
