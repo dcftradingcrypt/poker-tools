@@ -237,6 +237,17 @@ def interaction_expression() -> str:
     '[data-mix-a5-position-tab]': ['selectedA5Position', 'mixA5PositionTab'],
     '[data-mix-stud8-position-tab]': ['selectedStud8Position', 'mixStud8PositionTab'],
   };
+  const expectedPublicRangeGlobals = {
+    __PLO_HIGH_PREFLOP_PUBLIC_RANGES_V1: 'plo_high_preflop_position_ranges_v3',
+    __PLO8_PREFLOP_PUBLIC_RANGES_V1: 'plo8_preflop_position_ranges_v1',
+    __BADUGI_PRE_DRAW_PUBLIC_RANGES_V1: 'badugi_pre_draw_position_ranges_v3',
+    __A5_TRIPLE_DRAW_PUBLIC_RANGES_V1: 'a5_triple_draw_pre_draw_public_ranges_v1',
+    __DEUCE_TO_SEVEN_TRIPLE_DRAW_PUBLIC_RANGES_V1: 'deuce_to_seven_triple_draw_pre_draw_public_ranges_v1',
+    __RAZZ_THIRD_STREET_PUBLIC_RANGES_V1: 'razz_third_street_position_ranges_v1',
+    __STUD_HIGH_THIRD_STREET_PUBLIC_RANGES_V1: 'stud_high_third_street_position_ranges_v1',
+    __STUD8_THIRD_STREET_PUBLIC_RANGES_V1: 'stud8_third_street_position_ranges_v1',
+    __BASIL_826_PUBLIC_RANGES_V1: 'basil_826_public_archetypes_v2',
+  };
   const errors = [];
   const normalizeText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
   const includesNormalized = (haystack, needle) => normalizeText(haystack).includes(normalizeText(needle));
@@ -284,12 +295,101 @@ def interaction_expression() -> str:
       }
     }
   };
+  const validateBadugiSurface = (stage, positionValue = '') => {
+    const surface = document.getElementById('mix-display-surface');
+    const surfaceText = surface ? surface.innerText : '';
+    const dataset = window.__BADUGI_PRE_DRAW_PUBLIC_RANGES_V1;
+    const activePosition = positionValue || (typeof mixDisplayState === 'undefined' ? '' : mixDisplayState.selectedBadugiPosition);
+    const position = dataset && dataset.positions && dataset.positions[activePosition];
+    const firstInOpen = position && position.first_in_open;
+    if (!surface || surfaceText.length < 900) errors.push(`badugi_${stage}_surface_too_small:${surfaceText.length}`);
+    if (!position || !firstInOpen) {
+      errors.push(`badugi_${stage}_missing_dataset_position:${activePosition}`);
+      return;
+    }
+    const requiredText = [
+      'Source evidence folded into this position',
+      'リンク先の記事と PDF',
+      `${position.label || activePosition} Sources`,
+    ];
+    const missingRequired = requiredText.filter(needle => !includesNormalized(surfaceText, needle));
+    if (missingRequired.length) errors.push(`badugi_${stage}_missing_required_text:${missingRequired.join('|')}`);
+    const openRows = Array.isArray(firstInOpen.open_table_rows) ? firstInOpen.open_table_rows : [];
+    const missingOpenRows = openRows.flat().filter(value => value && !includesNormalized(surfaceText, value));
+    if (missingOpenRows.length) errors.push(`badugi_${stage}_missing_open_rows:${activePosition}:${missingOpenRows.join('|')}`);
+    const collectedRows = Array.isArray(firstInOpen.collected_rows) ? firstInOpen.collected_rows : [];
+    if (!collectedRows.length) {
+      errors.push(`badugi_${stage}_missing_collected_rows:${activePosition}`);
+    } else {
+      const rangeFieldMissing = collectedRows
+        .flatMap(row => [row && row.open_pct, row && row.pat, row && row.tri, row && row.two_card])
+        .filter(value => value && !includesNormalized(surfaceText, value));
+      if (rangeFieldMissing.length) errors.push(`badugi_${stage}_missing_collected_fields:${activePosition}:${rangeFieldMissing.slice(0, 4).join('|')}`);
+    }
+    const sourceIndex = dataset && dataset.source_index ? dataset.source_index : {};
+    const sourceRefs = Array.isArray(position.source_refs) ? position.source_refs : [];
+    const missingTitles = sourceRefs
+      .map(sourceRef => sourceIndex[sourceRef] && sourceIndex[sourceRef].title)
+      .filter(title => title && !includesNormalized(surfaceText, title));
+    if (missingTitles.length) errors.push(`badugi_${stage}_missing_source_titles:${activePosition}:${missingTitles.join('|')}`);
+  };
+  const validateA5Surface = (stage, positionValue = '') => {
+    const surface = document.getElementById('mix-display-surface');
+    const surfaceText = surface ? surface.innerText : '';
+    const dataset = window.__A5_TRIPLE_DRAW_PUBLIC_RANGES_V1;
+    const activePosition = positionValue || (typeof mixDisplayState === 'undefined' ? '' : mixDisplayState.selectedA5Position);
+    const position = dataset && dataset.positions && dataset.positions[activePosition];
+    if (!surface || surfaceText.length < 800) errors.push(`a5_${stage}_surface_too_small:${surfaceText.length}`);
+    if (!position) {
+      errors.push(`a5_${stage}_missing_dataset_position:${activePosition}`);
+      return;
+    }
+    const requiredText = [
+      `${position.label || activePosition} Range`,
+      `${position.label || activePosition} Sources`,
+      'CountingOuts',
+    ];
+    const missingRequired = requiredText.filter(needle => !includesNormalized(surfaceText, needle));
+    if (missingRequired.length) errors.push(`a5_${stage}_missing_required_text:${missingRequired.join('|')}`);
+    const openRows = position.first_in_open && Array.isArray(position.first_in_open.open_table_rows)
+      ? position.first_in_open.open_table_rows
+      : [];
+    const continueRows = position.versus_open && Array.isArray(position.versus_open.continue_table_rows)
+      ? position.versus_open.continue_table_rows
+      : [];
+    const missingRows = [...openRows, ...continueRows].flat().filter(value => value && !includesNormalized(surfaceText, value));
+    if (missingRows.length) errors.push(`a5_${stage}_missing_rows:${activePosition}:${missingRows.slice(0, 6).join('|')}`);
+    const sourceIndex = dataset && dataset.source_index ? dataset.source_index : {};
+    const sourceRefs = Array.isArray(position.source_refs) ? position.source_refs : [];
+    const missingTitles = sourceRefs
+      .map(sourceRef => sourceIndex[sourceRef] && sourceIndex[sourceRef].title)
+      .filter(title => title && !includesNormalized(surfaceText, title));
+    if (missingTitles.length) errors.push(`a5_${stage}_missing_source_titles:${activePosition}:${missingTitles.join('|')}`);
+  };
   let select = document.getElementById('mix-game-select');
   const gameIds = select
     ? Array.from(select.options).map(option => option.value || '').filter(Boolean)
     : [];
   if (!select) errors.push('missing_mix_game_select');
   const buttons = Array.from(document.querySelectorAll('button[data-mix-game-id]'));
+  for (const [globalName, datasetId] of Object.entries(expectedPublicRangeGlobals)) {
+    const payload = window[globalName];
+    if (!payload || typeof payload !== 'object') {
+      errors.push(`public_range_global_missing:${globalName}`);
+      continue;
+    }
+    if (payload.dataset_id !== datasetId) {
+      errors.push(`public_range_global_dataset_mismatch:${globalName}:${payload.dataset_id}:${datasetId}`);
+    }
+    if (!payload.source_index || typeof payload.source_index !== 'object' || !Object.keys(payload.source_index).length) {
+      errors.push(`public_range_global_missing_source_index:${globalName}`);
+    }
+    const hasRows = Boolean(
+      (payload.positions && typeof payload.positions === 'object' && Object.keys(payload.positions).length)
+      || (payload.hand_ranges && typeof payload.hand_ranges === 'object' && Object.keys(payload.hand_ranges).length)
+    );
+    if (!hasRows) errors.push(`public_range_global_missing_rows:${globalName}`);
+  }
   for (const gameId of expectedGameIds) {
     select = document.getElementById('mix-game-select');
     const option = select ? Array.from(select.options).find(entry => entry.value === gameId) : null;
@@ -364,6 +464,42 @@ def interaction_expression() -> str:
           }
           validateBasil826Surface(`${variantValue}_${viewValue}`, variantValue, viewValue);
         }
+      }
+    }
+    if (gameId === 'badugi') {
+      const positionValues = Array.from(document.querySelectorAll('[data-mix-badugi-position-tab]'))
+        .map(tab => tab.dataset ? tab.dataset.mixBadugiPositionTab : '')
+        .filter(Boolean);
+      for (const positionValue of positionValues) {
+        const tab = document.querySelector(`[data-mix-badugi-position-tab="${positionValue}"]`);
+        if (!tab) {
+          errors.push(`badugi_position_tab_missing_after_render:${positionValue}`);
+          continue;
+        }
+        tab.click();
+        await wait();
+        if (typeof mixDisplayState === 'undefined' || mixDisplayState.selectedBadugiPosition !== positionValue) {
+          errors.push(`badugi_position_state_not_synced:${positionValue}:${typeof mixDisplayState === 'undefined' ? 'missing_state' : mixDisplayState.selectedBadugiPosition}`);
+        }
+        validateBadugiSurface(positionValue || 'unknown', positionValue);
+      }
+    }
+    if (gameId === 'a5_triple_draw') {
+      const positionValues = Array.from(document.querySelectorAll('[data-mix-a5-position-tab]'))
+        .map(tab => tab.dataset ? tab.dataset.mixA5PositionTab : '')
+        .filter(Boolean);
+      for (const positionValue of positionValues) {
+        const tab = document.querySelector(`[data-mix-a5-position-tab="${positionValue}"]`);
+        if (!tab) {
+          errors.push(`a5_position_tab_missing_after_render:${positionValue}`);
+          continue;
+        }
+        tab.click();
+        await wait();
+        if (typeof mixDisplayState === 'undefined' || mixDisplayState.selectedA5Position !== positionValue) {
+          errors.push(`a5_position_state_not_synced:${positionValue}:${typeof mixDisplayState === 'undefined' ? 'missing_state' : mixDisplayState.selectedA5Position}`);
+        }
+        validateA5Surface(positionValue || 'unknown', positionValue);
       }
     }
     for (const selector of (expectedControls[gameId] || [])) {

@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 
 
-STRATEGY_CHECK_VERSION = "1.0"
+STRATEGY_CHECK_VERSION = "1.1"
 
 ALL_STRUCTURAL_FAMILIES = [
     "cc_high / 2-card",
@@ -626,7 +626,7 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
         "Startup continuity no longer asks for obsolete blocked-family source-drop files.",
     ]
     residual_risk = [
-        "This verifier proves repo-local consistency and claim boundaries; it does not prove poker EV optimality.",
+        "This verifier checks repo-local consistency and claim boundaries; it does not prove poker EV, solver optimality, or factual 100% confidence.",
         "Article-derived practical coverage remains practical heuristic coverage, not exact solver or chart coverage.",
         "PLO8 remains an inline public-source no-bundle surface until a normalized repo artifact is intentionally added.",
         "Off-repo source truth cannot be revalidated without external source acquisition.",
@@ -641,9 +641,9 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
             "checksFailed": len(failed),
             "failedCheckIds": [check.check_id for check in failed],
             "boundedConfidenceClaim": (
-                "repo-local strategy boundary is verified"
+                "repo-local strategy boundary checks passed"
                 if not failed
-                else "repo-local strategy boundary is not verified"
+                else "repo-local strategy boundary checks failed"
             ),
         },
         "loopholesClosed": [

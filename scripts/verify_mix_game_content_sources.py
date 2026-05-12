@@ -20,17 +20,30 @@ from pathlib import Path
 from typing import Any
 
 
-CONTENT_CHECK_VERSION = "1.4"
+CONTENT_CHECK_VERSION = "1.5"
 PUBLIC_COPY_PATHS = [
     "index.html",
     "assets/mix/badugi-pre-draw-public-ranges.v1.json",
     "assets/mix/a5-triple-draw-public-ranges.v1.json",
     "assets/mix/stud8-third-street-public-ranges.v1.json",
     "assets/mix/basil-826-public-ranges.v1.json",
+    "assets/mix/deuce-to-seven-triple-draw-public-ranges.v1.json",
+    "assets/mix/plo-high-preflop-public-ranges.v1.json",
+    "assets/mix/plo8-preflop-public-ranges.v1.json",
+    "assets/mix/razz-third-street-public-ranges.v1.json",
+    "assets/mix/stud-high-third-street-public-ranges.v1.json",
     "assets/mix/badugi-pre-draw-public-ranges.embedded.v1.js",
     "assets/mix/a5-triple-draw-public-ranges.embedded.v1.js",
     "assets/mix/stud8-third-street-public-ranges.embedded.v1.js",
     "assets/mix/basil-826-public-ranges.embedded.v1.js",
+    "assets/mix/deuce-to-seven-triple-draw-public-ranges.embedded.v1.js",
+    "assets/mix/plo-high-preflop-public-ranges.embedded.v1.js",
+    "assets/mix/plo8-preflop-public-ranges.embedded.v1.js",
+    "assets/mix/razz-third-street-public-ranges.embedded.v1.js",
+    "assets/mix/stud-high-third-street-public-ranges.embedded.v1.js",
+]
+PUBLIC_JSON_ASSET_PATHS = [
+    path for path in PUBLIC_COPY_PATHS if path.endswith(".json")
 ]
 
 
@@ -157,6 +170,21 @@ def iter_source_refs(payload: Any) -> list[str]:
         for value in payload:
             refs.extend(iter_source_refs(value))
     return refs
+
+
+def has_extracted_evidence(payload: Any) -> bool:
+    if isinstance(payload, dict):
+        source_extracts = payload.get("source_extracts")
+        if isinstance(source_extracts, dict) and bool(source_extracts):
+            return True
+        for key in ("collected_rows", "open_table_rows", "continue_table_rows", "rows"):
+            rows = payload.get(key)
+            if isinstance(rows, list) and bool(rows):
+                return True
+        return any(has_extracted_evidence(value) for value in payload.values())
+    if isinstance(payload, list):
+        return any(has_extracted_evidence(value) for value in payload)
+    return False
 
 
 def verify_public_asset_lineage(checks: list[CheckResult], root: Path, rel_path: str) -> None:
@@ -453,6 +481,64 @@ def verify_public_copy_files(checks: list[CheckResult], root: Path) -> None:
     )
 
 
+def verify_public_json_lineage_all(checks: list[CheckResult], root: Path) -> None:
+    empty_or_missing: list[str] = []
+    unresolved: dict[str, list[str]] = {}
+    for rel_path in PUBLIC_JSON_ASSET_PATHS:
+        payload = read_json(root / rel_path)
+        if not isinstance(payload, dict):
+            empty_or_missing.append(f"{rel_path}:top_level_not_object")
+            continue
+        source_index = payload.get("source_index")
+        source_extracts = payload.get("source_extracts")
+        refs = sorted(set(iter_source_refs(payload)))
+        if not isinstance(source_index, dict) or not source_index:
+            empty_or_missing.append(f"{rel_path}:source_index")
+        if refs and not has_extracted_evidence(payload):
+            empty_or_missing.append(f"{rel_path}:extracted_evidence")
+        missing = [
+            ref
+            for ref in refs
+            if not isinstance(source_index, dict)
+            or ref not in source_index
+            or (isinstance(source_extracts, dict) and source_extracts and ref not in source_extracts)
+        ]
+        if missing:
+            unresolved[rel_path] = missing[:20]
+    add_check(
+        checks,
+        "asset.all_public_json_assets.have_resolved_lineage",
+        not empty_or_missing and not unresolved,
+        f"checked={len(PUBLIC_JSON_ASSET_PATHS)} empty_or_missing={empty_or_missing} unresolved={unresolved}",
+    )
+
+
+def verify_ui_uses_range_assets(checks: list[CheckResult], index_html: str) -> None:
+    badugi_ok = (
+        "buildMixBadugiEvidenceRows" in index_html
+        and "renderMixSourceLinks(selectedRange.sourceRefs, readMixBadugiSourceEntry)" in index_html
+        and "Source evidence folded into this position" in index_html
+    )
+    a5_ok = (
+        "buildMixA5SelectedRangePayload" in index_html
+        and "rangeOnlyOpenRows" not in index_html
+        and "rangeOnlyContinueRows" not in index_html
+        and "renderMixSourceLinks(selectedRange.sourceRefs, readMixA5SourceEntry)" in index_html
+    )
+    add_check(
+        checks,
+        "ui.badugi.asset_evidence_visible",
+        badugi_ok,
+        "Badugi UI must expose collected source rows and links, not only the compressed chart",
+    )
+    add_check(
+        checks,
+        "ui.a5.uses_public_dataset_not_hardcoded_rows",
+        a5_ok,
+        "A-5 UI must render from assets/mix/a5-triple-draw-public-ranges.v1.json instead of a hardcoded copy",
+    )
+
+
 def build_payload(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root()
     checks: list[CheckResult] = []
@@ -482,6 +568,10 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
             verify_public_asset_lineage(checks, root, rel_path)
         except Exception as exc:
             add_check(checks, f"asset.{Path(rel_path).stem}.lineage_exception", False, str(exc))
+    try:
+        verify_public_json_lineage_all(checks, root)
+    except Exception as exc:
+        add_check(checks, "asset.all_public_json_assets.lineage_exception", False, str(exc))
 
     if literals:
         try:
@@ -502,6 +592,7 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
             add_check(checks, "content.826.exception", False, str(exc))
     verify_japanese_copy(checks, index_html)
     verify_public_copy_files(checks, root)
+    verify_ui_uses_range_assets(checks, index_html)
 
     failed = [check for check in checks if check.status != "passed"]
     return {

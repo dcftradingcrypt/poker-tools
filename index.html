@@ -2574,8 +2574,13 @@
   <script src="assets/pushfold/aof-bundle.embedded.v1.js"></script>
   <script src="assets/pushfold/aof-bundle-safety.embedded.v1.js"></script>
   <script src="assets/mix/plo-hu-exact.embedded.v1.js"></script>
+  <script src="assets/mix/plo-high-preflop-public-ranges.embedded.v1.js"></script>
+  <script src="assets/mix/plo8-preflop-public-ranges.embedded.v1.js"></script>
   <script src="assets/mix/badugi-pre-draw-public-ranges.embedded.v1.js"></script>
   <script src="assets/mix/a5-triple-draw-public-ranges.embedded.v1.js"></script>
+  <script src="assets/mix/deuce-to-seven-triple-draw-public-ranges.embedded.v1.js"></script>
+  <script src="assets/mix/razz-third-street-public-ranges.embedded.v1.js"></script>
+  <script src="assets/mix/stud-high-third-street-public-ranges.embedded.v1.js"></script>
   <script src="assets/mix/stud8-third-street-public-ranges.embedded.v1.js"></script>
   <script src="assets/mix/basil-826-public-ranges.embedded.v1.js"></script>
   <script>
@@ -5059,6 +5064,46 @@
     const MIX_A5_COLLECTION_NOTES = Array.isArray(MIX_A5_PUBLIC_RANGE_DATASET.collection_notes)
       ? MIX_A5_PUBLIC_RANGE_DATASET.collection_notes.filter(note => typeof note === 'string' && note.trim())
       : [];
+
+    function readMixA5SourceEntry(sourceRef) {
+      return sourceRef && MIX_A5_SOURCE_INDEX[sourceRef]
+        ? MIX_A5_SOURCE_INDEX[sourceRef]
+        : null;
+    }
+
+    function readMixA5PositionEntry(position) {
+      const safePosition = MIX_A5_POSITION_OPTIONS.includes(position) ? position : 'EP';
+      return MIX_A5_POSITION_OBJECT[safePosition] || {};
+    }
+
+    function readMixA5SourceRefsForPosition(position) {
+      const entry = readMixA5PositionEntry(position);
+      const refs = Array.isArray(entry?.source_refs)
+        ? entry.source_refs
+          .filter(sourceRef => typeof sourceRef === 'string' && sourceRef.trim())
+          .map(sourceRef => sourceRef.trim())
+        : [];
+      return Array.from(new Set(refs)).filter(sourceRef => !!readMixA5SourceEntry(sourceRef));
+    }
+
+    function buildMixA5SelectedRangePayload(selectedPosition) {
+      const safePosition = MIX_A5_POSITION_OPTIONS.includes(selectedPosition) ? selectedPosition : 'EP';
+      const entry = readMixA5PositionEntry(safePosition);
+      const firstInOpen = entry?.first_in_open || {};
+      const versusOpen = entry?.versus_open || {};
+      return {
+        label: entry?.label || MIX_A5_POSITION_LABELS[safePosition] || safePosition,
+        openBand: formatMixBadugiAnchorBand(firstInOpen.anchor_chart_pct),
+        positionRead: typeof firstInOpen.position_read === 'string' ? firstInOpen.position_read.trim() : '',
+        publicRangeRead: typeof firstInOpen.public_range_read === 'string' ? firstInOpen.public_range_read.trim() : '',
+        openSourceNote: typeof firstInOpen.source_note === 'string' ? firstInOpen.source_note.trim() : '',
+        openRows: Array.isArray(firstInOpen.open_table_rows) ? firstInOpen.open_table_rows : [],
+        versusRead: typeof versusOpen.scenario_read === 'string' ? versusOpen.scenario_read.trim() : '',
+        continueSourceNote: typeof versusOpen.source_note === 'string' ? versusOpen.source_note.trim() : '',
+        continueRows: Array.isArray(versusOpen.continue_table_rows) ? versusOpen.continue_table_rows : [],
+        sourceRefs: readMixA5SourceRefsForPosition(safePosition),
+      };
+    }
     const MIX_PLO_HU_DEFEND_PREVIEW = {
       title: 'Big Blind Call vs Small Blind Open',
       scope: 'repo exact slice / heads-up Small Blind vs Big Blind / 100bb / with limp tree',
@@ -10055,17 +10100,99 @@
       return Array.isArray(items) && items.length ? items.join(' ; ') : '—';
     }
 
+    function readMixBadugiSourceEntry(sourceRef) {
+      return sourceRef && MIX_BADUGI_SOURCE_INDEX[sourceRef]
+        ? MIX_BADUGI_SOURCE_INDEX[sourceRef]
+        : null;
+    }
+
+    function buildMixBadugiCollectedRows(firstInOpen) {
+      const rows = Array.isArray(firstInOpen?.collected_rows) ? firstInOpen.collected_rows : [];
+      return rows
+        .map(rawRow => {
+          if (!rawRow || typeof rawRow !== 'object') return null;
+          const sourceRef = typeof rawRow.source_ref === 'string' ? rawRow.source_ref.trim() : '';
+          if (!sourceRef) return null;
+          return {
+            sourceRef,
+            evidenceType: typeof rawRow.evidence_type === 'string' ? rawRow.evidence_type.trim() : '',
+            openPct: typeof rawRow.open_pct === 'string' ? rawRow.open_pct.trim() : '',
+            pat: typeof rawRow.pat === 'string' ? rawRow.pat.trim() : '',
+            tri: typeof rawRow.tri === 'string' ? rawRow.tri.trim() : '',
+            twoCard: typeof rawRow.two_card === 'string' ? rawRow.two_card.trim() : '',
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function readMixBadugiSourceRefsForPosition(position) {
+      const entry = readMixBadugiPositionEntry(position);
+      const refs = Array.isArray(entry?.source_refs)
+        ? entry.source_refs
+          .filter(sourceRef => typeof sourceRef === 'string' && sourceRef.trim())
+          .map(sourceRef => sourceRef.trim())
+        : [];
+      return Array.from(new Set(refs)).filter(sourceRef => !!readMixBadugiSourceEntry(sourceRef));
+    }
+
     function buildMixBadugiSelectedRangePayload(selectedPosition) {
+      const safePosition = readMixBadugiPosition(selectedPosition);
       const entry = readMixBadugiPositionEntry(selectedPosition);
       const firstInOpen = entry?.first_in_open || {};
       return {
-        label: entry?.label || MIX_BADUGI_POSITION_LABELS[readMixBadugiPosition(selectedPosition)] || selectedPosition,
+        label: entry?.label || MIX_BADUGI_POSITION_LABELS[safePosition] || selectedPosition,
         openBand: formatMixBadugiAnchorBand(firstInOpen.anchor_chart_pct),
         positionRead: firstInOpen.position_read || '',
         publicRangeRead: firstInOpen.public_range_read || '',
         sourceNote: firstInOpen.source_note || '',
         openTableRows: Array.isArray(firstInOpen.open_table_rows) ? firstInOpen.open_table_rows : [],
+        collectedRows: buildMixBadugiCollectedRows(firstInOpen),
+        sourceRefs: readMixBadugiSourceRefsForPosition(safePosition),
       };
+    }
+
+    function buildMixBadugiEvidenceRows(selectedRange) {
+      if (!selectedRange || !Array.isArray(selectedRange.collectedRows)) return [];
+      return selectedRange.collectedRows.map(row => {
+        const sourceEntry = readMixBadugiSourceEntry(row.sourceRef) || {};
+        return [
+          sourceEntry.short_label || sourceEntry.title || row.sourceRef,
+          humanizeMixSelectorValue(row.evidenceType || 'note'),
+          row.openPct || '—',
+          row.pat || '—',
+          row.tri || '—',
+          row.twoCard || '—',
+        ];
+      });
+    }
+
+    function renderMixSourceLinks(sourceRefs, sourceReader) {
+      if (!Array.isArray(sourceRefs) || !sourceRefs.length) {
+        return '<p class="mix-empty">source links unavailable</p>';
+      }
+      return `
+        <ul class="mix-link-list">
+          ${sourceRefs.map(sourceRef => {
+            const entry = sourceReader(sourceRef) || {};
+            const sourceUrl = typeof entry.url === 'string' && entry.url.trim() ? entry.url.trim() : '';
+            const sourceType = typeof entry.source_type === 'string' && entry.source_type.trim() ? entry.source_type.trim() : 'HTML';
+            const weightLabel = typeof entry.weight === 'string' && entry.weight.trim()
+              ? humanizeMixSelectorValue(entry.weight)
+              : '';
+            const typeClass = sourceType === 'PDF' || sourceType === 'supplemental_pdf' ? 'mix-chip mix-chip-pdf' : 'mix-chip mix-chip-html';
+            const title = typeof entry.title === 'string' && entry.title.trim()
+              ? entry.title.trim()
+              : sourceRef;
+            return `
+              <li>
+                <a class="mix-source-link" href="${escapeHtml(sourceUrl || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
+                <span class="${typeClass}">${escapeHtml(sourceType)}</span>
+                ${weightLabel ? `<span class="mix-chip mix-chip-preview">${escapeHtml(weightLabel)}</span>` : ''}
+              </li>
+            `;
+          }).join('')}
+        </ul>
+      `;
     }
 
     function readMixStud8SourceEntry(sourceRef) {
@@ -10295,6 +10422,7 @@
     function renderMixBadugiOpenRangePanel() {
       const selectedPosition = readMixBadugiPosition(mixDisplayState.selectedBadugiPosition);
       const selectedRange = buildMixBadugiSelectedRangePayload(selectedPosition);
+      const evidenceRows = buildMixBadugiEvidenceRows(selectedRange);
       return `
         <section class="surface-card tight">
           <h3>Badugi Open Chart</h3>
@@ -10327,6 +10455,15 @@
             selectedRange.openTableRows
           )}
           ${selectedRange.sourceNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.sourceNote)}</p>` : ''}
+          ${evidenceRows.length ? `
+            <p class="mix-preview-copy">Source evidence folded into this position:</p>
+            ${renderMixStaticTable(['Source', 'Evidence', 'Open %', 'Pat', 'Tri', 'Two-card'], evidenceRows)}
+          ` : ''}
+        </section>
+        <section class="surface-card tight">
+          <h3>${escapeHtml(`${selectedRange.label} Sources`)}</h3>
+          <p class="mix-preview-copy">リンク先の記事と PDF から取り込んだ行を、要約テーブルとは別に残しています。</p>
+          ${renderMixSourceLinks(selectedRange.sourceRefs, readMixBadugiSourceEntry)}
         </section>
       `;
     }
@@ -10448,60 +10585,9 @@
 
     function renderMixA5OpenRangePanel() {
       const selectedPosition = readMixA5Position(mixDisplayState.selectedA5Position);
-      const rangeOnlyOpenRows = {
-        EP: [
-          ['Pat made hands', 'Made 7s or better'],
-          ['One-card draws', 'Four wheel cards / Four to a six'],
-          ['Two-card draws', 'Three wheel cards'],
-          ['Strong three-card sixes', 'A26 / A36 / A46 / 236 / 246 / 346'],
-        ],
-        CO: [
-          ['Pat made hands', 'Made 7s or better'],
-          ['One-card draws', 'Four wheel cards / Four to a six'],
-          ['Two-card draws', 'Three wheel cards'],
-          ['Three-card sixes', 'Three to a six'],
-        ],
-        BTN: [
-          ['Pat made hands', 'Made 7s or better'],
-          ['One-card draws', 'Four wheel cards / Four to a six'],
-          ['Draw core', 'Three wheel cards / Three to a six'],
-          ['Button two-card steals', 'A2 / A3 / A4 / 23 / 24 / 34'],
-        ],
-        SB: [
-          ['Baseline open', 'Button range'],
-        ],
-        BB: [],
-      };
-      const rangeOnlyContinueRows = {
-        EP: [
-          ['3-bet', 'Pat hands / one-card draws / A23 / A24 / A34'],
-          ['Call', 'A23 mix / A36-type weaker two-card draws'],
-          ['Fold', '345-type bottom opens once raised'],
-        ],
-        CO: [
-          ['3-bet', 'Pat hands / one-card draws / A23 / A24 / A34'],
-          ['Call', 'A23 mix / A36-type weaker two-card draws'],
-          ['Fold', 'Bottom cutoff opens once raised'],
-        ],
-        BTN: [
-          ['3-bet', 'Pat hands / one-card draws / A23 / A24 / A34'],
-          ['Call', 'A23 mix / A36-type weaker two-card draws'],
-          ['Fold', 'Weakest button steals once raised'],
-        ],
-        SB: [
-          ['3-bet', 'Most continue range'],
-          ['Call', 'A2 vs loose late opens'],
-          ['Fold', 'A2 and thinner two-card draws vs tight EP'],
-        ],
-        BB: [
-          ['Vs late-position open', 'Button range'],
-          ['Vs early-position open', 'Slightly tighter than button range'],
-          ['Vs SB steal', 'Button range + A5 / 25 / 35 / 45'],
-          ['3-bet vs SB', 'Any two-card draw or better'],
-        ],
-      };
-      const openRows = Array.isArray(rangeOnlyOpenRows[selectedPosition]) ? rangeOnlyOpenRows[selectedPosition] : [];
-      const continueRows = Array.isArray(rangeOnlyContinueRows[selectedPosition]) ? rangeOnlyContinueRows[selectedPosition] : [];
+      const selectedRange = buildMixA5SelectedRangePayload(selectedPosition);
+      const openRows = Array.isArray(selectedRange.openRows) ? selectedRange.openRows : [];
+      const continueRows = Array.isArray(selectedRange.continueRows) ? selectedRange.continueRows : [];
       return `
         <section class="surface-card tight">
           <div class="mix-selector-field">
@@ -10514,15 +10600,42 @@
           </div>
         </section>
         <section class="surface-card tight">
+          <h3>${escapeHtml(selectedRange.label)} Range</h3>
+          <div class="mix-detail-grid">
+            <div class="mix-detail-band">
+              <strong>Open band</strong>
+              <span>${escapeHtml(selectedRange.openBand || 'dynamic')}</span>
+            </div>
+            <div class="mix-detail-band">
+              <strong>Sources</strong>
+              <span>${escapeHtml(String(selectedRange.sourceRefs.length))}</span>
+            </div>
+          </div>
+          ${selectedRange.publicRangeRead || selectedRange.positionRead
+            ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.publicRangeRead || selectedRange.positionRead)}</p>`
+            : ''}
           ${openRows.length ? `
             <h3>Open Range</h3>
             ${renderMixStaticTable(['Class', 'Range'], openRows)}
+            ${selectedRange.openSourceNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.openSourceNote)}</p>` : ''}
           ` : ''}
           ${continueRows.length ? `
             <h3>${openRows.length ? 'Vs Open Range' : 'Range'}</h3>
+            ${selectedRange.versusRead ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.versusRead)}</p>` : ''}
             ${renderMixStaticTable(['Action', 'Range'], continueRows)}
+            ${selectedRange.continueSourceNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.continueSourceNote)}</p>` : ''}
           ` : ''}
           ${!openRows.length && !continueRows.length ? '<p class="mix-empty">range unavailable</p>' : ''}
+        </section>
+        <section class="surface-card tight">
+          <h3>${escapeHtml(`${selectedRange.label} Sources`)}</h3>
+          <p class="mix-preview-copy">CountingOuts の明示%表、Haney の境界ハンド、ルール/PDF確認を分けて保持しています。</p>
+          ${MIX_A5_COLLECTION_NOTES.length ? `
+            <ul class="mix-note-list">
+              ${MIX_A5_COLLECTION_NOTES.map(note => `<li>${escapeHtml(note)}</li>`).join('')}
+            </ul>
+          ` : ''}
+          ${renderMixSourceLinks(selectedRange.sourceRefs, readMixA5SourceEntry)}
         </section>
       `;
     }

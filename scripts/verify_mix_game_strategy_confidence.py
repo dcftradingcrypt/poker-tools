@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 
-AGGREGATE_CHECK_VERSION = "1.0"
+AGGREGATE_CHECK_VERSION = "1.1"
 
 
 @dataclass
@@ -163,16 +163,16 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
             "failedCheckIds": [result.check_id for result in failed],
             "browserExecuted": browser_executed,
             "boundedConfidenceClaim": (
-                "repo-local mix strategy boundary is verified"
+                "repo-local mix source/display checks passed"
                 if not failed and browser_executed
-                else "repo-local mix strategy boundary is only partially verified"
+                else "repo-local mix source/display checks passed without browser execution"
                 if not failed
-                else "repo-local mix strategy boundary is not verified"
+                else "repo-local mix source/display checks failed"
             ),
         },
         "checks": [result.as_dict() for result in results] if args.verbose or failed else [],
         "residualRisk": [
-            "Aggregate pass does not prove poker EV or solver optimality.",
+            "Aggregate pass does not prove poker EV, solver optimality, or factual 100% confidence.",
             "Aggregate pass does not validate non-public or paywalled 826 exact thresholds.",
             "External public pages can change after repo-local source notes are captured.",
         ],

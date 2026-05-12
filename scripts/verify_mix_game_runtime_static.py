@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any
 
 
-RUNTIME_CHECK_VERSION = "1.1"
+RUNTIME_CHECK_VERSION = "1.2"
 EXPECTED_MIX_DOM_MARKERS = [
     'id="mix-display-surface"',
     'id="mix-game-select"',
@@ -48,6 +48,11 @@ EMBEDDED_JSON_MIRRORS = {
     "assets/mix/a5-triple-draw-public-ranges.embedded.v1.js": "assets/mix/a5-triple-draw-public-ranges.v1.json",
     "assets/mix/stud8-third-street-public-ranges.embedded.v1.js": "assets/mix/stud8-third-street-public-ranges.v1.json",
     "assets/mix/basil-826-public-ranges.embedded.v1.js": "assets/mix/basil-826-public-ranges.v1.json",
+    "assets/mix/deuce-to-seven-triple-draw-public-ranges.embedded.v1.js": "assets/mix/deuce-to-seven-triple-draw-public-ranges.v1.json",
+    "assets/mix/plo-high-preflop-public-ranges.embedded.v1.js": "assets/mix/plo-high-preflop-public-ranges.v1.json",
+    "assets/mix/plo8-preflop-public-ranges.embedded.v1.js": "assets/mix/plo8-preflop-public-ranges.v1.json",
+    "assets/mix/razz-third-street-public-ranges.embedded.v1.js": "assets/mix/razz-third-street-public-ranges.v1.json",
+    "assets/mix/stud-high-third-street-public-ranges.embedded.v1.js": "assets/mix/stud-high-third-street-public-ranges.v1.json",
 }
 
 
@@ -154,6 +159,16 @@ def verify_node_syntax(checks: list[CheckResult], root: Path, external_scripts: 
 
 def verify_embedded_assets(checks: list[CheckResult], root: Path, external_scripts: list[str]) -> None:
     embedded_scripts = [path for path in external_scripts if path.endswith(".embedded.v1.js")]
+    missing_mirrors_from_page = [
+        rel_path for rel_path in EMBEDDED_JSON_MIRRORS
+        if rel_path not in external_scripts
+    ]
+    add_check(
+        checks,
+        "embedded_asset.all_json_mirrors_loaded_by_page",
+        not missing_mirrors_from_page,
+        f"missingFromIndex={missing_mirrors_from_page}",
+    )
     add_check(
         checks,
         "embedded_asset.count",
@@ -193,11 +208,8 @@ def verify_embedded_assets(checks: list[CheckResult], root: Path, external_scrip
 
 def verify_embedded_asset_mirrors(checks: list[CheckResult], root: Path, external_scripts: list[str]) -> None:
     assignment_pattern = re.compile(r"^\s*window\.([A-Za-z0-9_]+)\s*=\s*(.*);\s*$", re.S)
-    referenced = set(external_scripts)
     checked = 0
     for embedded_rel_path, json_rel_path in EMBEDDED_JSON_MIRRORS.items():
-        if embedded_rel_path not in referenced:
-            continue
         checked += 1
         embedded_path = root / embedded_rel_path
         json_path = root / json_rel_path
