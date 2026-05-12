@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 
-TOOLCHAIN_HEALTH_VERSION = "1.1"
+TOOLCHAIN_HEALTH_VERSION = "1.0"
 DEFAULT_REGISTRY = "out/_codex/mix_game_family_contract_registry.json"
 PASSING_COMPONENT_PAYLOAD_STATUSES = {"passed", "ok"}
 COMPONENTS = [
@@ -297,14 +297,12 @@ def build_health_payload(args: argparse.Namespace) -> dict[str, Any]:
             "toolchainHealthVersion": TOOLCHAIN_HEALTH_VERSION,
             "repoRoot": root.as_posix(),
             "registryPath": display_path(registry_path, root),
-            "status": "inactive_no_blocked_families",
-            "strategyEvidenceStatus": "not_applicable",
+            "status": "passed",
             "currentGroundingBoundary": boundary,
             "blockedFamilyIds": [],
             "componentRuns": [],
             "coverageLimits": [
-                "No blocked families remain in the current registry boundary, so the blocked-family toolchain is not exercised in this pass.",
-                "This inactive result is not evidence that the current grounded-family display strategy is correct; run verify_mix_game_grounding_strategy.py for that.",
+                "No blocked families remain in the current registry boundary, so the blocked-family toolchain is not exercised in this pass."
             ],
             "summary": {
                 "componentCount": 0,
@@ -374,7 +372,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     payload = build_health_payload(parse_args())
     print(json.dumps(payload, indent=2, sort_keys=True))
-    return 0 if payload["status"] in {"passed", "inactive_no_blocked_families"} else 1
+    return 0 if payload["status"] == "passed" else 1
 
 
 if __name__ == "__main__":

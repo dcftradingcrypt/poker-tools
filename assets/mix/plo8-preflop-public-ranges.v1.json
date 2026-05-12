@@ -152,7 +152,7 @@
       "overview": {
         "seat_trigger": "後ろに MP / CO / BTN / blinds が残るため、reverse implied odds と quarter-risk の低い hand だけを残す席です。",
         "open_identity": "AA23 系、AA2x + extra wheel、A234 / A235 / A245、そして強い suited A2 broadway backup が軸です。",
-        "adds_here": "UTG は 広げる席ではありません。A2 broadway も double-suited か suited ace 前提の条件付きに止めます。",
+        "adds_here": "UTG は widen する席ではありません。A2 broadway も double-suited か suited ace 前提の条件付きに止めます。",
         "still_avoid": "naked A2、A3 / A4 / A5 tails、2345 / 2346 no ace、high-only、そして 6-J middles を外します。"
       },
       "at_a_glance": {
@@ -288,7 +288,7 @@
             "この map は UTG を first-in 参照 seat として扱う"
           ]
         ],
-        "source_note": "公開ソースの cold-call guidance は後ろの seat から書かれるものが中心なので、UTG だけは 正直に n/a としています。",
+        "source_note": "公開ソースの cold-call guidance は後ろの seat から書かれるものが中心なので、UTG だけは honest に n/a としています。",
         "collected_rows": []
       },
       "source_refs": [
@@ -365,7 +365,7 @@
         ],
         "action_bands": [
           {
-            "label": "自然に 広げる帯",
+            "label": "自然に widen する帯",
             "tone": "attack",
             "range_read": "UTG core に A2 broadway の best suited versions を足して、still-tight なまま少しだけ実戦的に広げます。",
             "when": "A2 と high side が両方働き、raised pot でも scoop path が残る時。",

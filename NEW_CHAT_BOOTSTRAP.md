@@ -9,7 +9,7 @@
 - treat `CLAUDE.md` as sole durable objective source for explicit objective-check tasks only
 
 ## Continuity status
-- `continuity_status: completed`
+- `continuity_status: blocked_user_step`
 
 ## Startup rule
 1. name the handoff artifact in use
