@@ -1,2584 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Poker Equity Calculator</title>
-  <style>
-    :root {
-      --felt-a: #063e2a;
-      --felt-b: #0a5a3b;
-      --felt-c: #0f6f4a;
-      --panel-bg: rgba(11, 24, 19, 0.78);
-      --panel-border: rgba(255, 214, 117, 0.24);
-      --panel-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
-      --text-main: #f1f8f2;
-      --text-soft: #bcd6c3;
-      --text-dim: #90aa99;
-      --accent: #ffd469;
-      --accent-strong: #ffbf2f;
-      --danger: #ff6f6f;
-      --ok: #7de4a0;
-      --radius-lg: 16px;
-      --radius-md: 12px;
-      --radius-sm: 9px;
-      --space-1: 4px;
-      --space-2: 8px;
-      --space-3: 12px;
-      --space-4: 16px;
-      --space-5: 20px;
-      --space-6: 24px;
-      --font-1: 12px;
-      --font-2: 14px;
-      --font-3: 16px;
-      --font-4: 20px;
-      --font-5: 26px;
-      --bottom-nav-height: 66px;
-      --safe-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
-      --range-cell-size: 44px;
-      --range-font-size: 12px;
-      color-scheme: dark;
-    }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      padding: var(--space-3);
-      padding-bottom: calc(var(--safe-bottom) + var(--space-4));
-      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-      color: var(--text-main);
-      background:
-        radial-gradient(circle at 20% -10%, rgba(255, 224, 162, 0.15), transparent 45%),
-        radial-gradient(circle at 80% 120%, rgba(0, 0, 0, 0.55), transparent 48%),
-        linear-gradient(150deg, var(--felt-a), var(--felt-b) 55%, var(--felt-c));
-      line-height: 1.45;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background:
-        repeating-radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 8px);
-      opacity: 0.22;
-      z-index: -1;
-    }
-
-    .container {
-      max-width: 1080px;
-      margin: 0 auto;
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-lg);
-      background: var(--panel-bg);
-      box-shadow: var(--panel-shadow);
-      padding: var(--space-4);
-      backdrop-filter: blur(8px);
-    }
-
-    .app-header {
-      margin-bottom: var(--space-4);
-    }
-
-    .app-build-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: var(--space-2);
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 212, 105, 0.46);
-      background: rgba(255, 212, 105, 0.14);
-      color: #ffe7a1;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .app-runtime-alert {
-      display: none;
-      margin-bottom: var(--space-3);
-      padding: var(--space-2) var(--space-3);
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 216, 123, 0.28);
-      background: rgba(255, 216, 123, 0.08);
-      color: #fff1bf;
-      font-size: var(--font-2);
-    }
-
-    .app-runtime-alert.active {
-      display: block;
-    }
-
-    .app-runtime-alert.negative {
-      border-color: rgba(255, 111, 111, 0.4);
-      background: rgba(255, 111, 111, 0.12);
-      color: #ffd7d7;
-    }
-
-    .app-runtime-alert.neutral {
-      border-color: rgba(255, 216, 123, 0.28);
-      background: rgba(255, 216, 123, 0.08);
-      color: #fff1bf;
-    }
-
-    .app-runtime-summary {
-      margin-top: var(--space-1);
-      color: var(--text-dim);
-      font-size: 11px;
-      word-break: break-all;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(24px, 4.5vw, 34px);
-      letter-spacing: 0.01em;
-    }
-
-    h2 {
-      margin: var(--space-3) 0 var(--space-2);
-      font-size: clamp(18px, 3.8vw, 24px);
-    }
-
-    h3 {
-      margin: 0;
-      font-size: clamp(16px, 3.4vw, 20px);
-    }
-
-    p {
-      margin: var(--space-2) 0;
-    }
-
-    .tab-menu {
-      display: none;
-    }
-
-    .tab-content {
-      display: none;
-      padding: var(--space-2) 0 var(--space-3);
-      animation: tabFade 0.24s ease;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes tabFade {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .surface-card {
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-md);
-      padding: var(--space-3);
-      margin: var(--space-3) 0;
-      background: rgba(8, 18, 15, 0.6);
-      box-shadow: inset 0 1px 0 rgba(255, 240, 204, 0.08);
-    }
-
-    .surface-card.tight {
-      padding: var(--space-2) var(--space-3);
-    }
-
-    .section-label {
-      margin: 0 0 var(--space-2);
-      color: var(--text-soft);
-      font-size: var(--font-2);
-    }
-
-    .pushfold-status-card {
-      margin-bottom: var(--space-4);
-    }
-
-    .pushfold-status-card-scoped {
-      margin-top: var(--space-3);
-    }
-
-    .pushfold-surface-slot:empty {
-      display: none;
-    }
-
-    .pushfold-status-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: var(--space-2);
-      margin: var(--space-3) 0;
-    }
-
-    .pushfold-band {
-      padding: var(--space-3);
-      border: 1px solid rgba(255, 233, 179, 0.16);
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .pushfold-band-label {
-      display: block;
-      margin-bottom: var(--space-1);
-      font-weight: 700;
-    }
-
-    .pushfold-chip {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: var(--font-2);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    .pushfold-chip-on {
-      color: #082312;
-      background: var(--ok);
-    }
-
-    .pushfold-chip-off {
-      color: #ffe4e4;
-      background: rgba(255, 111, 111, 0.22);
-    }
-
-    .pushfold-chip-warn {
-      color: #fff3d1;
-      background: rgba(255, 212, 105, 0.2);
-    }
-
-    .pushfold-select-wrap {
-      display: block;
-      margin-top: var(--space-2);
-      font-weight: 700;
-    }
-
-    .pushfold-select-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .pushfold-runtime-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      margin-top: var(--space-3);
-    }
-
-    .pushfold-runtime-status {
-      min-height: 1.4em;
-    }
-
-    .pushfold-runtime-note {
-      margin-top: var(--space-2);
-    }
-
-    .pushfold-runtime-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      margin-bottom: var(--space-2);
-    }
-
-    .pushfold-runtime-meta-inline {
-      margin-bottom: 0;
-    }
-
-    .pushfold-chip-outline {
-      color: var(--text-soft);
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 233, 179, 0.16);
-    }
-
-    .pushfold-scenario-panel {
-      display: grid;
-      gap: var(--space-2);
-      margin-bottom: var(--space-3);
-      padding: var(--space-3);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 233, 179, 0.14);
-      background: linear-gradient(180deg, rgba(255, 214, 102, 0.06), rgba(255, 255, 255, 0.02));
-    }
-
-    .pushfold-scenario-panel-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-    }
-
-    .pushfold-scenario-panel-summary,
-    .pushfold-scenario-panel-note,
-    .pushfold-select-hint {
-      margin: 0;
-      color: var(--text-soft);
-    }
-
-    .pushfold-scenario-summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-    }
-
-    .pushfold-scenario-details {
-      border-top: 1px solid rgba(255, 233, 179, 0.12);
-      padding-top: var(--space-2);
-    }
-
-    .pushfold-scenario-details summary {
-      cursor: pointer;
-      color: var(--text-soft);
-      user-select: none;
-    }
-
-    .pushfold-scenario-details-grid {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 6px 12px;
-      margin-top: var(--space-2);
-      color: var(--text-soft);
-      font-size: var(--font-2);
-    }
-
-    .pushfold-scenario-details-grid strong {
-      color: var(--text-main);
-      font-weight: 600;
-    }
-
-    .pushfold-runtime-panel {
-      display: grid;
-      gap: var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .pushfold-status-card[data-full-range-render-enabled="false"] .pushfold-runtime-panel {
-      display: none;
-    }
-
-    .pushfold-status-card-compact .pushfold-status-grid {
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: var(--space-1);
-      margin: var(--space-2) 0 0;
-    }
-
-    .pushfold-status-card-compact .pushfold-band {
-      padding: var(--space-2);
-    }
-
-    .pushfold-status-card-compact .pushfold-runtime-actions {
-      margin-top: var(--space-2);
-      align-items: center;
-    }
-
-    .pushfold-status-card-compact .pushfold-runtime-note {
-      margin-top: var(--space-1);
-    }
-
-    .chip-text {
-      display: inline-block;
-      margin-right: var(--space-2);
-      color: var(--accent);
-      font-weight: 800;
-      letter-spacing: 0.03em;
-    }
-
-    input,
-    select {
-      width: 100%;
-      margin-top: var(--space-1);
-      padding: 10px 12px;
-      border: 1px solid rgba(255, 233, 179, 0.26);
-      border-radius: var(--radius-sm);
-      background: rgba(9, 22, 17, 0.9);
-      color: var(--text-main);
-      font-size: var(--font-3);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    }
-
-    input:focus,
-    select:focus {
-      outline: 2px solid rgba(255, 212, 105, 0.5);
-      outline-offset: 1px;
-    }
-
-    button {
-      border: 1px solid rgba(255, 226, 153, 0.36);
-      border-radius: 999px;
-      background:
-        radial-gradient(circle at 30% 28%, rgba(255, 245, 213, 0.3), transparent 60%),
-        linear-gradient(180deg, #9e7417 0%, #7b5312 50%, #5c3e0e 100%);
-      color: #fff6df;
-      font-size: var(--font-2);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      min-height: 42px;
-      padding: 10px 14px;
-      margin: var(--space-1) 0;
-      cursor: pointer;
-      transition: transform 0.14s ease, filter 0.14s ease, box-shadow 0.14s ease;
-      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
-      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
-      touch-action: manipulation;
-    }
-
-    button:hover {
-      filter: brightness(1.08);
-    }
-
-    button:active {
-      transform: translateY(1px) scale(0.99);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    button.cancel,
-    .quick-ranges button.clear,
-    .danger-btn {
-      border-color: rgba(255, 175, 175, 0.55);
-      background:
-        radial-gradient(circle at 30% 28%, rgba(255, 220, 220, 0.3), transparent 60%),
-        linear-gradient(180deg, #8f2f2f 0%, #6c1e1e 55%, #521313 100%);
-    }
-
-    button.secondary,
-    .ghost-btn {
-      border-color: rgba(158, 197, 174, 0.35);
-      background:
-        radial-gradient(circle at 30% 28%, rgba(224, 246, 236, 0.22), transparent 60%),
-        linear-gradient(180deg, #28543e 0%, #1f3e2f 100%);
-    }
-
-    button.small {
-      min-height: 36px;
-      padding: 8px 11px;
-      font-size: var(--font-1);
-    }
-
-    button:disabled {
-      cursor: not-allowed;
-      filter: grayscale(0.35);
-      opacity: 0.6;
-    }
-
-    button[aria-pressed="true"] {
-      border-color: rgba(255, 233, 166, 0.7);
-      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.28), 0 6px 12px rgba(0, 0, 0, 0.32);
-    }
-
-    .button-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .sticky-action-bar {
-      position: sticky;
-      bottom: calc(var(--safe-bottom) + var(--space-2));
-      z-index: 18;
-      padding: var(--space-2);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 218, 126, 0.24);
-      background: rgba(7, 17, 13, 0.9);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
-      backdrop-filter: blur(6px);
-    }
-
-    .selection-display {
-      margin-top: var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 221, 131, 0.2);
-      background: rgba(8, 20, 15, 0.72);
-      color: var(--text-soft);
-      font-size: var(--font-2);
-    }
-
-    .selection-display span {
-      color: var(--text-main);
-      font-weight: 800;
-      margin: 0 var(--space-1);
-    }
-
-    .card-grid-container,
-    .range-grid-container,
-    .pushfold-range-grid-container,
-    .icm-table-container {
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 216, 123, 0.2);
-      background: rgba(8, 20, 16, 0.72);
-    }
-
-    #card-grid,
-    #range-grid,
-    .pushfold-range-grid {
-      border-collapse: separate;
-      border-spacing: 6px;
-      margin: 6px;
-    }
-
-    #card-grid td {
-      width: 46px;
-      min-width: 46px;
-      height: 62px;
-      border-radius: 10px;
-      border: 2px solid #e4e4e4;
-      background: linear-gradient(180deg, #ffffff 0%, #ececec 100%);
-      color: #111;
-      text-align: center;
-      font-weight: 800;
-      font-size: 17px;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.24);
-      cursor: pointer;
-      position: relative;
-      user-select: none;
-      transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
-    }
-
-    #card-grid td:hover {
-      transform: translateY(-1px);
-    }
-
-    #card-grid td.selected {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.38), 0 8px 14px rgba(0, 0, 0, 0.35);
-      transform: translateY(-2px);
-    }
-
-    #card-grid td.disabled {
-      color: #747474;
-      border-color: #8f8f8f;
-      cursor: not-allowed;
-      background:
-        repeating-linear-gradient(135deg, #ececec 0 6px, #dbdbdb 6px 12px);
-    }
-
-    #card-grid td.disabled::after {
-      content: "LOCK";
-      position: absolute;
-      inset: auto 4px 4px auto;
-      padding: 1px 4px;
-      border-radius: 4px;
-      font-size: 9px;
-      background: rgba(0, 0, 0, 0.68);
-      color: #fff;
-      letter-spacing: 0.04em;
-    }
-
-    #range-grid td,
-    .pushfold-range-grid td {
-      width: var(--range-cell-size);
-      min-width: var(--range-cell-size);
-      height: var(--range-cell-size);
-      min-height: var(--range-cell-size);
-      padding: 2px;
-      border: 1px solid rgba(255, 244, 214, 0.33);
-      border-radius: 11px;
-      font-size: var(--range-font-size);
-      text-align: center;
-      font-weight: 800;
-      color: #f8f4e8;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: none;
-      transition: transform 0.1s ease, box-shadow 0.12s ease, border-color 0.12s ease;
-      position: relative;
-    }
-
-    #range-grid td.pair,
-    .pushfold-range-grid td.pair {
-      background: linear-gradient(180deg, #8d2f2f, #6f1f1f);
-    }
-
-    #range-grid td.suited,
-    .pushfold-range-grid td.suited {
-      background: linear-gradient(180deg, #2c5f9f, #1e4070);
-    }
-
-    #range-grid td.offsuit,
-    .pushfold-range-grid td.offsuit {
-      background: linear-gradient(180deg, #404040, #2f2f2f);
-    }
-
-    #range-grid td:hover,
-    .pushfold-range-grid td:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.28);
-    }
-
-    #range-grid td.active-range,
-    .pushfold-range-grid td.active-range {
-      border: 2px solid var(--accent);
-      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.25), 0 8px 12px rgba(0, 0, 0, 0.28);
-      filter: saturate(1.18);
-      transform: translateY(-1px);
-    }
-
-    #range-grid td.hero-hand {
-      outline: 2px solid #ff6e6e;
-      outline-offset: 0;
-    }
-
-    #range-grid td.dragging-target {
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
-    }
-
-    #range-grid-container.zoom-sm {
-      --range-cell-size: 40px;
-      --range-font-size: 11px;
-    }
-
-    #range-grid-container.zoom-md {
-      --range-cell-size: 46px;
-      --range-font-size: 12px;
-    }
-
-    #range-grid-container.zoom-lg {
-      --range-cell-size: 56px;
-      --range-font-size: 14px;
-    }
-
-    .pushfold-range-preview {
-      display: grid;
-      gap: var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .pushfold-range-preview-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-    }
-
-    .pushfold-range-preview-summary,
-    .pushfold-range-preview-empty {
-      color: var(--text-soft);
-    }
-
-    .pushfold-range-grid {
-      --range-cell-size: 32px;
-      --range-font-size: 10px;
-      width: max-content;
-    }
-
-    .pushfold-range-grid td {
-      cursor: default;
-      opacity: 0.32;
-      border-color: rgba(255, 244, 214, 0.14);
-      filter: grayscale(0.18) saturate(0.38) brightness(0.72);
-      box-shadow: none;
-    }
-
-    .pushfold-range-grid td:hover {
-      transform: none;
-      box-shadow: none;
-    }
-
-    .pushfold-range-grid td.active-range {
-      opacity: 1;
-      border-color: rgba(255, 212, 105, 0.92);
-      filter: none;
-      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.25), 0 8px 12px rgba(0, 0, 0, 0.28);
-    }
-
-    .pushfold-range-preview-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-    }
-
-    .pushfold-range-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      color: var(--text-soft);
-      font-size: var(--font-2);
-    }
-
-    .pushfold-range-legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .pushfold-range-legend-swatch {
-      width: 16px;
-      height: 16px;
-      border-radius: 5px;
-      border: 1px solid rgba(255, 244, 214, 0.2);
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    .pushfold-range-legend-swatch-active {
-      border-color: rgba(255, 212, 105, 0.92);
-      background: linear-gradient(180deg, #2c5f9f, #1e4070);
-      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.2);
-    }
-
-    .pushfold-range-legend-swatch-inactive {
-      opacity: 0.45;
-      background: linear-gradient(180deg, #404040, #2f2f2f);
-    }
-
-    .pushfold-range-category-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-    }
-
-    .pushfold-range-category-chip {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      letter-spacing: 0.01em;
-    }
-
-    .mix-surface-slot:empty {
-      display: none;
-    }
-
-    .mix-status-grid,
-    .mix-detail-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: var(--space-2);
-    }
-
-    .mix-status-band,
-    .mix-detail-band {
-      padding: var(--space-3);
-      border: 1px solid rgba(255, 233, 179, 0.16);
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .mix-status-band strong,
-    .mix-detail-band strong {
-      display: block;
-      margin-bottom: var(--space-1);
-      color: var(--text-main);
-    }
-
-    .mix-family-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .mix-family-picker {
-      display: grid;
-      gap: 8px;
-      margin-top: var(--space-2);
-    }
-
-    .mix-family-picker span {
-      color: var(--text-soft);
-      font-size: var(--font-1);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .mix-family-picker select {
-      width: 100%;
-      min-height: 42px;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 233, 179, 0.2);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-main);
-      padding: 10px 12px;
-    }
-
-    .mix-family-card {
-      text-align: left;
-      border-radius: var(--radius-md);
-      min-height: 136px;
-      padding: var(--space-3);
-      margin: 0;
-      border: 1px solid rgba(255, 226, 153, 0.2);
-      background:
-        radial-gradient(circle at top right, rgba(255, 214, 105, 0.12), transparent 38%),
-        linear-gradient(180deg, rgba(20, 41, 31, 0.96), rgba(10, 20, 16, 0.96));
-      text-shadow: none;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
-      white-space: normal;
-    }
-
-    .mix-family-card.active {
-      border-color: rgba(255, 216, 123, 0.58);
-      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.22), 0 10px 20px rgba(0, 0, 0, 0.22);
-    }
-
-    .mix-family-card h3 {
-      margin-bottom: var(--space-2);
-    }
-
-    .mix-family-card p {
-      margin: 0;
-      color: var(--text-soft);
-      font-size: var(--font-2);
-    }
-
-    .mix-card-chip-row,
-    .mix-chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-    }
-
-    .mix-card-chip-row {
-      margin-bottom: var(--space-2);
-    }
-
-    .mix-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 233, 179, 0.18);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-soft);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    .mix-chip-exact {
-      color: #10250f;
-      background: rgba(125, 228, 160, 0.92);
-      border-color: rgba(125, 228, 160, 0.92);
-    }
-
-    .mix-chip-practical {
-      color: #2d2106;
-      background: rgba(255, 212, 105, 0.88);
-      border-color: rgba(255, 212, 105, 0.88);
-    }
-
-    .mix-chip-grounded {
-      color: #dff7e7;
-      background: rgba(29, 88, 56, 0.72);
-      border-color: rgba(125, 228, 160, 0.3);
-    }
-
-    .mix-detail-panel {
-      margin-top: var(--space-3);
-      padding: var(--space-3);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 226, 153, 0.2);
-      background: rgba(8, 20, 15, 0.72);
-    }
-
-    .mix-detail-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-      margin-bottom: var(--space-2);
-    }
-
-    .mix-detail-copy {
-      margin: 0;
-      color: var(--text-soft);
-    }
-
-    .mix-link-list {
-      margin: 0;
-      padding-left: 18px;
-      color: var(--text-soft);
-      font-size: var(--font-2);
-    }
-
-    .mix-link-list li + li {
-      margin-top: 6px;
-    }
-
-    .mix-link-list a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    .mix-preview-copy {
-      margin: 0 0 var(--space-2);
-      color: var(--text-soft);
-      font-size: var(--font-2);
-    }
-
-    .mix-preview-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: var(--space-2);
-    }
-
-    .mix-preview-card {
-      padding: var(--space-3);
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 233, 179, 0.16);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .mix-preview-card h4 {
-      margin: 0 0 8px;
-      font-size: var(--font-3);
-      color: var(--text-main);
-    }
-
-    .mix-preview-eyebrow,
-    .mix-preview-note {
-      margin: 0 0 8px;
-      color: var(--text-soft);
-      font-size: var(--font-1);
-      line-height: 1.45;
-    }
-
-    .mix-preview-note:last-child {
-      margin-bottom: 0;
-    }
-
-    .mix-preview-body {
-      margin: 0;
-      color: var(--text-main);
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .mix-preview-body-code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: var(--font-1);
-    }
-
-    .mix-link-list a:hover {
-      text-decoration: underline;
-    }
-
-    .mix-empty {
-      color: var(--text-soft);
-      margin: 0;
-    }
-
-    .mix-selector-grid,
-    .mix-spot-meta {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: var(--space-2);
-    }
-
-    .mix-selector-field {
-      display: grid;
-      gap: 6px;
-    }
-
-    .mix-selector-field span {
-      color: var(--text-soft);
-      font-size: var(--font-1);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .mix-selector-field select {
-      width: 100%;
-      min-height: 40px;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 233, 179, 0.2);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-main);
-      padding: 10px 12px;
-    }
-
-    .mix-selector-field select:disabled {
-      opacity: 0.72;
-      cursor: default;
-    }
-
-    .mix-spot-band {
-      padding: var(--space-3);
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 233, 179, 0.16);
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .mix-spot-band strong {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--text-soft);
-      font-size: var(--font-1);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .mix-spot-band span {
-      color: var(--text-main);
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .mix-range-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-      margin-bottom: var(--space-2);
-    }
-
-    .mix-range-toolbar .button-row {
-      display: flex;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-    }
-
-    .mix-range-summary {
-      color: var(--text-soft);
-      margin: 0;
-      font-size: var(--font-1);
-    }
-
-    .mix-range-table-wrap {
-      overflow: auto;
-      border: 1px solid rgba(255, 233, 179, 0.16);
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .mix-range-table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 420px;
-    }
-
-    .mix-range-table th,
-    .mix-range-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(255, 233, 179, 0.12);
-      text-align: left;
-      vertical-align: top;
-    }
-
-    .mix-range-table th {
-      color: var(--text-soft);
-      font-size: var(--font-1);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      background: rgba(255, 255, 255, 0.03);
-      position: sticky;
-      top: 0;
-    }
-
-    .mix-range-table td.mix-code-cell {
-      font-family: "IBM Plex Mono", "Fira Code", monospace;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    .mix-shell-groups {
-      display: grid;
-      gap: var(--space-3);
-      margin-top: var(--space-3);
-    }
-
-    .mix-shell-group-header {
-      display: grid;
-      gap: 6px;
-      margin-bottom: var(--space-2);
-    }
-
-    .mix-shell-group-header h3 {
-      margin: 0;
-    }
-
-    .mix-shell-group-header p,
-    .mix-game-card-note,
-    .mix-honesty-banner,
-    .mix-axis-list,
-    .mix-note-list {
-      color: var(--text-soft);
-      font-size: var(--font-2);
-      line-height: 1.55;
-    }
-
-    .mix-game-card {
-      text-align: left;
-      border-radius: var(--radius-md);
-      min-height: 172px;
-      padding: var(--space-3);
-      margin: 0;
-      border: 1px solid rgba(255, 226, 153, 0.2);
-      background:
-        radial-gradient(circle at top right, rgba(255, 214, 105, 0.12), transparent 38%),
-        linear-gradient(180deg, rgba(20, 41, 31, 0.96), rgba(10, 20, 16, 0.96));
-      text-shadow: none;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
-      white-space: normal;
-    }
-
-    .mix-game-card.active {
-      border-color: rgba(255, 216, 123, 0.58);
-      box-shadow: 0 0 0 2px rgba(255, 212, 105, 0.22), 0 10px 20px rgba(0, 0, 0, 0.22);
-    }
-
-    .mix-game-card h3 {
-      margin-bottom: var(--space-2);
-    }
-
-    .mix-game-card p {
-      margin: 0;
-    }
-
-    .mix-game-card-note {
-      margin-top: var(--space-2);
-      font-size: var(--font-1);
-    }
-
-    .mix-chip-shell-bucket {
-      color: #d6ebff;
-      background: rgba(63, 110, 186, 0.7);
-      border-color: rgba(150, 188, 255, 0.34);
-    }
-
-    .mix-chip-shell-split {
-      color: #dff8f2;
-      background: rgba(34, 116, 98, 0.72);
-      border-color: rgba(141, 230, 212, 0.28);
-    }
-
-    .mix-chip-shell-threshold {
-      color: #fff1d1;
-      background: rgba(145, 94, 17, 0.74);
-      border-color: rgba(255, 206, 120, 0.3);
-    }
-
-    .mix-chip-shell-stud,
-    .mix-chip-shell-studsplit {
-      color: #f4e1ff;
-      background: rgba(93, 48, 129, 0.72);
-      border-color: rgba(208, 170, 255, 0.3);
-    }
-
-    .mix-chip-shell-variant {
-      color: #ffe2c6;
-      background: rgba(131, 58, 26, 0.74);
-      border-color: rgba(255, 183, 138, 0.3);
-    }
-
-    .mix-chip-coverage-exact {
-      color: #10250f;
-      background: rgba(125, 228, 160, 0.92);
-      border-color: rgba(125, 228, 160, 0.92);
-    }
-
-    .mix-chip-coverage-grounded {
-      color: #18331c;
-      background: rgba(182, 240, 149, 0.9);
-      border-color: rgba(182, 240, 149, 0.92);
-    }
-
-    .mix-chip-coverage-plan {
-      color: #2d2106;
-      background: rgba(255, 212, 105, 0.88);
-      border-color: rgba(255, 212, 105, 0.88);
-    }
-
-    .mix-chip-coverage-gap {
-      color: #231934;
-      background: rgba(198, 170, 255, 0.9);
-      border-color: rgba(198, 170, 255, 0.92);
-    }
-
-    .mix-chip-html {
-      color: #dff8f2;
-      background: rgba(34, 116, 98, 0.72);
-      border-color: rgba(141, 230, 212, 0.28);
-    }
-
-    .mix-chip-pdf {
-      color: #fff1d1;
-      background: rgba(145, 94, 17, 0.74);
-      border-color: rgba(255, 206, 120, 0.3);
-    }
-
-    .mix-chip-image {
-      color: #eefcf5;
-      background: rgba(58, 105, 86, 0.76);
-      border-color: rgba(153, 226, 193, 0.28);
-    }
-
-    .mix-chip-preview {
-      color: #fff2e5;
-      background: rgba(150, 88, 42, 0.78);
-      border-color: rgba(255, 208, 155, 0.3);
-    }
-
-    .mix-range-table td.mix-status-cell {
-      white-space: nowrap;
-    }
-
-    .mix-source-link {
-      color: #ffe7a1;
-      text-decoration: none;
-    }
-
-    .mix-source-link:hover {
-      text-decoration: underline;
-    }
-
-    .mix-tab-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .mix-tab-row button {
-      flex: 0 0 auto;
-    }
-
-    .mix-shell-frame,
-    .mix-shell-sidecar {
-      display: grid;
-      gap: var(--space-3);
-      margin-top: var(--space-3);
-    }
-
-    .mix-honesty-banner {
-      margin: 0;
-    }
-
-    .mix-note-list,
-    .mix-axis-list {
-      margin: 0;
-      padding-left: 18px;
-    }
-
-    .mix-note-list li + li,
-    .mix-axis-list li + li {
-      margin-top: 6px;
-    }
-
-    .mix-bundle-shell-note {
-      margin-top: var(--space-3);
-    }
-
-    .red {
-      color: #bf2f2f;
-    }
-
-    .black {
-      color: #181818;
-    }
-
-    #equity-hud {
-      position: static;
-      margin-bottom: var(--space-3);
-      border: 1px solid rgba(255, 212, 105, 0.4);
-      border-radius: var(--radius-md);
-      background:
-        linear-gradient(180deg, rgba(19, 33, 26, 0.95), rgba(11, 20, 15, 0.95));
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
-      backdrop-filter: blur(8px);
-      overflow: hidden;
-    }
-
-    .hud-main {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-2);
-      padding: var(--space-3);
-    }
-
-    .hud-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-    }
-
-    .hud-title {
-      color: var(--text-soft);
-      font-size: var(--font-1);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 2px;
-    }
-
-    .hud-number {
-      font-size: var(--font-4);
-      font-weight: 900;
-      color: var(--accent);
-      letter-spacing: 0.03em;
-    }
-
-    #hud-equity-value {
-      font-size: var(--font-5);
-    }
-
-    #hud-equity-error {
-      color: var(--text-soft);
-      font-size: var(--font-1);
-      margin-left: var(--space-1);
-    }
-
-    #hud-hero-cards {
-      display: flex;
-      gap: var(--space-1);
-    }
-
-    .hud-card {
-      min-width: 36px;
-      height: 48px;
-      border-radius: 8px;
-      border: 2px solid rgba(255, 235, 176, 0.65);
-      background: linear-gradient(180deg, #fefefe 0%, #ebebeb 100%);
-      color: #141414;
-      font-size: 18px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .hud-card.red {
-      color: #b62929;
-    }
-
-    #hud-status-line {
-      border-top: 1px solid rgba(255, 220, 143, 0.22);
-      padding: var(--space-2) var(--space-3) calc(var(--space-2) + 1px);
-      font-size: var(--font-2);
-      color: var(--text-soft);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-    }
-
-    #hud-status {
-      font-weight: 800;
-      color: var(--accent);
-    }
-
-    .status-positive,
-    .status-negative,
-    .status-neutral {
-      font-weight: 800;
-    }
-
-    .status-positive::before {
-      content: "[OK] ";
-      font-weight: 900;
-    }
-
-    .status-negative::before {
-      content: "[NG] ";
-      font-weight: 900;
-    }
-
-    .status-neutral::before {
-      content: "[..] ";
-      font-weight: 900;
-    }
-
-    .status-positive {
-      color: var(--ok);
-    }
-
-    .status-negative {
-      color: var(--danger);
-    }
-
-    .status-neutral {
-      color: var(--text-soft);
-    }
-
-    .quick-ranges {
-      display: flex;
-      gap: var(--space-2);
-      flex-wrap: wrap;
-      margin: var(--space-2) 0;
-    }
-
-    .quick-ranges button {
-      margin: 0;
-      min-height: 38px;
-      padding: 7px 12px;
-      font-size: var(--font-1);
-    }
-
-    .range-tools {
-      display: grid;
-      gap: var(--space-2);
-      margin: var(--space-2) 0;
-    }
-
-    .range-tools .range-zoom {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .range-tools .range-zoom button {
-      margin: 0;
-      min-width: 0;
-      padding: 7px 12px;
-    }
-
-    .range-save {
-      display: grid;
-      gap: var(--space-2);
-      margin-top: var(--space-3);
-      border-top: 1px solid rgba(255, 221, 131, 0.2);
-      padding-top: var(--space-3);
-    }
-
-    .range-save .inline-2 {
-      display: grid;
-      gap: var(--space-2);
-      grid-template-columns: 1fr;
-    }
-
-    .sample-select {
-      margin-top: var(--space-3);
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-2);
-    }
-
-    .mode-note {
-      margin: 0;
-      color: var(--text-dim);
-      font-size: var(--font-1);
-    }
-
-    #equity-precalc {
-      margin-top: var(--space-2);
-      border-style: dashed;
-    }
-    .ev-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-2);
-    }
-
-    .ev-block h3 {
-      margin-bottom: var(--space-2);
-    }
-
-    .ev-note {
-      margin-top: 0;
-      margin-bottom: var(--space-2);
-    }
-
-    .ev-out {
-      margin-top: var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 218, 126, 0.2);
-      background: rgba(6, 15, 12, 0.64);
-      color: var(--text-soft);
-      font-size: var(--font-2);
-      line-height: 1.55;
-    }
-
-    .ev-out .ev-value {
-      color: var(--text-main);
-      font-weight: 900;
-    }
-
-    .ev-out .ev-gap {
-      font-weight: 800;
-    }
-
-    .ev-quick-bets {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .ev-quick-bets button {
-      margin: 0;
-      min-height: 40px;
-      font-size: 12px;
-      padding: 8px 10px;
-    }
-
-    .ev-sticky-actions {
-      margin-top: var(--space-3);
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: var(--space-2);
-    }
-
-    .ev-sticky-actions button {
-      margin: 0;
-      min-height: 44px;
-    }
-
-    .ev-result {
-      margin-top: var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      border-radius: var(--radius-sm);
-      background: rgba(6, 15, 12, 0.55);
-      border: 1px solid rgba(255, 218, 126, 0.2);
-      color: var(--text-soft);
-      font-size: var(--font-2);
-    }
-
-    #ev-diff {
-      font-size: 17px;
-      font-weight: 900;
-    }
-
-    #ev-diff.ev-positive {
-      color: var(--ok);
-    }
-
-    #ev-diff.ev-negative {
-      color: var(--danger);
-    }
-
-    .ev-neutral {
-      color: var(--text-soft);
-    }
-
-    .results {
-      margin-top: var(--space-3);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 219, 130, 0.25);
-      background: rgba(8, 16, 13, 0.68);
-      padding: var(--space-3);
-      color: var(--text-main);
-    }
-
-    .results h3 {
-      margin-top: 0;
-      color: var(--accent);
-    }
-
-    .results hr {
-      border: none;
-      border-top: 1px solid rgba(255, 218, 126, 0.2);
-      margin: var(--space-2) 0;
-    }
-
-    #progress-wrap {
-      margin-top: var(--space-2);
-      width: 100%;
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.13);
-      overflow: hidden;
-    }
-
-    #progress-bar {
-      width: 0%;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #f2be4d, #ffe9a3);
-      transition: width 0.16s linear;
-    }
-
-    .controls {
-      margin: var(--space-3) 0;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-2);
-    }
-
-    .controls label {
-      display: block;
-    }
-
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-2);
-      margin-top: var(--space-2);
-    }
-
-    .icm-hint {
-      color: var(--text-dim);
-      font-size: var(--font-2);
-      margin: var(--space-2) 0;
-    }
-
-    .workspace-warning {
-      display: none;
-      margin: var(--space-2) 0;
-      padding: 8px 10px;
-      border: 1px solid rgba(255, 111, 111, 0.55);
-      background: rgba(126, 28, 28, 0.45);
-      color: var(--danger);
-      border-radius: var(--radius-sm);
-      font-size: var(--font-2);
-      font-weight: 700;
-    }
-
-    .workspace-warning.active {
-      display: block;
-    }
-
-    #icm-results,
-    #trainer-panel,
-    #settings-panel {
-      margin-top: var(--space-3);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 222, 137, 0.22);
-      background: rgba(8, 18, 14, 0.7);
-      padding: var(--space-3);
-    }
-
-    #icm-results p {
-      margin: var(--space-1) 0;
-    }
-
-    .icm-summary {
-      padding: 2px 0;
-    }
-
-    #icm-details {
-      margin-top: var(--space-2);
-    }
-
-    #icm-details summary {
-      cursor: pointer;
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      background: rgba(255, 212, 105, 0.12);
-      border: 1px solid rgba(255, 212, 105, 0.25);
-      font-weight: 800;
-      color: var(--accent);
-      user-select: none;
-    }
-
-    #icm-details[open] summary {
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-
-    #icm-details .icm-details-body {
-      background: rgba(4, 10, 8, 0.72);
-      border: 1px solid rgba(255, 212, 105, 0.2);
-      border-top: none;
-      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-      padding: var(--space-3);
-    }
-
-    #icm-error {
-      display: none;
-      margin-bottom: var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      border: 1px solid rgba(255, 127, 127, 0.5);
-      background: rgba(98, 26, 26, 0.6);
-      border-radius: var(--radius-sm);
-      word-break: break-word;
-      color: #ffcece;
-      font-weight: 700;
-    }
-
-    #icm-error.active {
-      display: block;
-    }
-
-    #assumed-ev {
-      display: none;
-      margin-top: var(--space-2);
-      padding: var(--space-2);
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(125, 228, 160, 0.35);
-      background: rgba(20, 59, 34, 0.55);
-      color: #d4f8df;
-    }
-
-    #assumed-ev.active {
-      display: block;
-    }
-
-    .ev-positive {
-      color: var(--ok);
-      font-weight: 800;
-    }
-
-    .ev-negative {
-      color: var(--danger);
-      font-weight: 800;
-    }
-
-    #icm-breakdown {
-      margin-top: var(--space-3);
-      overflow-x: auto;
-    }
-
-    .icm-section-title {
-      margin: var(--space-2) 0;
-      color: var(--accent);
-      font-weight: 900;
-      font-size: var(--font-2);
-    }
-
-    .icm-table-container table,
-    #icm-breakdown table {
-      width: 100%;
-      border-collapse: collapse;
-      background: rgba(11, 21, 17, 0.9);
-    }
-
-    .icm-table-container th,
-    .icm-table-container td,
-    #icm-breakdown th,
-    #icm-breakdown td {
-      border: 1px solid rgba(255, 218, 129, 0.22);
-      padding: 7px 8px;
-      font-size: 13px;
-      text-align: left;
-      white-space: nowrap;
-      color: #f1f8f2;
-    }
-
-    .icm-table-container input,
-    .icm-table-container select {
-      min-width: 76px;
-      margin-top: 0;
-      font-size: 13px;
-      padding: 6px 8px;
-    }
-
-    .icm-table-container input[readonly] {
-      opacity: 0.78;
-    }
-
-    #icm-action-table th:last-child,
-    #icm-action-table td:last-child {
-      width: 1%;
-      text-align: center;
-    }
-
-    #icm-action-table button {
-      margin: 0;
-      min-height: 32px;
-      padding: 5px 10px;
-      min-width: 0;
-      font-size: 13px;
-    }
-
-    #icm-player-table tr.icm-player-hero td {
-      background: rgba(61, 117, 176, 0.45);
-    }
-
-    #icm-player-table tr.icm-player-villain td {
-      background: rgba(133, 102, 34, 0.5);
-    }
-
-    #icm-table-panel,
-    #icm-drill-panel {
-      margin-top: var(--space-3);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 222, 137, 0.22);
-      background: rgba(8, 18, 14, 0.7);
-      padding: var(--space-3);
-    }
-
-    #icm-table-visual {
-      position: relative;
-      min-height: 280px;
-      border-radius: 999px;
-      border: 2px solid rgba(255, 215, 120, 0.42);
-      background:
-        radial-gradient(circle at center, rgba(31, 94, 63, 0.6) 0%, rgba(15, 47, 31, 0.9) 66%, rgba(10, 28, 20, 0.95) 100%);
-      overflow: hidden;
-    }
-
-    #icm-table-visual::before {
-      content: '';
-      position: absolute;
-      inset: 12%;
-      border: 1px dashed rgba(255, 231, 169, 0.3);
-      border-radius: 999px;
-      pointer-events: none;
-    }
-
-    .icm-seat {
-      position: absolute;
-      width: 132px;
-      min-height: 84px;
-      transform: translate(-50%, -50%);
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(255, 222, 137, 0.3);
-      background: rgba(9, 18, 14, 0.88);
-      padding: 7px 8px;
-      font-size: 12px;
-      color: #f1f8f2;
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
-    }
-
-    .icm-seat.hero {
-      border-color: rgba(125, 228, 160, 0.8);
-      box-shadow: 0 10px 24px rgba(72, 182, 117, 0.35);
-      background: rgba(16, 44, 30, 0.9);
-    }
-
-    .icm-seat.villain {
-      border-color: rgba(255, 196, 107, 0.78);
-      background: rgba(62, 45, 20, 0.85);
-    }
-
-    .icm-seat-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      font-weight: 800;
-      color: var(--accent);
-    }
-
-    .icm-seat-role {
-      color: var(--text-dim);
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .icm-seat-stack {
-      margin-top: 4px;
-      font-weight: 700;
-    }
-
-    .icm-seat-hand {
-      margin-top: 4px;
-      font-size: 11px;
-      color: #cce8d8;
-      min-height: 14px;
-    }
-
-    .icm-seat-action {
-      margin-top: 4px;
-      font-size: 11px;
-      color: #c4d4c8;
-      min-height: 14px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    @media (max-width: 430px) {
-      #icm-table-visual {
-        min-height: 280px;
-      }
-
-      .icm-seat {
-        width: clamp(88px, 24vw, 108px);
-        min-height: 70px;
-        padding: 5px 6px;
-        font-size: 10px;
-      }
-
-      .icm-seat-role,
-      .icm-seat-stack,
-      .icm-seat-hand,
-      .icm-seat-action {
-        font-size: 10px;
-      }
-
-      .icm-seat-action {
-        white-space: normal;
-        line-height: 1.15;
-        max-height: 2.3em;
-      }
-
-      .icm-pos-badge {
-        padding: 1px 5px;
-        font-size: 9px;
-      }
-    }
-
-    .icm-pos-badge {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 2px 7px;
-      font-size: 10px;
-      font-weight: 900;
-      border: 1px solid rgba(255, 230, 168, 0.34);
-      color: #fbeab9;
-      background: rgba(90, 68, 28, 0.42);
-    }
-
-    .icm-pos-btn {
-      color: #162b20;
-      background: rgba(255, 210, 101, 0.92);
-      border-color: rgba(255, 218, 126, 0.95);
-    }
-
-    .icm-pos-sb {
-      color: #122d36;
-      background: rgba(137, 224, 255, 0.9);
-      border-color: rgba(166, 236, 255, 0.95);
-    }
-
-    .icm-pos-bb {
-      color: #1a1d36;
-      background: rgba(163, 183, 255, 0.9);
-      border-color: rgba(191, 205, 255, 0.95);
-    }
-
-    #icm-results.icm-drill-hidden {
-      display: none;
-    }
-
-    #trainer-panel {
-      display: grid;
-      gap: var(--space-2);
-    }
-
-    .trainer-row {
-      display: grid;
-      gap: var(--space-2);
-      grid-template-columns: 1fr;
-    }
-
-    #trainer-prompt {
-      border: 1px solid rgba(255, 216, 123, 0.2);
-      border-radius: var(--radius-sm);
-      padding: var(--space-2) var(--space-3);
-      background: rgba(7, 16, 13, 0.72);
-      color: var(--text-soft);
-    }
-
-    #trainer-feedback {
-      padding: var(--space-2) var(--space-3);
-      border: 1px solid rgba(255, 216, 123, 0.2);
-      border-radius: var(--radius-sm);
-      background: rgba(7, 16, 13, 0.72);
-      min-height: 56px;
-    }
-
-    #trainer-history {
-      margin: 0;
-      padding-left: 16px;
-      max-height: 190px;
-      overflow: auto;
-      color: var(--text-soft);
-      font-size: var(--font-2);
-    }
-
-    .scroll-hint {
-      text-align: center;
-      color: var(--text-dim);
-      font-size: 11px;
-      margin: 4px 0;
-    }
-
-    .hidden-mobile {
-      display: none;
-    }
-
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    #bottom-nav {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 80;
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 1px;
-      padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-      background: rgba(6, 15, 12, 0.92);
-      border-top: 1px solid rgba(255, 216, 123, 0.28);
-      backdrop-filter: blur(8px);
-    }
-
-    #bottom-nav .nav-btn {
-      margin: 0;
-      min-width: 0;
-      min-height: 52px;
-      border-radius: 12px;
-      font-size: 9px;
-      line-height: 1.15;
-      border: 1px solid rgba(255, 222, 137, 0.2);
-      background: rgba(27, 51, 38, 0.8);
-      color: var(--text-soft);
-      font-weight: 700;
-      box-shadow: none;
-    }
-
-    #bottom-nav .nav-btn.active {
-      color: #2a2010;
-      border-color: rgba(255, 216, 123, 0.58);
-      background:
-        radial-gradient(circle at 30% 25%, rgba(255, 246, 213, 0.55), transparent 58%),
-        linear-gradient(180deg, #ffd77f 0%, #f4be4a 100%);
-    }
-
-    #settings-panel .setting-row {
-      display: grid;
-      gap: var(--space-2);
-    }
-
-    @media (min-width: 768px) {
-      body {
-        padding: var(--space-5);
-        padding-bottom: calc(var(--safe-bottom) + var(--space-5));
-      }
-
-      .container {
-        padding: var(--space-5);
-      }
-
-      .button-row {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .range-save .inline-2 {
-        grid-template-columns: 1fr auto auto;
-      }
-
-      .sample-select {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .ev-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .controls.controls-setup {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .controls.controls-action {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-
-      .actions {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .hud-main {
-        grid-template-columns: 1.05fr 1fr 1fr;
-      }
-
-      #bottom-nav {
-        left: 50%;
-        transform: translateX(-50%);
-        max-width: 860px;
-        border-top-left-radius: 16px;
-        border-top-right-radius: 16px;
-        border-left: 1px solid rgba(255, 216, 123, 0.28);
-        border-right: 1px solid rgba(255, 216, 123, 0.28);
-      }
-
-      #bottom-nav .nav-btn {
-        font-size: 10px;
-      }
-
-      .hidden-mobile {
-        display: initial;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        transition-duration: 0ms !important;
-        animation-duration: 0ms !important;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header class="app-header">
-      <h1>Poker Equity Calculator</h1>
-      <p class="section-label">モバイル最適化版: エクイティを判断に直結</p>
-      <div id="app-build-badge" class="app-build-badge"></div>
-      <div id="app-runtime-summary" class="app-runtime-summary"></div>
-    </header>
-    <div id="app-runtime-alert" class="app-runtime-alert" role="status" aria-live="polite"></div>
-
-    <!-- EV電卓タブ -->
-    <div id="evcalc-tab" class="tab-content active">
-      <section class="surface-card tight">
-        <h2>EV電卓</h2>
-        <p class="section-label">実戦用1アクション専用: 1ストリートのチップEVを即確認</p>
-      </section>
-
-      <section class="surface-card ev-block">
-        <h3>MDF（最小防衛頻度）</h3>
-        <p class="icm-hint ev-note">前提: 純ブラフ固定（コールされたら勝率0%）。相手はフォールド/コールのみ（レイズ/将来ストリート無視）。</p>
-        <div class="ev-grid">
-          <label for="evbet-pot">P (ベット前ポット)
-            <input id="evbet-pot" type="number" min="0" step="0.1" placeholder="例: 10">
-          </label>
-          <label for="evbet-size">B (ベット額)
-            <input id="evbet-size" type="number" min="0" step="0.1" placeholder="例: 6.7">
-          </label>
-        </div>
-        <div class="ev-quick-bets">
-          <button type="button" id="evbet-set-third" class="secondary" onclick="setEvBetByPotRatio(1/3); updateBetEvDecision();">1/3P</button>
-          <button type="button" id="evbet-set-half" class="secondary" onclick="setEvBetByPotRatio(1/2); updateBetEvDecision();">1/2P</button>
-          <button type="button" id="evbet-set-two-third" class="secondary" onclick="setEvBetByPotRatio(2/3); updateBetEvDecision();">2/3P</button>
-          <button type="button" id="evbet-set-pot" class="secondary" onclick="setEvBetByPotRatio(1); updateBetEvDecision();">1.0P</button>
-        </div>
-        <div class="ev-out">
-          最小防衛頻度（MDF）: <span id="evbet-mdf" class="ev-value">--</span><br>
-          <span id="evbet-error" class="icm-hint"></span>
-        </div>
-        <div class="button-row">
-          <button id="evcalc-calc-bet-btn" type="button" class="secondary" onclick="updateBetEvDecision();">ベット更新</button>
-        </div>
-      </section>
-    </div>
-
-    <!-- エクイティ計算タブ -->
-    <div id="winrate-tab" class="tab-content">
-      <section class="surface-card tight">
-        <h2>対想定レンジ</h2>
-        <p class="section-label">レンジ対ハンドの勝率を算出</p>
-      </section>
-      <section id="equity-hud" aria-live="polite">
-        <div class="hud-main">
-          <div>
-            <p class="hud-title">ヒーロー</p>
-            <div id="hud-hero-cards">
-              <span id="hud-hero-1" class="hud-card">--</span>
-              <span id="hud-hero-2" class="hud-card">--</span>
-            </div>
-          </div>
-          <div>
-            <p class="hud-title">Villain Range</p>
-            <div class="hud-number"><span id="hud-combos">0</span> / 1326</div>
-            <div class="section-label"><span id="hud-combo-pct">0.0</span>% 有効コンボ</div>
-          </div>
-          <div>
-            <p class="hud-title">Equity</p>
-            <div class="hud-number" id="hud-equity-value">--%</div>
-            <div id="hud-equity-error">誤差: --</div>
-          </div>
-        </div>
-        <div id="hud-status-line">
-          <span id="hud-status" class="status-neutral">待機中</span>
-          <span id="hud-progress">進捗 0.0%</span>
-        </div>
-      </section>
-
-      <section class="surface-card" id="card-selection">
-        <h2>ヒーローのハンド</h2>
-        <p class="section-label">タップして2枚選択</p>
-        <div class="scroll-hint">カードグリッドは横スクロール可</div>
-        <div class="card-grid-container">
-          <table id="card-grid">
-            <tr>
-              <td data-card="As" class="black">A♠</td>
-              <td data-card="Ks" class="black">K♠</td>
-              <td data-card="Qs" class="black">Q♠</td>
-              <td data-card="Js" class="black">J♠</td>
-              <td data-card="Ts" class="black">T♠</td>
-              <td data-card="9s" class="black">9♠</td>
-              <td data-card="8s" class="black">8♠</td>
-              <td data-card="7s" class="black">7♠</td>
-              <td data-card="6s" class="black">6♠</td>
-              <td data-card="5s" class="black">5♠</td>
-              <td data-card="4s" class="black">4♠</td>
-              <td data-card="3s" class="black">3♠</td>
-              <td data-card="2s" class="black">2♠</td>
-            </tr>
-            <tr>
-              <td data-card="Ah" class="red">A♥</td>
-              <td data-card="Kh" class="red">K♥</td>
-              <td data-card="Qh" class="red">Q♥</td>
-              <td data-card="Jh" class="red">J♥</td>
-              <td data-card="Th" class="red">T♥</td>
-              <td data-card="9h" class="red">9♥</td>
-              <td data-card="8h" class="red">8♥</td>
-              <td data-card="7h" class="red">7♥</td>
-              <td data-card="6h" class="red">6♥</td>
-              <td data-card="5h" class="red">5♥</td>
-              <td data-card="4h" class="red">4♥</td>
-              <td data-card="3h" class="red">3♥</td>
-              <td data-card="2h" class="red">2♥</td>
-            </tr>
-            <tr>
-              <td data-card="Ad" class="red">A♦</td>
-              <td data-card="Kd" class="red">K♦</td>
-              <td data-card="Qd" class="red">Q♦</td>
-              <td data-card="Jd" class="red">J♦</td>
-              <td data-card="Td" class="red">T♦</td>
-              <td data-card="9d" class="red">9♦</td>
-              <td data-card="8d" class="red">8♦</td>
-              <td data-card="7d" class="red">7♦</td>
-              <td data-card="6d" class="red">6♦</td>
-              <td data-card="5d" class="red">5♦</td>
-              <td data-card="4d" class="red">4♦</td>
-              <td data-card="3d" class="red">3♦</td>
-              <td data-card="2d" class="red">2♦</td>
-            </tr>
-            <tr>
-              <td data-card="Ac" class="black">A♣</td>
-              <td data-card="Kc" class="black">K♣</td>
-              <td data-card="Qc" class="black">Q♣</td>
-              <td data-card="Jc" class="black">J♣</td>
-              <td data-card="Tc" class="black">T♣</td>
-              <td data-card="9c" class="black">9♣</td>
-              <td data-card="8c" class="black">8♣</td>
-              <td data-card="7c" class="black">7♣</td>
-              <td data-card="6c" class="black">6♣</td>
-              <td data-card="5c" class="black">5♣</td>
-              <td data-card="4c" class="black">4♣</td>
-              <td data-card="3c" class="black">3♣</td>
-              <td data-card="2c" class="black">2♣</td>
-            </tr>
-          </table>
-        </div>
-        <div class="selection-display">
-          選択中: <span id="hand-card1">--</span><span id="hand-card2">--</span><span id="hand-category"></span>
-        </div>
-      </section>
-
-      <section class="surface-card" id="range-selection">
-        <h2>相手のレンジ</h2>
-        <div class="quick-ranges">
-          <button type="button" onclick="selectRange('top5')">Top 5%</button>
-          <button type="button" onclick="selectRange('top10')">Top 10%</button>
-          <button type="button" onclick="selectRange('top15')">Top 15%</button>
-          <button type="button" onclick="selectRange('top20')">Top 20%</button>
-          <button type="button" onclick="selectRange('top30')">Top 30%</button>
-          <button type="button" onclick="selectRange('pairs')">全ポケット</button>
-          <button type="button" onclick="selectRange('broadway')">ブロードウェイ</button>
-          <button type="button" onclick="selectRange('suited-connectors')">SC</button>
-          <button type="button" onclick="selectRange('clear')" class="clear">クリア</button>
-        </div>
-
-        <div class="range-tools">
-          <div class="range-zoom">
-            <span class="chip-text">ズーム</span>
-            <button type="button" id="zoom-sm-btn" class="small secondary">小</button>
-            <button type="button" id="zoom-md-btn" class="small secondary">中</button>
-            <button type="button" id="zoom-lg-btn" class="small secondary">大</button>
-          </div>
-        </div>
-
-        <p class="section-label">セル長押し/ドラッグで連続選択対応</p>
-        <div class="scroll-hint">レンジグリッドは横スクロール可</div>
-        <div id="range-grid-container" class="range-grid-container zoom-md">
-          <table id="range-grid">
-            <!-- JavaScriptで生成 -->
-          </table>
-        </div>
-        <div class="selection-display">
-          169カテゴリ: <span id="range-count">0</span>/169 (<span id="range-percent">0.0</span>%)
-        </div>
-
-        <div class="range-save">
-          <label for="range-name-input">レンジ名</label>
-          <div class="inline-2">
-            <input id="range-name-input" type="text" maxlength="40" placeholder="例: BTN open 30%">
-            <button id="save-range-btn" type="button">保存</button>
-          </div>
-          <label for="saved-range-select">保存済みレンジ</label>
-          <div class="inline-2">
-            <select id="saved-range-select">
-              <option value="">選択してください</option>
-            </select>
-            <button id="load-range-btn" type="button" class="secondary">読込</button>
-            <button id="delete-range-btn" type="button" class="cancel">削除</button>
-          </div>
-          <label for="range-json-input">JSON入出力 (任意)</label>
-          <input id="range-json-input" type="text" placeholder='{"name":"sample","hands":["AA","AKs"]}'>
-          <div class="button-row">
-            <button id="range-export-btn" type="button" class="secondary">JSON出力</button>
-            <button id="range-import-btn" type="button" class="secondary">JSON読込</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="surface-card tight">
-        <div class="sample-select">
-          <label for="calc-mode">計算モード
-            <select id="calc-mode">
-              <option value="precise" selected>精密 (全コンボ×サンプル)</option>
-              <option value="fast">高速 (レンジ直接サンプル)</option>
-            </select>
-          </label>
-          <label for="sample-count">サンプル数
-            <select id="sample-count">
-              <option value="25000">25,000回</option>
-              <option value="50000">50,000回</option>
-              <option value="100000">100,000回</option>
-            </select>
-          </label>
-        </div>
-        <p class="mode-note" id="calc-mode-note">精密: 広いレンジでは時間がかかります。高速: 推定値を素早く表示します。</p>
-        <div class="selection-display" id="equity-precalc">
-          相手有効コンボ数: <span id="villain-combo-count">0</span>
-          / 推定総試行回数: <span id="estimated-trials">0</span>
-        </div>
-        <div id="progress-wrap" aria-hidden="true">
-          <div id="progress-bar"></div>
-        </div>
-        <div class="button-row sticky-action-bar">
-          <button id="calc-winrate-btn" type="button">エクイティ計算</button>
-          <button id="cancel-winrate-btn" type="button" class="cancel" style="display:none;" disabled>キャンセル</button>
-        </div>
-      </section>
-
-          <section class="surface-card">
-            <p class="icm-hint">
-              必要勝率（ポットオッズ）とコールEVは EV電卓 → 機能A を使用。<br>
-              このタブはエクイティEの推定だけを行う。
-            </p>
-          </section>
-
-      <div id="winrate-result" class="results"></div>
-    </div>
-
-    <!-- Push/Fold 専用タブ -->
-    <div id="pushfold-tab" class="tab-content">
-      <section class="surface-card tight">
-        <h2>Push/Fold</h2>
-        <p class="section-label">AOF 専用画面。repo-hosted bundle または explicit bridge で range を表示。</p>
-      </section>
-      <div
-        id="pushfold-surface-slot"
-        class="pushfold-surface-slot"
-        data-target-surface="pushfold-tab"
-        aria-live="polite"
-      ></div>
-    </div>
-
-    <div id="mix-tab" class="tab-content">
-      <section class="surface-card tight">
-        <h2>Mix Game Browser</h2>
-        <p class="section-label">まずはゲームごとに、実際に使うレンジ表示へ寄せて整理します。現在は PLO のオープンレンジとコール / ディフェンス総覧を優先して表示します。</p>
-      </section>
-      <div
-        id="mix-surface-slot"
-        class="mix-surface-slot"
-        data-target-surface="mix-tab"
-        aria-live="polite"
-      ></div>
-    </div>
-
-    <!-- ICM計算タブ -->
-    <div id="icm-tab" class="tab-content">
-      <div class="controls controls-setup">
-        <label>プレイヤー数
-          <select id="num-players">
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-          </select>
-        </label>
-        <label>BBアンティ
-          <input type="number" id="bb-ante" step="0.1" min="0" placeholder="0">
-        </label>
-        <div class="actions">
-          <button id="generate-btn" type="button">生成</button>
-          <button id="jump-icm-table-btn" type="button" class="secondary">卓ビューへ移動</button>
-        </div>
-      </div>
-      <p class="icm-hint">スタック/金額はBB換算。SB=0.5 / BB=1.0固定。2人ショーダウン前提。</p>
-
-      <div id="player-inputs"></div>
-      <div class="controls controls-action">
-        <label>ヒーロー
-          <select id="hero-index"></select>
-        </label>
-        <label>オールイン相手
-          <select id="allin-index"></select>
-        </label>
-        <div class="icm-hint">想定勝率(%): <span id="assumed-winrate-display">--</span></div>
-        <div class="icm-hint">ヒーロー: <span id="icm-assumed-hero-hand">--</span></div>
-        <input type="hidden" id="assumed-winrate" value="">
-      </div>
-      <div id="assumed-sync-message" class="icm-hint status-neutral">想定勝率はプリフロップのエクイティ計算で更新されます。</div>
-
-      <div id="icm-table-panel">
-        <div class="icm-section-title">卓ビュー（ICM）</div>
-        <div id="icm-table-visual" aria-live="polite"></div>
-      </div>
-
-      <div id="icm-drill-panel">
-        <div class="icm-section-title">ICMドリル（方式1: プリフロップ想定勝率を使用）</div>
-        <div id="icm-drill-prompt" class="icm-hint">想定勝率が未設定でも「出題」は可能です。回答判定はプリフロップ計算後に表示されます。</div>
-        <div class="actions">
-          <button id="icm-drill-start-btn" type="button">出題</button>
-          <button id="icm-drill-call-btn" type="button" class="secondary">コール</button>
-          <button id="icm-drill-fold-btn" type="button" class="secondary">フォールド</button>
-        </div>
-        <div id="icm-drill-feedback" class="icm-hint"></div>
-      </div>
-
-      <div id="icm-actions">
-        <div class="icm-section-title">アクション(オールイン前)</div>
-        <p class="icm-hint">オールイン相手はこの後自動オールインします。オールイン前アクションには追加しないでください（空欄でもOK）。</p>
-        <p class="icm-hint">この欄は「オールイン前」のみです。オールイン後に行動する他プレイヤーは、このツールでは自動フォールド扱い（2人ショーダウン前提）されます。</p>
-        <div class="icm-table-container">
-          <table id="icm-action-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>プレイヤー</th>
-                <th>アクション</th>
-                <th>金額(to)</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="icm-action-rows"></tbody>
-          </table>
-        </div>
-        <div class="actions">
-          <button id="add-icm-action-btn" type="button">+ アクション追加</button>
-          <button id="fold-others-icm-action-btn" type="button">残り全員フォールド</button>
-          <button id="clear-icm-action-btn" type="button">クリア</button>
-        </div>
-      </div>
-      <div class="actions">
-        <button id="calc-icm-btn" type="button">ICM計算</button>
-      </div>
-
-      <div id="icm-results">
-        <div id="icm-error" role="alert"></div>
-        <div class="icm-summary">
-          <p>有効オールイン(ヒーローvs相手): <span id="effective-stack">0.00</span></p>
-          <p>相手オールイン(to): <span id="villain-allin-to">0.00</span></p>
-          <p>コール額(追加): <span id="call-amount">0.00</span></p>
-          <p>ショーダウンポット: <span id="pot-call">0.00</span></p>
-          <p>必要勝率: <span id="required-winrate">0.00%</span> / エクイティ: <span id="equity-for-icm">-</span></p>
-        </div>
-
-        <details id="icm-details">
-          <summary>詳細</summary>
-          <div class="icm-details-body">
-            <p>フォールド時 相手純増(デッドポット): <span id="pot-fold">0.00</span></p>
-            <p>フォールド時 未コール返却(相手): <span id="fold-uncalled-villain">0.00</span></p>
-            <p>コール時 未コール返却(相手): <span id="call-uncalled-villain">0.00</span></p>
-            <p>フォールド時EV: <span id="fold-ev">0.00</span></p>
-            <p>勝利時EV: <span id="win-ev">0.00</span></p>
-            <p>敗北時EV: <span id="lose-ev">0.00</span></p>
-            <div id="assumed-ev">
-              <p>想定勝率でのコールEV: <span id="assumed-call-ev">0.00</span></p>
-              <p>EV差(コール-フォールド): <span id="assumed-ev-diff">0.00</span></p>
-            </div>
-            <div id="icm-breakdown"></div>
-            <div id="ev-list"></div>
-          </div>
-        </details>
-      </div>
-
-    </div>
-
-    <div id="trainer-tab" class="tab-content">
-      <div id="trainer-panel">
-        <h2>トレーナー</h2>
-        <p class="icm-hint">即答ドリル（MDF）。出題条件から正答を計算して答える。</p>
-        <div id="trainer-prompt">「出題」を押して開始してください。</div>
-        <div class="trainer-row">
-          <label for="trainer-session-mode">進行モード
-            <select id="trainer-session-mode">
-              <option value="practice">練習（時間制限なし）</option>
-              <option value="drill">鍛錬（時間制限あり）</option>
-            </select>
-          </label>
-          <label for="trainer-time-limit-sec">制限秒数（鍛錬）
-            <input id="trainer-time-limit-sec" type="number" min="1" step="1" value="8">
-          </label>
-          <label for="trainer-guess-input">あなたの回答(%)
-            <input id="trainer-guess-input" type="number" min="0" max="100" step="0.1" placeholder="例: 33.3">
-          </label>
-          <div class="button-row">
-            <button id="trainer-new-btn" type="button">出題</button>
-            <button id="trainer-check-btn" type="button" class="secondary">答え合わせ</button>
-          </div>
-        </div>
-        <div id="trainer-timer" class="icm-hint">残り時間: --</div>
-        <div id="trainer-feedback"></div>
-        <div id="trainer-stats">MDF平均得点: -- (0問)</div>
-        <ol id="trainer-history"></ol>
-      </div>
-    </div>
-
-	    <div id="settings-tab" class="tab-content">
-	      <div id="settings-panel">
-	        <h2>設定</h2>
-	        <div class="setting-row">
-	          <div class="icm-hint">
-	            現在開いているURL: <span id="settings-current-url" class="icm-hint">--</span>
-	          </div>
-	          <div id="workspace-warning" class="workspace-warning" role="status" aria-live="polite"></div>
-	        <label for="default-zoom-select">初期レンジズーム
-            <select id="default-zoom-select">
-              <option value="zoom-sm">小</option>
-              <option value="zoom-md" selected>中</option>
-              <option value="zoom-lg">大</option>
-            </select>
-          </label>
-          <label for="default-mode-select">初期計算モード
-            <select id="default-mode-select">
-              <option value="precise" selected>精密</option>
-              <option value="fast">高速</option>
-            </select>
-          </label>
-	          <button id="save-settings-btn" type="button">設定を保存</button>
-	        </div>
-	        <div class="setting-row">
-	          <button id="run-ev-selftest-btn" type="button" class="secondary">EV電卓セルフテスト</button>
-	          <div id="ev-selftest-output" class="icm-hint">未実行</div>
-	        </div>
-	      </div>
-	    </div>
-  </div>
-
-  <nav id="bottom-nav" aria-label="メインナビゲーション">
-    <button type="button" class="nav-btn active" data-tab="evcalc-tab">EV電卓</button>
-    <button type="button" class="nav-btn" data-tab="winrate-tab">プリフロップ</button>
-    <button type="button" class="nav-btn" data-tab="pushfold-tab">AOF</button>
-    <button type="button" class="nav-btn" data-tab="mix-tab">Mix</button>
-    <button type="button" class="nav-btn" data-tab="icm-tab">ICM</button>
-    <button type="button" class="nav-btn" data-tab="trainer-tab">トレーナー</button>
-    <button type="button" class="nav-btn" data-tab="settings-tab">設定</button>
-  </nav>
-
-  <script src="assets/pushfold/aof-bundle.embedded.v1.js"></script>
-  <script src="assets/pushfold/aof-bundle-safety.embedded.v1.js"></script>
-  <script src="assets/mix/plo-hu-exact.embedded.v1.js"></script>
-  <script src="assets/mix/badugi-pre-draw-public-ranges.embedded.v1.js"></script>
-  <script src="assets/mix/a5-triple-draw-public-ranges.embedded.v1.js"></script>
-  <script src="assets/mix/stud8-third-street-public-ranges.embedded.v1.js"></script>
-  <script src="assets/mix/basil-826-public-ranges.embedded.v1.js"></script>
-  <script>
 		    // グローバル変数
 		    let selectedCards = [];
 		    let winrateCancelRequested = false;
@@ -3841,12 +1261,12 @@
     const MIX_DISPLAY_CLASS_META = {
       grounded_exact_display: {
         label: 'Tool-ready / Exact',
-        description: '資料に残っている exact preflop の spot を表示します。family に応じて decision node または chart row を使います。',
+        description: 'exact preflop source-backed spot browser。family により decision node または chart row を表示',
         chipClass: 'mix-chip-exact',
       },
       grounded_practical_coverage: {
         label: 'Reference / Practical',
-        description: '記事由来の practical coverage です。exact preflop chart ではなく参照用として扱います。',
+        description: 'article-derived practical coverage。exact preflop source browser ではなく reference 用',
         chipClass: 'mix-chip-practical',
       },
     };
@@ -3855,13 +1275,13 @@
         toolScope: 'PLO hi / preflop only / HU SB vs BB / 100bb / with limp',
         repoScope: 'tool-ready exact preflop response-node slice: PLO hi HU SB vs BB / 100bb / with-limp / 31 source-backed nodes',
         warning: 'flat range table ではありません。HU with-limp source tree の hero response nodes を表示します。6max・postflop・他 stack depth は未収録です。',
-        surfaceSemantics: 'source-native preflop decision-node browser です。selector は hero seat・prior action path・hero action を固定し、各 spot の full source rows を表示します。',
+        surfaceSemantics: 'source-native preflop decision-node browser。selector は hero seat・prior action path・hero action を固定し、各 spot の full source rows を表示します。',
       },
       'cc_hilo / 4-card': {
         toolScope: 'O8 / preflop only / first-in open / LJ-HJ-CO-BU',
         repoScope: 'tool-ready exact preflop chart slice: O8 first-in open chart / LJ-HJ-CO-BU / 20 chart spots',
         warning: 'opening chart slice のみです。defend nodes・postflop・exact stack model は source にありません。',
-        surfaceSemantics: 'source-native chart browser です。selector は open position / chart tab / low qualifier を切り替え、solver tree ではなく chart row を表示します。',
+        surfaceSemantics: 'source-native chart browser。selector は open position / chart tab / low qualifier を切り替え、solver tree ではなく chart row を表示します。',
       },
       stud_high: {
         toolScope: 'reference only / article-derived practical stud-high notes',
@@ -3887,32 +1307,32 @@
     const MIX_GAME_DISPLAY_CLASS_META = {
       bucket_table: {
         label: 'Bucket Table',
-        description: 'position x bucket family の表です。raw combo 数が多すぎるゲームを hand-class で整理します。',
+        description: 'position x bucket family の表。raw combo 数が多すぎるゲームを hand-class で整理する。',
         chipClass: 'mix-chip-shell-bucket',
       },
       split_pot_bucket_matrix: {
         label: 'Split-Pot Bucket Matrix',
-        description: 'family bucket を position ごとに ALL / specific / NONE で読む split-pot 用 matrix です。',
+        description: 'family bucket を position ごとに ALL / specific / NONE で読む split-pot 用 matrix。',
         chipClass: 'mix-chip-shell-split',
       },
       threshold_ladder: {
         label: 'Threshold Ladder',
-        description: 'pat / draw count と quality threshold の広がりを ladder で見ます。',
+        description: 'pat / draw count と quality threshold の widening を ladder で見る。',
         chipClass: 'mix-chip-shell-threshold',
       },
       stud_context_board: {
         label: 'Stud Context Board',
-        description: 'third street の start class と bring-in / live-dead context を、board 状況込みで見ます。',
+        description: 'third street の start class と bring-in / live-dead context を board aware に見る。',
         chipClass: 'mix-chip-shell-stud',
       },
       stud_context_split_pot_board: {
         label: 'Stud Split-Pot Board',
-        description: 'stud context に low contest / scoop / qualifier を重ねる split-pot stud 用の表示です。',
+        description: 'stud context に low contest / scoop / qualifier を重ねる split-pot stud shell。',
         chipClass: 'mix-chip-shell-studsplit',
       },
       variant_first_split_pot_draw_board: {
         label: 'Variant-First Draw Board',
-        description: 'variant split と role hierarchy を先に固定する特殊 draw game 用の表示です。',
+        description: 'variant split と role hierarchy を先に固定する special draw shell。',
         chipClass: 'mix-chip-shell-variant',
       },
     };
@@ -3924,22 +1344,17 @@
       },
       grounded_practical_bundle: {
         label: 'Grounded Practical',
-        bannerText: 'この表示は exact chart ではなく、資料で裏付けた practical heuristic に基づきます。',
+        bannerText: 'This display is backed by grounded practical heuristics rather than an exact chart.',
         chipClass: 'mix-chip-coverage-grounded',
-      },
-      source_confirmed_archetypes: {
-        label: 'Source-Confirmed Archetypes',
-        bannerText: '公開資料で確認できる役・アーキタイプ・リスクだけを表示します。position 別の確定レンジではありません。',
-        chipClass: 'mix-chip-coverage-plan',
       },
       research_frozen_no_bundle: {
         label: 'Source-Backed Plan',
-        bannerText: '資料ベースの表示方針は固定済みですが、まだ normalized repo bundle ではありません。',
+        bannerText: 'This display is source-backed at the planning level, but not yet backed by a normalized repo bundle.',
         chipClass: 'mix-chip-coverage-plan',
       },
       research_plus_bundle_gap: {
         label: 'Planned Shell / Bundle Gap',
-        bannerText: '資料ベースの表示方針と現在の repo 表示をつないでいます。最終版の公開 shell ではありません。',
+        bannerText: 'This display merges source-backed planning with a current repo surface that is not yet the final public shell.',
         chipClass: 'mix-chip-coverage-gap',
       },
     };
@@ -3947,25 +1362,25 @@
       {
         id: 'community_card_buckets',
         title: 'Community-Card Buckets',
-        copy: '13x13 grid ではなく、hand-class bucket で整理する 4-card 系ゲーム。',
+        copy: 'grid ではなく hand-class bucket で出すべき 4-card 系ゲーム。',
         gameIds: ['plo_high', 'o8', 'plo8'],
       },
       {
         id: 'draw_threshold_games',
         title: 'Draw Threshold Games',
-        copy: 'pat / draw count と threshold の広がりを ladder で見せるゲーム群。',
+        copy: 'pat / draw count と threshold widening を ladder で見せるゲーム群。',
         gameIds: ['badugi', 'a5_triple_draw', 'deuce_to_seven_triple_draw'],
       },
       {
         id: 'stud_context_games',
         title: 'Stud Context Games',
-        copy: 'seat percent ではなく、bring-in 相対位置と live/dead 情報で読む stud 系ゲーム。',
+        copy: 'seat percent ではなく bring-in 相対位置と live/dead 情報で読む stud 系ゲーム。',
         gameIds: ['razz', 'stud_high', 'stud8'],
       },
       {
         id: 'variant_split_pot_draw',
         title: 'Variant Split-Pot Draw',
-        copy: 'variant split と role reference を先に固定しないと誤表示になりやすい特殊ルール系。',
+        copy: 'variant split と role reference を先に固定しないと誤表示になる特殊ルール系。',
         gameIds: ['basil_826'],
       },
     ];
@@ -4011,7 +1426,7 @@
         familyId: '',
         displayClass: 'threshold_ladder',
         coverageTier: 'research_frozen_no_bundle',
-        repoArtifact: 'assets/mix/a5-triple-draw-public-ranges.v1.json',
+        repoArtifact: '',
         planningDoc: 'out/_codex/a5_triple_draw_rank_bucket_and_ui_plan.md',
         selectorAxes: ['position', 'draw_state', 'quality_threshold'],
       },
@@ -4044,49 +1459,49 @@
       },
       {
         gameId: 'stud8',
-        familyId: '',
+        familyId: 'stud_hilo',
         displayClass: 'stud_context_split_pot_board',
-        coverageTier: 'grounded_practical_bundle',
-        repoArtifact: 'assets/mix/stud8-third-street-public-ranges.v1.json',
+        coverageTier: 'research_plus_bundle_gap',
+        repoArtifact: 'out/_codex/mix_ui/stud_hilo.json',
         planningDoc: 'out/_codex/stud8_rank_bucket_and_ui_plan.md',
-        selectorAxes: ['position', 'open_complete', 'vs_complete', 'source_pack'],
+        selectorAxes: ['street', 'start_class', 'bring_in_relation', 'low_contest', 'pot_shape'],
       },
       {
         gameId: 'basil_826',
         familyId: '',
         displayClass: 'variant_first_split_pot_draw_board',
-        coverageTier: 'source_confirmed_archetypes',
+        coverageTier: 'grounded_practical_bundle',
         repoArtifact: 'assets/mix/basil-826-public-ranges.v1.json',
         planningDoc: 'out/_codex/826_rank_bucket_and_ui_plan.md',
-        selectorAxes: ['variant', 'view', 'source_scope'],
+        selectorAxes: ['variant', 'view', 'position'],
       },
     ];
     const MIX_GAME_UI_META = {
       plo_high: {
         label: 'PLO High',
-        cardCopy: 'position を選び、first-in open の資料由来 notation を表示します。',
-        shellSummary: 'PLO は fold bucket ではなく、position ごとの open notation を表示します。',
+        cardCopy: 'position を選んで、first-in open できる exact notation をそのまま表示。',
+        shellSummary: 'PLO は fold bucket ではなく、position ごとの open notation をそのまま見せる。',
         sourceProfile: 'PokerVIP conservative first-in chart + Upswing PDF coverage notes',
         currentSurface: 'Current repo surface: cc_high / 4-card exact HU SB vs BB 100bb with-limp',
-        shows: 'position ごとの open hand notation と、repo 内 exact slice の spot rows を表示します。',
-        notShows: 'Open / Mix / Fold bucket や、根拠のない exact percent chart は出しません。',
+        shows: 'position ごとの open hand notation をそのまま出す。',
+        notShows: 'Open / Mix / Fold bucket や fake exact percent chart は出さない。',
         highlightCards: [
           {
-            title: 'Notation を優先',
+            title: 'Exact notation first',
             body: 'ユーザーには QQxx のような coarse bucket ではなく、記事に書かれている open notation を直接見せる。',
           },
           {
-            title: 'Position ごとの差',
-            body: 'UTG から HJ、CO、BTN に進むにつれて、追加される notation を読める形にします。',
+            title: 'Position widening',
+            body: 'UTG から HJ、CO、BTN に進むにつれて、前ポジション比の追加 notation を読める形にする。',
           },
           {
-            title: 'SB は前提依存',
-            body: 'reviewed source は SB の固定 exact chart を出していないため、UTG baseline と BB の守備傾向に応じた拡張として扱います。',
+            title: 'SB stays dynamic',
+            body: 'reviewed source は SB の固定 exact chart を出していないため、UTG baseline + BB次第の拡張として見せる。',
           },
         ],
         knownLimits: [
-          '3.5BB open と 3BB open の差分は reviewed source から固定できていません。',
-          'current repo bundle は final public open-range shell ではなく、repo 内 exact node browser の暫定表示です。',
+          '3.5BB open と 3BB open の差分は reviewed source からは固定できていない。',
+          'current repo bundle は final public open-range shell ではなく、exact node browser を interim に見せている。',
         ],
       },
       o8: {
@@ -4118,28 +1533,28 @@
       plo8: {
         label: 'PLO8',
         cardCopy: 'UTG / MP / CO / BTN / SB ごとの open range を、公開ソース統合の family pack で読む。',
-        shellSummary: 'PLO8 は source ごとの断片を first-in open range に整理し直し、position 別 family pack として見せます。',
+        shellSummary: 'PLO8 は source ごとの断片を first-in open range に成型し直して、position 別 family pack として見せる。',
         sourceProfile: 'OmahaPlanet + Pokerology + OnlinePoker + Steve Badger + Omaha Indicator PDF',
         currentSurface: 'Current repo surface: public-source standardized PLO8 open-range packs',
-        shows: 'position 別 open family、代表ハンド、統合 read、公開ソース basis をまとめて表示します。',
-        notShows: 'O8 family chart を上書きしません。seat-vs-seat solver tree とも扱いません。',
+        shows: 'position 別 open family、代表ハンド、統合 read、公開ソース basis をまとめて表示する。',
+        notShows: 'O8 family chart を上書きしない。seat-vs-seat solver tree も装わない。',
         highlightCards: [
           {
-            title: 'Range を先に成型',
-            body: 'open range を UTG / MP / CO / BTN / SB ごとの family pack に整理してから UI に出します。',
+            title: 'Range shaped first',
+            body: 'open range を UTG / MP / CO / BTN / SB ごとの family pack に先に成型してから UI に出す。',
           },
           {
-            title: 'Position ごとの差',
-            body: 'UTG / MP は A2 + wheel + backup を核にし、CO から backup-low を広げ、BTN だけ selective tail を追加します。',
+            title: 'Position honest',
+            body: 'UTG / MP は A2 + wheel + backup を核にし、CO から backup-low widen、BTN だけ selective tail を追加する。',
           },
           {
-            title: 'Source basis',
+            title: 'Source transparency',
             body: '各 open family に HTML/PDF の source basis を残して、どこから統合したかを追えるようにする。',
           },
         ],
         knownLimits: [
-          '公開情報は exact seat tree まで揃っていないため、UI は標準化した public-source open baseline を使っています。',
-          'これは公開資料の再構築表示であり、solver 由来の exact mixed frequency ではありません。',
+          '公開情報は exact seat tree まで揃っていないため、UI は standardized public-source open baseline を使っています。',
+          'これは public-source report の再構築 UI であり、solver 由来の exact mixed frequency ではありません。',
         ],
       },
       badugi: {
@@ -4148,20 +1563,20 @@
         shellSummary: 'Badugi は pat / tri / two-card の閾値を position 別に比較して見るのが自然。',
         sourceProfile: 'normalized public-source dataset backed by CountingOuts, CardPlayer, PokerNews, note, and PDF supplemental material',
         currentSurface: 'Current repo surface: assets/mix/badugi-pre-draw-public-ranges.v1.json + embedded runtime mirror',
-        shows: 'position 別の open core と blind defense baseline を、資料で確認できる共通部分として見せます。',
-        notShows: 'solver exact mixed frequency や、公開されていない BB first-in open row は装いません。',
+        shows: 'position 別の open core と blind defense baseline を source-backed な共通部分で見せる。',
+        notShows: 'solver exact mixed frequency や BB first-in open row を pretending しない。',
         highlightCards: [
           {
-            title: 'Open の軸',
-            body: '公開レンジの軸は EP 14.3%, MP 18.2%, CO 28.3%, BTN 38.2% の first-in totals です。',
+            title: 'Open anchors',
+            body: '公開レンジの軸は EP 14.3%, MP 18.2%, CO 28.3%, BTN 38.2% の first-in totals。',
           },
           {
             title: 'Tri first',
             body: 'ほぼ全ソースで tri が利益の中心。弱い pat badugi と雑な two-card はむしろ削る。',
           },
           {
-            title: 'SB/BB は相手依存',
-            body: 'SB の open 幅と BB の flat range は相手依存です。非 BB の flat はかなり減らすのが共通線です。',
+            title: 'SB and BB are context heavy',
+            body: 'SB の open 幅と BB の flat range は相手依存。非 BB の flat はかなり減らすのが共通線。',
           },
         ],
         knownLimits: [
@@ -4171,19 +1586,19 @@
       },
       a5_triple_draw: {
         label: 'A-5 Triple Draw',
-        cardCopy: '公開 HTML / PDF を統合した A-5 pre-draw open / continue baseline を、position ごとに切り替えて見る。',
-        shellSummary: 'A-5 は draw-count state と quality band を主軸にした ladder 表示が合います。',
-        sourceProfile: 'CountingOuts detailed article + CardPlayer boundary examples + BetMGM cross-check + WPT rules + KKPOKER LIVE PDF',
-        currentSurface: 'Current repo surface: assets/mix/a5-triple-draw-public-ranges.v1.json + embedded runtime mirror',
-        shows: 'position ごとの first-in open と facing-open continue baseline を、資料ベースで整理します。',
-        notShows: 'exact call % や solver mixed frequency は装いません。',
+        cardCopy: 'pat made / one-card / two-card draw の threshold ladder。repo bundle はまだない。',
+        shellSummary: 'A-5 は draw-count state と quality band を主軸にした ladder shell が正しい。',
+        sourceProfile: 'CountingOuts detailed article + rules/basic + CardPlayer supplemental',
+        currentSurface: 'Current repo surface: no normalized bundle yet',
+        shows: 'made hand, D1, D2, premium re-raise class を position ごとに整理する。',
+        notShows: 'SB / BB まで固定した exact percent ladder を装わない。',
         highlightCards: [
           {
-            title: '資料由来の totals',
+            title: 'Source-backed totals',
             body: '現時点の中核 threshold は EP 26.7%, CO 31.7%, BTN 42.7%。',
           },
           {
-            title: '詳細記事を優先',
+            title: 'Detailed article wins',
             body: 'CountingOuts 内の差分は detailed article の Made 7s or better を正本に置く。',
           },
           {
@@ -4192,25 +1607,25 @@
           },
         ],
         knownLimits: [
-          'exact call % は公開資料で確認できないため、continue panel は action-class guidance として表示します。',
+          'current repo には A-5 専用 grounded bundle がない。',
         ],
       },
       deuce_to_seven_triple_draw: {
         label: '2-7 Triple Draw',
-        cardCopy: 'threshold ladder と source profile 差分を併記します。current repo には practical bundle が残っています。',
+        cardCopy: 'threshold ladder + source profile aware。current repo には practical bundle が残っている。',
         shellSummary: '2-7 は pat / D1 / D2 / D3 ladder を主軸にしつつ、source profile 差分を残すべきゲーム。',
         sourceProfile: 'CountingOuts + CardPlayer + grounded PokerTips practical bundle',
         currentSurface: 'Current repo surface: draw_triple_low practical heuristic bundle',
-        shows: 'pat / D1 / D2 / D3 の quality band と source profile gap を明示します。',
-        notShows: 'CountingOuts と CardPlayer の差を潰した根拠のない exact number にはしません。',
+        shows: 'pat / D1 / D2 / D3 の quality band と source profile gap を honest に出す。',
+        notShows: 'CountingOuts と CardPlayer の差を潰した fake exact number にしない。',
         highlightCards: [
           {
-            title: '2つの source profile',
+            title: 'Two source profiles',
             body: 'CountingOuts は EP 19.8 / HJ 21.6 / CO 31.8 / BTN 44.9、CardPlayer は UTG 15.8 / HJ 20.7 / CO 30.1 / BU 45.3。',
           },
           {
             title: 'D2 matters',
-            body: 'D2 quality と deuce retention が表示の中心で、button の広がりも非常に大きい。',
+            body: 'D2 quality と deuce retention が display の中心で、button widen も非常に大きい。',
           },
           {
             title: 'Current repo gap',
@@ -4227,20 +1642,20 @@
         shellSummary: 'Razz は stud context board で表示するのが正しく、top x% ladder にはしない。',
         sourceProfile: 'CountingOuts / PokerTips Razz guidance + grounded practical bundle',
         currentSurface: 'Current repo surface: stud_low_razz practical third-street bundle',
-        shows: '5-high or better, 6-high, 7-high, steal class を blocker 状況付きで整理します。',
-        notShows: 'fixed seat-based opening percent table は装いません。',
+        shows: '5-high or better, 6-high, 7-high, steal class を blocker 状況付きで整理する。',
+        notShows: 'fixed seat-based opening percent table を pretending しない。',
         highlightCards: [
           {
-            title: 'Bring-in との位置関係',
-            body: 'bring-in のすぐ左は厳しく、folds が回ってきた later relation では参加範囲を広げられます。',
+            title: 'Bring-in relation',
+            body: 'bring-in のすぐ左は厳しく、folds が回ってきた later relation では widen できる。',
           },
           {
-            title: 'Live/dead の層',
+            title: 'Live-dead layer',
             body: 'dead low cards が 2 枚以上見えると marginal な 7-high class は大きく落ちる。',
           },
           {
-            title: 'Board 状況込み',
-            body: 'door card と visible blockers が重要なので、stud context board が自然な公開表示です。',
+            title: 'Board-aware shell',
+            body: 'door card と visible blockers が重要なので、stud context board が honest な public shell。',
           },
         ],
         knownLimits: [
@@ -4275,42 +1690,41 @@
       },
       stud8: {
         label: 'Stud8',
-        cardCopy: 'position-normalized third-street complete / continue browser。Stud の bring-in relative seat で見る。',
-        shellSummary: 'Stud8 は fixed seat chart ではなく、EP / MP / LP / BI に正規化した third-street browser で見せる。',
-        sourceProfile: 'CardPlayer Haney / Ohel + PokerNews + PokerStars Learn + Kihara + Kogoro note + California PDF',
-        currentSurface: 'Current repo surface: assets/mix/stud8-third-street-public-ranges.v1.json + embedded runtime mirror',
-        shows: 'EP / MP / LP / BI に正規化した rows、open-complete / vs-complete bands、HTML/PDF links を表示します。',
-        notShows: 'solver frequencies や根拠のない fixed-seat chart は装いません。',
+        cardCopy: 'stud split-pot board。low contest / scoop / freeroll pressure を追加で見る。',
+        shellSummary: 'Stud8 は stud shell に split-pot overlay を足した専用 board にする必要がある。',
+        sourceProfile: 'CountingOuts + PokerTips + PokerNews Stud8',
+        currentSurface: 'Current repo surface: stud_hilo practical third-street bundle',
+        shows: 'three low suited babies, ace-plus-wheel, scoop pressure, qualifier context を重ねて読む。',
+        notShows: 'single seat ladder や generic stud-high shell に潰さない。',
         highlightCards: [
           {
-            title: '正規化した seat',
-            body: 'UTG / CO / BTN ではなく、bring-in relative の EP / MP / LP / BI で public source を再構築する。',
+            title: 'No-man’s-land trap',
+            body: '9 / T / J 付近の starts は hi と low の中間で value を失いやすい。',
           },
           {
-            title: 'Ace-up で late seat が広がる',
-            body: 'late seat は ace-up で一気に広がります。ただし Stud8 なので、守られたときの fallback equity も必要です。',
+            title: 'Weak eight-low discipline',
+            body: 'weak eight-low は low competition や dead low outs が見えると一気に落ちる。',
           },
           {
-            title: 'Bring-in は別 row',
-            body: 'bring-in seat は unopened return と defend vs complete で意味が違うため、別 position として切り出します。',
+            title: 'Split-pot overlay',
+            body: 'made low の freeroll や scoop path を regular stud shell の上に重ねる必要がある。',
           },
         ],
         knownLimits: [
-          'public HTML/PDF からの再構築であり、exact mixed frequency chart ではありません。',
-          'LP と BI は ante structure と visible dead cards で大きく動くため、UI は public-source overlap を優先しています。',
+          'current repo surface は practical bundle で、final split-pot board shell ではない。',
         ],
       },
       basil_826: {
         label: '826',
-        cardCopy: 'FL826TD / NL826SD ごとに、公開資料で確認できるアーキタイプとリスクだけを表示します。',
-        shellSummary: '826 は variant と view を固定して、役の序列・スタート構造・pot-share risk を確認する表示です。',
+        cardCopy: 'FL826TD / NL826SD のハンドレンジだけを、Open と BB Call で position ごとに切り替えて見る。',
+        shellSummary: '826 は variant / view / position を固定して、選択中 spot の hand range だけを表示する。',
         sourceProfile: 'zoniki public note + embedded rule image + preview-backed FL positional frame',
         currentSurface: 'Current repo surface: assets/mix/basil-826-public-ranges.v1.json + embedded runtime mirror',
-        shows: 'variant switcher、資料で確認できる archetype / risk overlay、source boundary を表示します。',
-        notShows: '公開資料で確定できない position 別 open range や BB defense matrix は表示しません。',
+        shows: 'variant switcher, Open / BB Call view, position tabs, and the selected hand range only.',
+        notShows: 'confidence, source links, role reference, summary cards は表示しない。',
         highlightCards: [
           {
-            title: '役の序列',
+            title: 'Role hierarchy',
             body: 'number role は 826 > 82 > 86 > 26、club role は club count 優先で評価する。',
           },
           {
@@ -4318,16 +1732,16 @@
             body: '8c2c6c は Royal Basil として別格扱いになる。',
           },
           {
-            title: 'Variant を先に分ける',
+            title: 'Variant-first',
             body: 'FL826TD と NL826SD は同じ three-card start でも価値が大きく変わるため別 shell が必要。',
           },
           {
-            title: 'Position chart は未確定',
-            body: 'exact public frequency chart はないため、position 別の core / mix / avoid は出さず、資料で確認できる構造だけに絞ります。',
+            title: 'Position-aware bands',
+            body: 'exact public frequency chart はないので、position 別には core / mix / avoid と confidence を honest に出す。',
           },
         ],
         knownLimits: [
-          'exact seat-by-seat frequency chart は公開されていません。',
+          'exact seat-by-seat frequency chart は公開されていないため、UI は public-source reconstruction を表示します。',
           'standalone PDF / CSV chart は未発見で、rules authority は note 埋め込み画像です。',
         ],
       },
@@ -4699,7 +2113,7 @@
     const MIX_PLO8_OPEN_META = {
       label: 'Open / RFI',
       scope: '6-max / 100bb / first in',
-      summary: 'UTG から BTN に向かって広がる public-source baseline を、ポジション別オープンレンジ表として固定しています。',
+      summary: 'UTG から BTN に向かって widen する public-source baseline を、ポジション別オープンレンジ表として固定しています。',
       caveat: '公開ソース最大公約数の統合表示であり、solver の exact frequency chart ではありません。',
     };
     const MIX_PLO8_SOURCE_CARDS = [
@@ -4974,40 +2388,6 @@
     const MIX_BADUGI_COLLECTION_NOTES = Array.isArray(MIX_BADUGI_PUBLIC_RANGE_DATASET.collection_notes)
       ? MIX_BADUGI_PUBLIC_RANGE_DATASET.collection_notes.filter(note => typeof note === 'string' && note.trim())
       : [];
-    const MIX_STUD8_PUBLIC_RANGE_DATASET = (window.__STUD8_THIRD_STREET_PUBLIC_RANGES_V1 && typeof window.__STUD8_THIRD_STREET_PUBLIC_RANGES_V1 === 'object')
-      ? window.__STUD8_THIRD_STREET_PUBLIC_RANGES_V1
-      : {
-        collection_notes: [],
-        global_source_refs: [],
-        position_order: [],
-        positions: {},
-        source_index: {},
-      };
-    const MIX_STUD8_SOURCE_INDEX = (MIX_STUD8_PUBLIC_RANGE_DATASET.source_index && typeof MIX_STUD8_PUBLIC_RANGE_DATASET.source_index === 'object')
-      ? MIX_STUD8_PUBLIC_RANGE_DATASET.source_index
-      : {};
-    const MIX_STUD8_POSITION_OBJECT = (MIX_STUD8_PUBLIC_RANGE_DATASET.positions && typeof MIX_STUD8_PUBLIC_RANGE_DATASET.positions === 'object')
-      ? MIX_STUD8_PUBLIC_RANGE_DATASET.positions
-      : {};
-    const MIX_STUD8_GLOBAL_SOURCE_REFS = Array.isArray(MIX_STUD8_PUBLIC_RANGE_DATASET.global_source_refs)
-      ? MIX_STUD8_PUBLIC_RANGE_DATASET.global_source_refs
-        .filter(sourceRef => typeof sourceRef === 'string' && sourceRef.trim())
-        .map(sourceRef => sourceRef.trim())
-      : [];
-    const MIX_STUD8_COLLECTION_NOTES = Array.isArray(MIX_STUD8_PUBLIC_RANGE_DATASET.collection_notes)
-      ? MIX_STUD8_PUBLIC_RANGE_DATASET.collection_notes.filter(note => typeof note === 'string' && note.trim())
-      : [];
-    const MIX_STUD8_POSITION_OPTIONS = Array.isArray(MIX_STUD8_PUBLIC_RANGE_DATASET.position_order) && MIX_STUD8_PUBLIC_RANGE_DATASET.position_order.length
-      ? MIX_STUD8_PUBLIC_RANGE_DATASET.position_order
-        .filter(positionKey => typeof positionKey === 'string' && positionKey && MIX_STUD8_POSITION_OBJECT[positionKey])
-        .filter(Boolean)
-      : ['EP', 'MP', 'LP', 'BI'];
-    const MIX_STUD8_POSITION_LABELS = Object.fromEntries(
-      MIX_STUD8_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_STUD8_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
-    );
     const MIX_BASIL_826_PUBLIC_RANGE_DATASET = window.__BASIL_826_PUBLIC_RANGES_V1
       && typeof window.__BASIL_826_PUBLIC_RANGES_V1 === 'object'
       ? window.__BASIL_826_PUBLIC_RANGES_V1
@@ -5020,45 +2400,64 @@
       ? Object.keys(MIX_BASIL_826_HAND_RANGES).filter(value => typeof value === 'string' && value.trim())
       : ['FL826TD', 'NL826SD'];
     const MIX_BASIL_826_VIEW_OPTIONS = [
-      ['archetypes', '資料確認済みアーキタイプ'],
-      ['risk_overlays', 'Pot-share / risk'],
+      ['open_raise', 'Open / Raise'],
+      ['bb_defense_call', 'BB Call'],
     ];
     const MIX_BASIL_826_VIEW_LABELS = {
-      archetypes: '資料確認済みアーキタイプ',
-      risk_overlays: 'Pot-share / risk',
+      open_raise: 'Open / Raise',
+      bb_defense_call: 'BB Call',
     };
-    const MIX_BASIL_826_POSITION_ORDER = ['SOURCE_CONFIRMED'];
+    const MIX_BASIL_826_POSITION_ORDER = ['UTG', 'HJ', 'CO', 'BTN', 'SB'];
     const MIX_BASIL_826_POSITION_LABELS = {
-      SOURCE_CONFIRMED: '公開資料で確認できる範囲',
+      UTG: 'UTG',
+      HJ: 'HJ',
+      CO: 'CO',
+      BTN: 'BTN',
+      SB: 'SB',
     };
-    const MIX_A5_PUBLIC_RANGE_DATASET = (window.__A5_TRIPLE_DRAW_PUBLIC_RANGES_V1 && typeof window.__A5_TRIPLE_DRAW_PUBLIC_RANGES_V1 === 'object')
-      ? window.__A5_TRIPLE_DRAW_PUBLIC_RANGES_V1
-      : {
-        collection_notes: [],
-        position_order: [],
-        positions: {},
-        source_index: {},
-      };
-    const MIX_A5_SOURCE_INDEX = (MIX_A5_PUBLIC_RANGE_DATASET.source_index && typeof MIX_A5_PUBLIC_RANGE_DATASET.source_index === 'object')
-      ? MIX_A5_PUBLIC_RANGE_DATASET.source_index
-      : {};
-    const MIX_A5_POSITION_OBJECT = (MIX_A5_PUBLIC_RANGE_DATASET.positions && typeof MIX_A5_PUBLIC_RANGE_DATASET.positions === 'object')
-      ? MIX_A5_PUBLIC_RANGE_DATASET.positions
-      : {};
-    const MIX_A5_POSITION_OPTIONS = Array.isArray(MIX_A5_PUBLIC_RANGE_DATASET.position_order) && MIX_A5_PUBLIC_RANGE_DATASET.position_order.length
-      ? MIX_A5_PUBLIC_RANGE_DATASET.position_order
-        .filter(positionKey => typeof positionKey === 'string' && positionKey && MIX_A5_POSITION_OBJECT[positionKey])
-        .filter(Boolean)
-      : ['EP', 'CO', 'BTN', 'SB', 'BB'];
-    const MIX_A5_POSITION_LABELS = Object.fromEntries(
-      MIX_A5_POSITION_OPTIONS.map(positionKey => {
-        const entry = MIX_A5_POSITION_OBJECT[positionKey] || {};
-        return [positionKey, entry.label || positionKey];
-      })
-    );
-    const MIX_A5_COLLECTION_NOTES = Array.isArray(MIX_A5_PUBLIC_RANGE_DATASET.collection_notes)
-      ? MIX_A5_PUBLIC_RANGE_DATASET.collection_notes.filter(note => typeof note === 'string' && note.trim())
-      : [];
+    const MIX_A5_POSITION_OPTIONS = ['EP', 'CO', 'BTN', 'SB'];
+    const MIX_A5_POSITION_LABELS = {
+      EP: 'Early Position',
+      CO: 'Cutoff',
+      BTN: 'Button',
+      SB: 'Small Blind',
+    };
+    const MIX_A5_OPEN_RANGE = {
+      EP: [
+        ['Pat hands', 'Made 7s or better'],
+        ['One-card draw', 'Four wheel cards'],
+        ['One-card draw', 'Four to a six'],
+        ['Two-card draw', 'Three wheel cards'],
+        ['Special three-card sixes', 'A26, A36, A46, 236, 246, 346'],
+      ],
+      CO: [
+        ['Pat hands', 'Made 7s or better'],
+        ['One-card draw', 'Four wheel cards'],
+        ['One-card draw', 'Four to a six'],
+        ['Two-card draw', 'Three wheel cards'],
+        ['Special three-card sixes', 'A26, A36, A46, 236, 246, 346'],
+        ['Late-position additions', 'Three to a six'],
+      ],
+      BTN: [
+        ['Pat hands', 'Made 7s or better'],
+        ['One-card draw', 'Four wheel cards'],
+        ['One-card draw', 'Four to a six'],
+        ['Two-card draw', 'Three wheel cards'],
+        ['Special three-card sixes', 'A26, A36, A46, 236, 246, 346'],
+        ['Late-position additions', 'Three to a six'],
+        ['Button additions', 'A2, A3, A4, 23, 24, 34'],
+      ],
+      SB: [
+        ['Pat hands', 'Made 7s or better'],
+        ['One-card draw', 'Four wheel cards'],
+        ['One-card draw', 'Four to a six'],
+        ['Two-card draw', 'Three wheel cards'],
+        ['Special three-card sixes', 'A26, A36, A46, 236, 246, 346'],
+        ['Late-position additions', 'Three to a six'],
+        ['Button baseline', 'A2, A3, A4, 23, 24, 34'],
+        ['Adjustment', 'open wider only against weaker players who overfold and do not reraise enough'],
+      ],
+    };
     const MIX_PLO_HU_DEFEND_PREVIEW = {
       title: 'Big Blind Call vs Small Blind Open',
       scope: 'repo exact slice / heads-up Small Blind vs Big Blind / 100bb / with limp tree',
@@ -5327,10 +2726,9 @@
       selectedO8Position: 'LJ',
       selectedPlo8Position: 'UTG',
       selectedBadugiPosition: 'EP',
-      selectedStud8Position: 'EP',
       selected826Variant: 'FL826TD',
-      selected826View: 'archetypes',
-      selected826Position: 'SOURCE_CONFIRMED',
+      selected826View: 'open_raise',
+      selected826Position: 'UTG',
       selectedA5Position: 'EP',
       selectedO8Family: 'A-2',
       selectedFamilyId: '',
@@ -8492,11 +5890,8 @@
       if (!normalizedFamilyId || !normalizedSpotId) return;
       const stateKey = buildMixExactSpotKey(normalizedFamilyId, normalizedSpotId);
       const existingState = mixDisplayState.exactSpotByKey[stateKey];
-      if (!forceRefresh && existingState) {
-        if (existingState.status === 'loading') return;
-        if ((existingState.status === 'ready' || existingState.status === 'error') && existingState.page === page) {
-          return;
-        }
+      if (!forceRefresh && existingState && (existingState.status === 'loading' || (existingState.status === 'ready' && existingState.page === page))) {
+        return;
       }
       mixDisplayState.exactSpotByKey[stateKey] = {
         status: 'loading',
@@ -10068,196 +7463,6 @@
       };
     }
 
-    function readMixStud8SourceEntry(sourceRef) {
-      return sourceRef && MIX_STUD8_SOURCE_INDEX[sourceRef]
-        ? MIX_STUD8_SOURCE_INDEX[sourceRef]
-        : null;
-    }
-
-    function readMixStud8Position(position) {
-      return MIX_STUD8_POSITION_OPTIONS.includes(position) ? position : 'EP';
-    }
-
-    function readMixStud8PositionEntry(position) {
-      const safePosition = readMixStud8Position(position);
-      return MIX_STUD8_POSITION_OBJECT[safePosition] || {};
-    }
-
-    function normalizeMixStud8Section(rawSection) {
-      const section = rawSection && typeof rawSection === 'object' ? rawSection : {};
-      const collectedRows = Array.isArray(section.collected_rows)
-        ? section.collected_rows
-          .map(rawRow => {
-            if (!rawRow || typeof rawRow !== 'object') return null;
-            const sourceRef = typeof rawRow.source_ref === 'string' ? rawRow.source_ref.trim() : '';
-            const rangeRead = typeof rawRow.range_read === 'string' ? rawRow.range_read.trim() : '';
-            if (!sourceRef || !rangeRead) return null;
-            return {
-              sourceRef,
-              evidenceType: typeof rawRow.evidence_type === 'string' ? rawRow.evidence_type.trim() : '',
-              rangeRead,
-              notes: typeof rawRow.notes === 'string' ? rawRow.notes.trim() : '',
-            };
-          })
-          .filter(Boolean)
-        : [];
-      return {
-        sectionLabel: typeof section.section_label === 'string' ? section.section_label.trim() : '',
-        anchorProfile: typeof section.anchor_profile === 'string' ? section.anchor_profile.trim() : '',
-        publicRangeRead: typeof section.public_range_read === 'string' ? section.public_range_read.trim() : '',
-        tableColumns: Array.isArray(section.table_columns)
-          ? section.table_columns.filter(value => typeof value === 'string' && value.trim()).map(value => value.trim())
-          : [],
-        tableRows: Array.isArray(section.table_rows)
-          ? section.table_rows.filter(row => Array.isArray(row) && row.length)
-          : [],
-        sourceNote: typeof section.source_note === 'string' ? section.source_note.trim() : '',
-        collectedRows,
-      };
-    }
-
-    function readMixStud8SourceRefsForPosition(position) {
-      const entry = readMixStud8PositionEntry(position);
-      const positionRefs = Array.isArray(entry?.source_refs)
-        ? entry.source_refs
-          .filter(sourceRef => typeof sourceRef === 'string' && sourceRef.trim())
-          .map(sourceRef => sourceRef.trim())
-        : [];
-      return Array.from(new Set([...MIX_STUD8_GLOBAL_SOURCE_REFS, ...positionRefs]))
-        .filter(sourceRef => !!readMixStud8SourceEntry(sourceRef));
-    }
-
-    function buildMixStud8SelectedRangePayload(selectedPosition) {
-      const safePosition = readMixStud8Position(selectedPosition);
-      const entry = readMixStud8PositionEntry(safePosition);
-      return {
-        label: entry?.label || MIX_STUD8_POSITION_LABELS[safePosition] || safePosition,
-        positionSummary: typeof entry?.position_summary === 'string' ? entry.position_summary.trim() : '',
-        cautionNote: typeof entry?.caution_note === 'string' ? entry.caution_note.trim() : '',
-        openSection: normalizeMixStud8Section(entry?.open_complete),
-        versusSection: normalizeMixStud8Section(entry?.versus_complete),
-        sourceRefs: readMixStud8SourceRefsForPosition(safePosition),
-      };
-    }
-
-    function buildMixStud8EvidenceRows(section) {
-      if (!section || !Array.isArray(section.collectedRows)) return [];
-      return section.collectedRows.map(row => {
-        const sourceEntry = readMixStud8SourceEntry(row.sourceRef) || {};
-        return [
-          sourceEntry.short_label || row.sourceRef,
-          humanizeMixSelectorValue(row.evidenceType || 'note'),
-          row.rangeRead || '',
-          row.notes || '',
-        ];
-      });
-    }
-
-    function renderMixStud8SourceLinks(sourceRefs) {
-      if (!Array.isArray(sourceRefs) || !sourceRefs.length) {
-        return '<p class="mix-empty">source links unavailable</p>';
-      }
-      return `
-        <ul class="mix-link-list">
-          ${sourceRefs.map(sourceRef => {
-            const entry = readMixStud8SourceEntry(sourceRef) || {};
-            const sourceUrl = typeof entry.url === 'string' && entry.url.trim() ? entry.url.trim() : '';
-            const sourceType = typeof entry.source_type === 'string' && entry.source_type.trim() ? entry.source_type.trim() : 'HTML';
-            const weightLabel = typeof entry.weight === 'string' && entry.weight.trim()
-              ? humanizeMixSelectorValue(entry.weight)
-              : '';
-            const typeClass = sourceType === 'PDF' ? 'mix-chip mix-chip-pdf' : 'mix-chip mix-chip-html';
-            const title = typeof entry.title === 'string' && entry.title.trim()
-              ? entry.title.trim()
-              : sourceRef;
-            return `
-              <li>
-                <a class="mix-source-link" href="${escapeHtml(sourceUrl || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>
-                <span class="${typeClass}">${escapeHtml(sourceType)}</span>
-                ${weightLabel ? `<span class="mix-chip mix-chip-preview">${escapeHtml(weightLabel)}</span>` : ''}
-              </li>
-            `;
-          }).join('')}
-        </ul>
-      `;
-    }
-
-    function renderMixStud8Section(section) {
-      if (!section || (!section.publicRangeRead && !section.tableRows.length && !section.collectedRows.length)) {
-        return '';
-      }
-      const evidenceRows = buildMixStud8EvidenceRows(section);
-      const tableColumns = section.tableColumns.length ? section.tableColumns : ['Class', 'Range'];
-      return `
-        <section class="surface-card tight">
-          <h3>${escapeHtml(section.sectionLabel || 'Range section')}</h3>
-          <div class="mix-detail-grid">
-            <div class="mix-detail-band">
-              <strong>Anchor</strong>
-              <span>${escapeHtml(section.anchorProfile || 'source-backed practical row')}</span>
-            </div>
-            <div class="mix-detail-band">
-              <strong>Evidence rows</strong>
-              <span>${escapeHtml(String(evidenceRows.length || 0))}</span>
-            </div>
-          </div>
-          ${section.publicRangeRead ? `<p class="mix-preview-copy">${escapeHtml(section.publicRangeRead)}</p>` : ''}
-          ${renderMixStaticTable(tableColumns, section.tableRows)}
-          ${section.sourceNote ? `<p class="mix-preview-copy">${escapeHtml(section.sourceNote)}</p>` : ''}
-          ${evidenceRows.length ? `
-            <p class="mix-preview-copy">Source evidence folded into this section:</p>
-            ${renderMixStaticTable(['Source', 'Evidence', 'Used as', 'Why'], evidenceRows)}
-          ` : ''}
-        </section>
-      `;
-    }
-
-    function renderMixStud8RangePanel() {
-      const selectedPosition = readMixStud8Position(mixDisplayState.selectedStud8Position);
-      const selectedRange = buildMixStud8SelectedRangePayload(selectedPosition);
-      return `
-        <section class="surface-card tight">
-          <h3>Stud8 Position Browser</h3>
-          <p class="mix-preview-copy">公開 HTML と PDF を使って third-street の complete / continue を position-normalized に再構築した Stud8 surface です。Stud なので UTG / CO / BTN ではなく、bring-in relative の EP / MP / LP / BI で切り替えます。</p>
-          <div class="mix-selector-field">
-            <span>Position</span>
-            ${renderMixPlo8TabButtons(
-              MIX_STUD8_POSITION_OPTIONS.map(position => [position, MIX_STUD8_POSITION_LABELS[position] || position]),
-              selectedPosition,
-              'data-mix-stud8-position-tab'
-            )}
-          </div>
-          <div class="mix-detail-grid">
-            <div class="mix-detail-band">
-              <strong>Position shown</strong>
-              <span>${escapeHtml(selectedRange.label)}</span>
-            </div>
-            <div class="mix-detail-band">
-              <strong>Seat meaning</strong>
-              <span>${escapeHtml(selectedRange.positionSummary || 'source-backed practical position')}</span>
-            </div>
-            <div class="mix-detail-band">
-              <strong>Source pack</strong>
-              <span>${escapeHtml(`${selectedRange.sourceRefs.length} linked sources / HTML + PDF`)}</span>
-            </div>
-          </div>
-          ${selectedRange.cautionNote ? `<p class="mix-preview-copy">${escapeHtml(selectedRange.cautionNote)}</p>` : ''}
-          ${MIX_STUD8_COLLECTION_NOTES.length ? `
-            <ul class="mix-note-list">
-              ${MIX_STUD8_COLLECTION_NOTES.map(note => `<li>${escapeHtml(note)}</li>`).join('')}
-            </ul>
-          ` : ''}
-        </section>
-        ${renderMixStud8Section(selectedRange.openSection)}
-        ${renderMixStud8Section(selectedRange.versusSection)}
-        <section class="surface-card tight">
-          <h3>${escapeHtml(`${selectedRange.label} Sources`)}</h3>
-          <p class="mix-preview-copy">上の行データは以下のリンクから再構築しています。PDF は bring-in / completion / 8-or-better の正式ルール確認、記事群は practical range band の再構築に使っています。</p>
-          ${renderMixStud8SourceLinks(selectedRange.sourceRefs)}
-        </section>
-      `;
-    }
-
     function renderMixO8OpenRangePanel() {
       return `
         ${renderMixO8FamilyRangePanel()}
@@ -10336,7 +7541,7 @@
     }
 
     function readMixBasil826View(view) {
-      return MIX_BASIL_826_VIEW_OPTIONS.some(([value]) => value === view) ? view : 'archetypes';
+      return MIX_BASIL_826_VIEW_OPTIONS.some(([value]) => value === view) ? view : 'open_raise';
     }
 
     function readMixBasil826VariantPayload(variant) {
@@ -10387,18 +7592,12 @@
       const selectedRows = readMixBasil826Entry(safeVariant, safeView, safePosition);
       const selectedDetailRows = buildMixBasil826DetailRows(selectedRows);
       const selectedPositionLabel = MIX_BASIL_826_POSITION_LABELS[safePosition] || safePosition;
-      const selectedViewLabel = MIX_BASIL_826_VIEW_LABELS[safeView] || safeView;
-      const scopeText = MIX_BASIL_826_PUBLIC_RANGE_DATASET.scope
-        && typeof MIX_BASIL_826_PUBLIC_RANGE_DATASET.scope.source_boundary === 'string'
-        ? MIX_BASIL_826_PUBLIC_RANGE_DATASET.scope.source_boundary
-        : 'Public sources do not support an exact position matrix.';
-      const collectionNotes = Array.isArray(MIX_BASIL_826_PUBLIC_RANGE_DATASET.collection_notes)
-        ? MIX_BASIL_826_PUBLIC_RANGE_DATASET.collection_notes
-        : [];
+      const selectedPositionTitle = safeView === 'bb_defense_call'
+        ? `BB vs ${selectedPositionLabel} open`
+        : selectedPositionLabel;
       return `
         <section class="surface-card tight">
-          <h3>${escapeHtml(`826 ${safeVariant} / ${selectedViewLabel}`)}</h3>
-          <p class="mix-preview-copy">公開資料で確認できる役・構造・リスクだけを表示します。position 別の open range や BB defense matrix は、現時点の資料からは確定できません。</p>
+          <h3>${escapeHtml(`826 ${safeVariant} ${selectedPositionTitle}`)}</h3>
           <div class="mix-selector-grid">
             <label class="mix-selector-field">
               <span>Variant</span>
@@ -10417,112 +7616,55 @@
               </select>
             </label>
             <label class="mix-selector-field">
-              <span>Source scope</span>
+              <span>${escapeHtml(safeView === 'bb_defense_call' ? 'Facing open' : 'Position')}</span>
               <select id="mix-826-position-select" data-mix-826-position-select="true">
                 ${readMixBasil826PositionOptions(safeVariant, safeView).map(position => {
                   const positionLabel = MIX_BASIL_826_POSITION_LABELS[position] || position;
-                  return `<option value="${escapeHtml(position)}"${position === safePosition ? ' selected' : ''}>${escapeHtml(positionLabel)}</option>`;
+                  const optionLabel = safeView === 'bb_defense_call' ? `vs ${positionLabel}` : positionLabel;
+                  return `<option value="${escapeHtml(position)}"${position === safePosition ? ' selected' : ''}>${escapeHtml(optionLabel)}</option>`;
                 }).join('')}
               </select>
             </label>
           </div>
-          <p class="mix-preview-copy">${escapeHtml(scopeText)}</p>
-          ${collectionNotes.length ? `
-            <ul class="mix-note-list">
-              ${collectionNotes.map(note => `<li>${escapeHtml(note)}</li>`).join('')}
-            </ul>
-          ` : ''}
           ${selectedDetailRows.length
             ? renderMixStaticTable(
-              ['資料確認済み項目'],
+              [safeView === 'bb_defense_call' ? 'Call hand detail' : 'Open hand detail'],
               selectedDetailRows
             )
-            : '<p class="mix-empty">資料確認済み項目がありません</p>'}
+            : '<p class="mix-empty">hand range unavailable</p>'}
         </section>
       `;
     }
 
-    function readMixA5Position(position) {
-      return MIX_A5_POSITION_OPTIONS.includes(position) ? position : 'EP';
-    }
-
     function renderMixA5OpenRangePanel() {
-      const selectedPosition = readMixA5Position(mixDisplayState.selectedA5Position);
-      const rangeOnlyOpenRows = {
-        EP: [
-          ['Pat made hands', 'Made 7s or better'],
-          ['One-card draws', 'Four wheel cards / Four to a six'],
-          ['Two-card draws', 'Three wheel cards'],
-          ['Strong three-card sixes', 'A26 / A36 / A46 / 236 / 246 / 346'],
-        ],
-        CO: [
-          ['Pat made hands', 'Made 7s or better'],
-          ['One-card draws', 'Four wheel cards / Four to a six'],
-          ['Two-card draws', 'Three wheel cards'],
-          ['Three-card sixes', 'Three to a six'],
-        ],
-        BTN: [
-          ['Pat made hands', 'Made 7s or better'],
-          ['One-card draws', 'Four wheel cards / Four to a six'],
-          ['Draw core', 'Three wheel cards / Three to a six'],
-          ['Button two-card steals', 'A2 / A3 / A4 / 23 / 24 / 34'],
-        ],
-        SB: [
-          ['Baseline open', 'Button range'],
-        ],
-        BB: [],
-      };
-      const rangeOnlyContinueRows = {
-        EP: [
-          ['3-bet', 'Pat hands / one-card draws / A23 / A24 / A34'],
-          ['Call', 'A23 mix / A36-type weaker two-card draws'],
-          ['Fold', '345-type bottom opens once raised'],
-        ],
-        CO: [
-          ['3-bet', 'Pat hands / one-card draws / A23 / A24 / A34'],
-          ['Call', 'A23 mix / A36-type weaker two-card draws'],
-          ['Fold', 'Bottom cutoff opens once raised'],
-        ],
-        BTN: [
-          ['3-bet', 'Pat hands / one-card draws / A23 / A24 / A34'],
-          ['Call', 'A23 mix / A36-type weaker two-card draws'],
-          ['Fold', 'Weakest button steals once raised'],
-        ],
-        SB: [
-          ['3-bet', 'Most continue range'],
-          ['Call', 'A2 vs loose late opens'],
-          ['Fold', 'A2 and thinner two-card draws vs tight EP'],
-        ],
-        BB: [
-          ['Vs late-position open', 'Button range'],
-          ['Vs early-position open', 'Slightly tighter than button range'],
-          ['Vs SB steal', 'Button range + A5 / 25 / 35 / 45'],
-          ['3-bet vs SB', 'Any two-card draw or better'],
-        ],
-      };
-      const openRows = Array.isArray(rangeOnlyOpenRows[selectedPosition]) ? rangeOnlyOpenRows[selectedPosition] : [];
-      const continueRows = Array.isArray(rangeOnlyContinueRows[selectedPosition]) ? rangeOnlyContinueRows[selectedPosition] : [];
+      const selectedPosition = MIX_A5_POSITION_OPTIONS.includes(mixDisplayState.selectedA5Position)
+        ? mixDisplayState.selectedA5Position
+        : 'EP';
+      const positionLabel = MIX_A5_POSITION_LABELS[selectedPosition] || selectedPosition;
+      const rows = Array.isArray(MIX_A5_OPEN_RANGE[selectedPosition])
+        ? MIX_A5_OPEN_RANGE[selectedPosition]
+        : [];
       return `
         <section class="surface-card tight">
-          <div class="mix-selector-field">
-            <span>Position</span>
-            ${renderMixPlo8TabButtons(
-              MIX_A5_POSITION_OPTIONS.map(position => [position, MIX_A5_POSITION_LABELS[position] || position]),
-              selectedPosition,
-              'data-mix-a5-position-tab'
-            )}
+          <h3>A-5 Triple Draw Open Range</h3>
+          <div class="mix-selector-grid">
+            <label class="mix-selector-field">
+              <span>Position</span>
+              <select id="mix-a5-position-select" data-mix-a5-position-select="true">
+                ${MIX_A5_POSITION_OPTIONS.map(position => {
+                  const selected = position === selectedPosition ? ' selected' : '';
+                  return `<option value="${escapeHtml(position)}"${selected}>${escapeHtml(MIX_A5_POSITION_LABELS[position] || position)}</option>`;
+                }).join('')}
+              </select>
+            </label>
           </div>
-        </section>
-        <section class="surface-card tight">
-          ${openRows.length ? `
-            <h3>Open Range</h3>
-            ${renderMixStaticTable(['Class', 'Range'], openRows)}
-          ` : ''}
-          ${continueRows.length ? `
-            <h3>${openRows.length ? 'Vs Open Range' : 'Range'}</h3>
-            ${renderMixStaticTable(['Action', 'Range'], continueRows)}
-          ` : ''}
-          ${!openRows.length && !continueRows.length ? '<p class="mix-empty">range unavailable</p>' : ''}
+          <div class="mix-detail-grid">
+            <div class="mix-detail-band">
+              <strong>Position shown</strong>
+              <span>${escapeHtml(positionLabel)}</span>
+            </div>
+          </div>
+          ${renderMixStaticTable(['Class', 'Open hands'], rows)}
         </section>
       `;
     }
@@ -10540,9 +7682,6 @@
       }
       if (selectedGame.gameId === 'badugi') {
         return renderMixBadugiOpenRangePanel();
-      }
-      if (selectedGame.gameId === 'stud8') {
-        return renderMixStud8RangePanel();
       }
       if (selectedGame.gameId === 'basil_826') {
         return renderMixBasil826RangePanel();
@@ -11168,22 +8307,6 @@
           safeRenderMixSurface();
           return;
         }
-        const stud8PositionTab = target.closest('[data-mix-stud8-position-tab]');
-        if (stud8PositionTab instanceof HTMLButtonElement) {
-          event.preventDefault();
-          const nextPosition = stud8PositionTab.dataset.mixStud8PositionTab || '';
-          mixDisplayState.selectedStud8Position = readMixStud8Position(nextPosition);
-          safeRenderMixSurface();
-          return;
-        }
-        const a5PositionTab = target.closest('[data-mix-a5-position-tab]');
-        if (a5PositionTab instanceof HTMLButtonElement) {
-          event.preventDefault();
-          const nextPosition = a5PositionTab.dataset.mixA5PositionTab || '';
-          mixDisplayState.selectedA5Position = readMixA5Position(nextPosition);
-          safeRenderMixSurface();
-          return;
-        }
         const basil826VariantTab = target.closest('[data-mix-826-variant-tab]');
         if (basil826VariantTab instanceof HTMLButtonElement) {
           event.preventDefault();
@@ -11322,7 +8445,9 @@
         }
         const a5PositionSelect = target.closest('[data-mix-a5-position-select]');
         if (a5PositionSelect instanceof HTMLSelectElement) {
-          mixDisplayState.selectedA5Position = readMixA5Position(a5PositionSelect.value);
+          mixDisplayState.selectedA5Position = MIX_A5_POSITION_OPTIONS.includes(a5PositionSelect.value)
+            ? a5PositionSelect.value
+            : 'EP';
           safeRenderMixSurface();
           return;
         }
@@ -15215,6 +12340,4 @@
           console.error(error);
         }
 	    });
-  </script>
-</body>
-</html>
+  
